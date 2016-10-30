@@ -27,3 +27,7 @@
 *.exe
 *.out
 *.app
+
+# Exclude bin and build directories
+bin
+build
