@@ -1,3 +1,5 @@
+git submodule update --remote NPart
+
 FIXES
 
 FEATURES
@@ -5,4 +7,4 @@ FEATURES
 TESTS
 
 STRUCTURE
-	Add NPart as a submodule
+	Compile and use NPart when compiling NRobot
