@@ -24,6 +24,8 @@
 /*************** cmake exported settings ***************/
 /*******************************************************/
 
-
+/* Version number */
+#define NR_VERSION_MAJOR @NR_VERSION_MAJOR@
+#define NR_VERSION_MINOR @NR_VERSION_MINOR@
 
 #endif

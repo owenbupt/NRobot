@@ -20,7 +20,11 @@
 #ifndef __NRobot_h
 #define __NRobot_h
 
+#include "NRConfig.hpp"
+
 namespace nr {
+
+	void nr_info();
 
 }
 

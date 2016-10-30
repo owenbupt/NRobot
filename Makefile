@@ -12,10 +12,14 @@ release:
 	cmake --build build/release -- -j3
 
 install: release
+	cd NPart; make install
 	cd build/release/; make install
 
 uninstall:
 	sudo ldconfig -n /usr/local/lib/
+
+install_npart:
+	cd NPart; sudo make install
 
 clean:
 	rm -rf bin/*

@@ -19,12 +19,12 @@
 
 #include <cstdio>
 #include <iostream>
+#include <NPart/NPart.hpp>
 #include <NRobot.hpp>
 
 using namespace std;
-using namespace nr;
 
 
 int main() {
-	cout << "ZERP\n";
+	nr::nr_info();
 }

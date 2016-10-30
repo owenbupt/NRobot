@@ -7,4 +7,4 @@ FEATURES
 TESTS
 
 STRUCTURE
-	Compile and use NPart when compiling NRobot
+	Make it easier to use NPart through NRobot, use cmake
