@@ -1,7 +1,7 @@
 # NRobot CMakeLists #####################################################
 
 # Source files
-SET(NROBOT_SRC NRobot.cpp)
+SET(NROBOT_SRC NRobot.cpp NRControl.cpp)
 
 # Create library
 ADD_LIBRARY(nrobot SHARED ${NROBOT_SRC})

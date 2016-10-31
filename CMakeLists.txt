@@ -17,6 +17,8 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-w -O2")
 
 
 
+############################# DO NOT EDIT THESE ################################
+
 # Debug postfix
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     SET(BUILD_POSTFIX "_d")
@@ -24,6 +26,13 @@ else(CMAKE_BUILD_TYPE STREQUAL Debug)
     SET(BUILD_POSTFIX "")
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
+# Find SDL
+# https://groups.google.com/forum/#!topic/linux.debian.bugs.dist/j9WDz2YHeKg
+# There seems to be a bug in sdl2-config.cmake, use the one provided
+FIND_PACKAGE(SDL2)
+IF(SDL2_FOUND)
+    INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
+ENDIF(SDL2_FOUND)
 
 # Write cmake settings to header file
 CONFIGURE_FILE(

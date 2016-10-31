@@ -17,15 +17,16 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NRobot_h
-#define __NRobot_h
+#ifndef __NRControl_h
+#define __NRControl_h
 
-#include "NRConfig.hpp"
-#include "NRControl.hpp"
+#include <vector>
+#include <NPart/NPBase.hpp>
 
 namespace nr {
 
-	void nr_info();
+    np::Point YS_uniform_quality_control(const np::Polygon& region, const int i, const np::Polygons& cells, const std::vector<double>& quality, const bool *neighbors);
+    /* Control law used for planar coverage with downwards facing cameras on flying agents */
 
 }
 
