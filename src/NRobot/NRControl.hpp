@@ -22,10 +22,11 @@
 
 #include <vector>
 #include <NPart/NPBase.hpp>
+#include "NRBase.hpp"
 
 namespace nr {
 
-    np::Point YS_uniform_quality_control(const np::Polygon& region, const int i, const np::Polygons& cells, const std::vector<double>& quality, const bool *neighbors);
+    np::Point YS_uniform_quality_control(const np::Polygon& region, const std::vector<MAA>& robots, const size_t i, const bool *neighbors);
     /* Control law used for planar coverage with downwards facing cameras on flying agents */
 
 }

@@ -20,6 +20,8 @@
 #include <cstdio>
 #include <iostream>
 #include <ctime>
+#include <cmath>
+#include <vector>
 #include <NPart/NPart.hpp>
 #include <NRobot.hpp>
 
@@ -43,50 +45,61 @@ int main() {
 	Polygon region;
 	region.read("Input Files/region_cb.txt");
 
-	/* Read disk centers */
-	Points P;
-	P.push_back( Point(1.256634384155579,0.266874846382719) );
-	P.push_back( Point(2.180030882721485,1.17824756490934) );
-	P.push_back( Point(2.701234170811698,1.56856761860151) );
-	P.push_back( Point(1.232008755529501,0.752191466863367) );
+	/* Setup robots */
+	size_t N = 4;
+	std::vector<MAA> robots;
+	robots.resize(N);
 
-	/* Create disks */
-	Circles CC;
-	CC.push_back( Circle(P[0], 0.8) );
-	CC.push_back( Circle(P[1], 1.0) );
-	CC.push_back( Circle(P[2], 0.7) );
-	CC.push_back( Circle(P[3], 0.5) );
-	Polygons disks;
-	disks = Polygons( CC );
+	Circles sdisks;
+	sdisks.resize(N);
+	Polygons cells;
+	cells.resize(N);
+	std::vector<NPFLOAT> quality;
+	quality.resize(N);
 
-	/* Coverage quality */
-	std::vector<double> quality;
-	quality.push_back(0.8);
-	quality.push_back(1.0);
-	quality.push_back(0.7);
-	quality.push_back(0.5);
+	/* Set robot positions */
+	robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
+	robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
+	robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
+	robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
+	for (size_t i=0; i<N; i++) {
+		robots[i].zmin = 0.5;
+		robots[i].zmax = 2.5;
+		robots[i].view_angle = 2.0 * 20.0/180.0 * std::acos(-1.0);
+		robots[i].set_quality();
+		robots[i].set_sensing();
+		robots[i].set_sensing_poly();
+
+		quality[i] = robots[i].quality;
+		sdisks[i] = robots[i].sensing;
+	}
 
 	/* Neighbor array */
 	bool *neighbors = NULL;
 
 	clock_t begin = clock();
 	Polygons YSUQ;
-	size_t N = 1;
-	for (size_t i=0; i<N; i++) {
-		YS_uniform_quality(region, CC, quality, YSUQ, &neighbors);
+	size_t M = 1;
+	for (size_t i=0; i<M; i++) {
+		YS_uniform_quality(region, sdisks, quality, cells, &neighbors);
 	}
 	clock_t end = clock();
 	double YSUQ_time = (double)(end - begin) / CLOCKS_PER_SEC;
-	cout << "Created YSUQ " << N << " times." << "\n";
+	cout << "Created YSUQ " << M << " times." << "\n";
 	cout << "Total YSUQ time: " << YSUQ_time << "\n";
-	cout << "Average YSUQ time: " << YSUQ_time/N << "\n";
+	cout << "Average YSUQ time: " << YSUQ_time/M << "\n";
+
+	/* Copy the cells into the robot class */
+	for (size_t i=0; i<N; i++) {
+		robots[i].cell = cells[i];
+	}
 
 
 	/* Control law */
 	Points V;
-	V.resize(P.size());
-	for (size_t i=0; i<P.size(); i++) {
-		V[i] = YS_uniform_quality_control(region, i, YSUQ, quality, &(neighbors[i]));
+	V.resize(N);
+	for (size_t i=0; i<N; i++) {
+		V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
 		printf("Vx %f  Vy %f  Yz %f\n", V[i].x, V[i].y, V[i].z);
 	}
 
@@ -94,11 +107,11 @@ int main() {
 
 
 
-	// YSUQ.print();
+	// cells.print();
 	/* Print neighbors */
-	for (size_t i=0; i<CC.size(); i++) {
-		for (size_t j=0; j<CC.size(); j++) {
-			printf("%d ", neighbors[i+CC.size()*j]);
+	for (size_t i=0; i<N; i++) {
+		for (size_t j=0; j<N; j++) {
+			printf("%d ", neighbors[i+N*j]);
 		}
 		printf("\n");
 	}
@@ -125,11 +138,13 @@ int main() {
 
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			npsdl::plot_polygon( region );
-			npsdl::plot_points( P );
-			npsdl::plot_polygons( disks );
+			for (size_t i=0; i<N; i++) {
+				npsdl::plot_point( robots[i].position );
+				npsdl::plot_polygon( robots[i].sensing_poly );
+			}
 
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			npsdl::plot_polygons( YSUQ );
+			npsdl::plot_polygons( cells );
 
 			npsdl::plot_render();
 			uquit = npsdl::handle_input();
