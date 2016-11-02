@@ -58,7 +58,7 @@ int main() {
 	region.read("Input Files/region_cb.txt");
 
 	/* Setup robots */
-	size_t N = 4;
+	size_t N = 1;
 	std::vector<MAA> robots;
 	robots.resize(N);
 	Circles sdisks;
@@ -72,10 +72,15 @@ int main() {
 	bool *neighbors = NULL;
 
 	/* Set robot positions */
-	robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
-	robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
-	robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
-	robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
+	robots[0].position = Point(0.6, 1.1, 2.5-0.01);
+
+	// robots[0].position = Point(1.0, 0.8, 0.6);
+	// robots[1].position = Point(1.05, 0.8, 0.7);
+
+	// robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
+	// robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
+	// robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
+	// robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
 	for (size_t i=0; i<N; i++) {
 		robots[i].zmin = 0.5;
 		robots[i].zmax = 2.5;
@@ -89,13 +94,14 @@ int main() {
 	}
 
 
-	size_t smax = 100;
-	NPFLOAT dt = 0.01;
+	size_t smax = 300;
+	NPFLOAT dt = 0.1;
+	std::chrono::milliseconds plot_sleep(100);
 
 	/* Simulation loop */
 	clock_t begin = clock();
 	for (size_t s=0; s<smax; s++) {
-		printf("---------- %lu ----------\n", s);
+		printf("---------- %.2f%% ----------\n", 100.0*s/ (double) smax);
 		/* Partitioning */
 		YS_uniform_quality(region, sdisks, quality, cells, &neighbors);
 
@@ -104,13 +110,36 @@ int main() {
 			robots[i].cell = cells[i];
 		}
 
+
+		/* Plot */
+		#if NP_USE_SDL
+			npsdl::clear_render();
+			// npsdl::show_axes();
+
+			npsdl::plot_polygon( region, {0xAA, 0xAA, 0xAA, 0xFF} );
+			for (size_t i=0; i<N; i++) {
+				npsdl::plot_point( robots[i].position, {0xAA, 0xAA, 0xAA, 0xFF} );
+				npsdl::plot_polygon( robots[i].sensing_poly, {0xAA, 0x00, 0x00, 0xFF} );
+				npsdl::plot_polygon( robots[i].cell, {0x00, 0xAA, 0x00, 0xFF} );
+				npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
+			}
+
+			npsdl::plot_render();
+			if (npsdl::handle_input()) {
+				/* User quit */
+				exit(0);
+			}
+
+			std::this_thread::sleep_for(plot_sleep);
+		#endif
+
+
+
 		/* Control law */
 		for (size_t i=0; i<N; i++) {
 			V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
-			// printf("Px %f  Py %f  Pz %f\n", robots[i].position.x, robots[i].position.y, robots[i].position.z);
-			// printf("Vx %f  Vy %f  Vz %f\n", V[i].x, V[i].y, V[i].z);
-			printf("Pz %f\n", robots[i].position.z);
-			printf("Vz %f\n", V[i].z);
+			printf("%lu Px %f  Py %f  Pz %f\n", i, robots[i].position.x, robots[i].position.y, robots[i].position.z);
+			printf("%lu Vx %f  Vy %f  Vz %f\n", i, V[i].x, V[i].y, V[i].z);
 		}
 
 
@@ -126,28 +155,6 @@ int main() {
 			quality[i] = robots[i].quality;
 			sdisks[i] = robots[i].sensing;
 		}
-
-		/* Plot */
-		#if NP_USE_SDL
-			npsdl::clear_render();
-			// npsdl::show_axes();
-
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
-			npsdl::plot_polygon( region );
-			for (size_t i=0; i<N; i++) {
-				npsdl::plot_point( robots[i].position );
-				npsdl::plot_polygon( robots[i].sensing_poly );
-			}
-
-			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			npsdl::plot_polygons( cells );
-
-			npsdl::plot_render();
-			npsdl::handle_input();
-
-			std::chrono::milliseconds timespan(200);
-			std::this_thread::sleep_for(timespan);
-		#endif
 	}
 	clock_t end = clock();
 
@@ -169,17 +176,15 @@ int main() {
 		char uquit = false;
 		while (!uquit) {
 			npsdl::clear_render();
-			// npsdl::show_axes();
+			npsdl::show_axes();
 
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
-			npsdl::plot_polygon( region );
+			npsdl::plot_polygon( region, {0xAA, 0xAA, 0xAA, 0xFF} );
 			for (size_t i=0; i<N; i++) {
-				npsdl::plot_point( robots[i].position );
-				npsdl::plot_polygon( robots[i].sensing_poly );
+				npsdl::plot_point( robots[i].position, {0xAA, 0xAA, 0xAA, 0xFF} );
+				npsdl::plot_polygon( robots[i].sensing_poly, {0xAA, 0x00, 0x00, 0xFF} );
+				npsdl::plot_polygon( robots[i].cell, {0x00, 0xAA, 0x00, 0xFF} );
+				npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
 			}
-
-			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			npsdl::plot_polygons( cells );
 
 			npsdl::plot_render();
 			uquit = npsdl::handle_input();

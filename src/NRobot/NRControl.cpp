@@ -27,50 +27,72 @@
 np::Point nr::YS_uniform_quality_control(const np::Polygon& region, const std::vector<MAA>& robots, const size_t i, const bool *neighbors) {
     np::Point V;
 
-    /* Loop over all neighbors */
-    for (size_t j=0; j<robots.size(); j++) {
-        /* Only calculate the control law for neighbors with non-empty cells */
-        if (neighbors[j] && robots[j].cell.contour.size()) {
-            /* Loop over all extenral contours of the cell of i */
-            for (size_t c=0; c<robots[i].cell.contour.size(); c++){
-                if (!robots[i].cell.is_hole[c]) {
-                    /* Loop over all edges of the current contour */
-                    size_t Ne = robots[i].cell.contour[c].size();
-                    for (size_t k=0; k<Ne; k++) {
-                        np::Point v1 = robots[i].cell.contour[c][k];
-                        np::Point v2 = robots[i].cell.contour[c][(k+1) % Ne];
 
-                        /* Both v1 and v2 are on the boundary of the cell of i */
-                        bool both_on_wi = v1.on(robots[i].cell) && v2.on(robots[i].cell);
+    /* Loop over all extenral contours of the cell of i */
+    for (size_t c=0; c<robots[i].cell.contour.size(); c++) {
+        if (!robots[i].cell.is_hole[c]) {
+            /* Loop over all edges of the current contour */
+            size_t Ne = robots[i].cell.contour[c].size();
+            for (size_t k=0; k<Ne; k++) {
+                np::Point v1 = robots[i].cell.contour[c][k];
+                np::Point v2 = robots[i].cell.contour[c][(k+1) % Ne];
 
-                        /* One v1 and v2 is on the boundary of the cell of i and the other on the boundary of the region */
-                        bool on_wi_and_b = (v1.on(robots[i].cell) && v2.on(region)) || (v2.on(robots[i].cell) && v1.on(region));
+                /* Both v1 and v2 are on the boundary of the sensing disk of i */
+                bool both_on_ci = v1.on(robots[i].sensing) && v2.on(robots[i].sensing);
 
-                        /* The midpoint of v1 and v2 is on the boundary of the cell of i */
-                        bool midpt_on_wi = midpoint(v1, v2).on(robots[i].cell);
+                /* The midpoint of v1 and v2 is on the sensing disk of i */
+                bool midpt_on_ci = midpoint(v1, v2).on(robots[i].sensing);
 
-                        /* Check if the current edge should be integrated over */
-                        if ((both_on_wi || on_wi_and_b) && midpt_on_wi) {
-                            /* Find if the current edge is on the boundary of the cell of another node j */
-                            bool both_on_wj = v1.on(robots[j].cell) && v2.on(robots[j].cell);
+                /* Both v1 and v2 are on the boundary of the region */
+                bool both_on_region = v1.on(region) && v2.on(region);
+                /* FIX this should NOT be needed */
+
+                printf("BoCi %d MoCi %d  BoR %d\n", both_on_ci, midpt_on_ci, both_on_region);
+
+                /* Check if the current edge should be integrated over */
+                if (both_on_ci && midpt_on_ci && !both_on_region) {
+                    /* Find the normal vector of the current edge */
+                    np::Point n = robots[i].cell.normal(c, k);
+                    /* Find the length of the current edge */
+                    NPFLOAT l = np::dist(v1, v2);
+                    // std::cout << n << std::endl;
+
+                    /* Find if the current edge is on the boundary of the cell of another node j */
+                    bool both_on_wj;
+                    /* Need to keep the index of the neighbor */
+                    size_t j;
+                    /* Loop over all neighbors */
+                    for (j=0; j<robots.size(); j++) {
+                        // printf("N %lu - %lu  %d\n",i, j, neighbors[j]);
+                        /* Only calculate the control law for neighbors with non-empty cells */
+                        if (neighbors[j] && robots[j].cell.contour.size()) {
+                            both_on_wj = v1.on(robots[j].cell) && v2.on(robots[j].cell);
                             if (both_on_wj) {
-                                /* Use the fi-fj integral */
-                                V.x += 0;
-                                V.y += 0;
-                                V.z += std::tan(robots[i].view_angle/2) * (robots[i].quality - robots[j].quality);
-                            } else {
-                                /* Use the fi integral */
-                                V.x += 0;
-                                V.y += 0;
-                                V.z += std::tan(robots[i].view_angle/2) * robots[i].quality;
+                                break;
                             }
                         }
+                    } /* Neighbor loop */
 
-                    } /* Edge of Ci loop */
+                    // printf("BoWj %d\n", both_on_wj);
+
+                    if (both_on_wj) {
+                        // printf("Dominant arc\n");
+                        /* Use the fi-fj integral */
+                        V.x += l * n.x * (robots[i].quality - robots[j].quality);
+                        V.y += l * n.y * (robots[i].quality - robots[j].quality);
+                        V.z += l * std::tan(robots[i].view_angle/2) * (robots[i].quality - robots[j].quality);
+                    } else {
+                        // printf("Free arc\n");
+                        /* Use the fi integral */
+                        V.x += l * n.x * robots[i].quality;
+                        V.y += l * n.y * robots[i].quality;
+                        V.z += l * std::tan(robots[i].view_angle/2) * robots[i].quality;
+                    }
                 }
-            } /* Contour loop */
+
+            } /* Edge of Ci loop */
         }
-    } /* Neighbor loop */
+    } /* Contour loop */
 
     /* Add the integral over Wi to the z control law */
     V.z += robots[i].cell.area() * robots[i].get_dquality();

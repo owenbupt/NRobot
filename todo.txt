@@ -1,6 +1,7 @@
 git submodule update --remote NPart
 
 FIXES
+	Check why the check for both points on the boundary of the region is needed in the control law for UAV coverage
 
 FEATURES
 
@@ -8,3 +9,8 @@ TESTS
 
 STRUCTURE
 	Make it easier to use NPart through NRobot, use cmake
+
+
+Notes on control law
+	Seems to work ok for a single node
+	Problem with control law at region boundaries
