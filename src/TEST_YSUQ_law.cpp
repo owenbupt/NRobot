@@ -22,6 +22,8 @@
 #include <ctime>
 #include <cmath>
 #include <vector>
+#include <chrono>
+#include <thread>
 #include <NPart/NPart.hpp>
 #include <NRobot.hpp>
 
@@ -41,6 +43,16 @@ int main() {
 	np_info();
 	nr_info();
 
+	/* Initialize SDL */
+	#if NP_USE_SDL
+		if (npsdl::init_SDL()) exit(1);
+		PLOT_SCALE = 150;
+		PLOT_X_OFFSET = -1;
+		PLOT_Y_OFFSET = -1;
+
+		npsdl::clear_render();
+	#endif
+
 	/* Read region */
 	Polygon region;
 	region.read("Input Files/region_cb.txt");
@@ -49,13 +61,15 @@ int main() {
 	size_t N = 4;
 	std::vector<MAA> robots;
 	robots.resize(N);
-
 	Circles sdisks;
 	sdisks.resize(N);
 	Polygons cells;
 	cells.resize(N);
 	std::vector<NPFLOAT> quality;
 	quality.resize(N);
+	Points V;
+	V.resize(N);
+	bool *neighbors = NULL;
 
 	/* Set robot positions */
 	robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
@@ -74,47 +88,73 @@ int main() {
 		sdisks[i] = robots[i].sensing;
 	}
 
-	/* Neighbor array */
-	bool *neighbors = NULL;
 
+	size_t smax = 100;
+	NPFLOAT dt = 0.01;
+
+	/* Simulation loop */
 	clock_t begin = clock();
-	Polygons YSUQ;
-	size_t M = 1;
-	for (size_t i=0; i<M; i++) {
+	for (size_t s=0; s<smax; s++) {
+		printf("---------- %lu ----------\n", s);
+		/* Partitioning */
 		YS_uniform_quality(region, sdisks, quality, cells, &neighbors);
+
+		/* Copy the cells into the robot class */
+		for (size_t i=0; i<N; i++) {
+			robots[i].cell = cells[i];
+		}
+
+		/* Control law */
+		for (size_t i=0; i<N; i++) {
+			V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
+			// printf("Px %f  Py %f  Pz %f\n", robots[i].position.x, robots[i].position.y, robots[i].position.z);
+			// printf("Vx %f  Vy %f  Vz %f\n", V[i].x, V[i].y, V[i].z);
+			printf("Pz %f\n", robots[i].position.z);
+			printf("Vz %f\n", V[i].z);
+		}
+
+
+		/* Move robots */
+		for (size_t i=0; i<N; i++) {
+			robots[i].position += dt * V[i];
+
+			/* Update robot attributes */
+			robots[i].set_quality();
+			robots[i].set_sensing();
+			robots[i].set_sensing_poly();
+
+			quality[i] = robots[i].quality;
+			sdisks[i] = robots[i].sensing;
+		}
+
+		/* Plot */
+		#if NP_USE_SDL
+			npsdl::clear_render();
+			// npsdl::show_axes();
+
+			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+			npsdl::plot_polygon( region );
+			for (size_t i=0; i<N; i++) {
+				npsdl::plot_point( robots[i].position );
+				npsdl::plot_polygon( robots[i].sensing_poly );
+			}
+
+			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
+			npsdl::plot_polygons( cells );
+
+			npsdl::plot_render();
+			npsdl::handle_input();
+
+			std::chrono::milliseconds timespan(200);
+			std::this_thread::sleep_for(timespan);
+		#endif
 	}
 	clock_t end = clock();
+
 	double YSUQ_time = (double)(end - begin) / CLOCKS_PER_SEC;
-	cout << "Created YSUQ " << M << " times." << "\n";
-	cout << "Total YSUQ time: " << YSUQ_time << "\n";
-	cout << "Average YSUQ time: " << YSUQ_time/M << "\n";
+	cout << "Total simulation time: " << YSUQ_time << "\n";
+	cout << "Average iteration time: " << YSUQ_time/smax << "\n";
 
-	/* Copy the cells into the robot class */
-	for (size_t i=0; i<N; i++) {
-		robots[i].cell = cells[i];
-	}
-
-
-	/* Control law */
-	Points V;
-	V.resize(N);
-	for (size_t i=0; i<N; i++) {
-		V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
-		printf("Vx %f  Vy %f  Yz %f\n", V[i].x, V[i].y, V[i].z);
-	}
-
-
-
-
-
-	// cells.print();
-	/* Print neighbors */
-	for (size_t i=0; i<N; i++) {
-		for (size_t j=0; j<N; j++) {
-			printf("%d ", neighbors[i+N*j]);
-		}
-		printf("\n");
-	}
 	free(neighbors);
 
 
@@ -126,12 +166,7 @@ int main() {
 
 	/* Plot */
 	#if NP_USE_SDL
-		if (npsdl::init_SDL()) exit(1);
-		PLOT_SCALE = 150;
-		PLOT_X_OFFSET = -1;
-		PLOT_Y_OFFSET = -1;
 		char uquit = false;
-
 		while (!uquit) {
 			npsdl::clear_render();
 			// npsdl::show_axes();
