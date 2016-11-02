@@ -38,10 +38,10 @@ np::Point nr::YS_uniform_quality_control(const np::Polygon& region, const std::v
                 np::Point v2 = robots[i].cell.contour[c][(k+1) % Ne];
 
                 /* Both v1 and v2 are on the boundary of the sensing disk of i */
-                bool both_on_ci = v1.on(robots[i].sensing) && v2.on(robots[i].sensing);
+                bool both_on_ci = v1.on(robots[i].sensing_poly) && v2.on(robots[i].sensing_poly);
 
                 /* The midpoint of v1 and v2 is on the sensing disk of i */
-                bool midpt_on_ci = midpoint(v1, v2).on(robots[i].sensing);
+                bool midpt_on_ci = np::midpoint(v1, v2).on(robots[i].sensing_poly);
 
                 /* Both v1 and v2 are on the boundary of the region */
                 bool both_on_region = v1.on(region) && v2.on(region);
