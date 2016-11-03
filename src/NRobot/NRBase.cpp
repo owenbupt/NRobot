@@ -69,5 +69,5 @@ void nr::MAA::set_sensing() {
 
 void nr::MAA::set_sensing_poly() {
     NPFLOAT r = this->position.z * std::tan(this->view_angle/2);
-    this->sensing_poly = np::Polygon( np::Circle(this->position, r) );
+    this->sensing_poly = np::Polygon( np::Circle(this->position, r), 360 );
 }

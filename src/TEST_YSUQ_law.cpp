@@ -72,9 +72,9 @@ int main() {
 	bool *neighbors = NULL;
 
 	/* Set robot positions */
-	// robots[0].position = Point(0.6, 1.1, 2.5-0.01);
+	robots[0].position = Point(0.6, 0.1, 2.5-0.01);
 
-	robots[0].position = Point(1.6, 1.1, 2.5-0.01);
+	// robots[0].position = Point(1.6, 1.1, 2.5-0.01);
 
 	// robots[0].position = Point(1.0, 0.8, 0.6);
 	// robots[1].position = Point(1.05, 0.8, 0.7);
@@ -96,7 +96,7 @@ int main() {
 	}
 
 
-	size_t smax = 300;
+	size_t smax = 1;
 	NPFLOAT dt = 0.1;
 	std::chrono::milliseconds plot_sleep(100);
 
