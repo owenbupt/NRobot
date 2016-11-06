@@ -27,6 +27,9 @@
 np::Point nr::YS_uniform_quality_control(const np::Polygon& region, const std::vector<MAA>& robots, const size_t i, const bool *neighbors) {
     np::Point V;
 
+	// robots[i].cell.print();
+	// robots[i].sensing_poly.print();
+
 
     /* Loop over all extenral contours of the cell of i */
     for (size_t c=0; c<robots[i].cell.contour.size(); c++) {
@@ -37,17 +40,25 @@ np::Point nr::YS_uniform_quality_control(const np::Polygon& region, const std::v
                 np::Point v1 = robots[i].cell.contour[c][k];
                 np::Point v2 = robots[i].cell.contour[c][(k+1) % Ne];
 
+				// printf("------------------ v ------------------\n");
+				// printf("x %.20f  y %.20f\n", v1.x, v1.y);
+				// printf("x %.20f  y %.20f\n", v2.x, v2.y);
+				// printf("------------------ si ------------------\n");
+				// robots[i].sensing_poly.print();
+
                 /* Both v1 and v2 are on the boundary of the sensing disk of i */
-                bool both_on_ci = v1.on_(robots[i].sensing_poly) && v2.on(robots[i].sensing_poly);
+                bool both_on_ci = v1.on_dist(robots[i].sensing_poly) && v2.on_dist(robots[i].sensing_poly);
+
+				// bool either_on_ci = v1.on_dist(robots[i].sensing_poly) || v2.on_dist(robots[i].sensing_poly);
 
                 /* The midpoint of v1 and v2 is on the sensing disk of i */
-                bool midpt_on_ci = np::midpoint(v1, v2).on(robots[i].sensing_poly);
+                bool midpt_on_ci = np::midpoint(v1, v2).on_dist(robots[i].sensing_poly);
 
                 /* Both v1 and v2 are on the boundary of the region */
-                bool both_on_region = v1.on(region) && v2.on(region);
+                bool both_on_region = v1.on_dist(region) && v2.on_dist(region);
                 /* FIX this should NOT be needed */
 
-                printf("BoCi %d MoCi %d  BoR %d\n", both_on_ci, midpt_on_ci, both_on_region);
+                // printf("BoCi %d MoCi %d  BoR %d EoCi %d\n", both_on_ci, midpt_on_ci, both_on_region, either_on_ci);
 
                 /* Check if the current edge should be integrated over */
                 if (both_on_ci && midpt_on_ci && !both_on_region) {

@@ -58,7 +58,7 @@ int main() {
 	region.read("Input Files/region_cb.txt");
 
 	/* Setup robots */
-	size_t N = 1;
+	size_t N = 4;
 	std::vector<MAA> robots;
 	robots.resize(N);
 	Circles sdisks;
@@ -96,7 +96,7 @@ int main() {
 	}
 
 
-	size_t smax = 1;
+	size_t smax = 200;
 	NPFLOAT dt = 0.1;
 	std::chrono::milliseconds plot_sleep(100);
 
@@ -123,7 +123,7 @@ int main() {
 				npsdl::plot_point( robots[i].position, {0xAA, 0xAA, 0xAA, 0xFF} );
 				npsdl::plot_polygon( robots[i].sensing_poly, {0xAA, 0x00, 0x00, 0xFF} );
 				npsdl::plot_polygon( robots[i].cell, {0x00, 0xAA, 0x00, 0xFF} );
-				npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
+				// npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
 			}
 
 			npsdl::plot_render();
@@ -185,7 +185,7 @@ int main() {
 				npsdl::plot_point( robots[i].position, {0xAA, 0xAA, 0xAA, 0xFF} );
 				npsdl::plot_polygon( robots[i].sensing_poly, {0xAA, 0x00, 0x00, 0xFF} );
 				npsdl::plot_polygon( robots[i].cell, {0x00, 0xAA, 0x00, 0xFF} );
-				npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
+				// npsdl::plot_polygon_vertices( robots[i].cell, {0x00, 0x00, 0x00, 0xFF} );
 			}
 
 			npsdl::plot_render();
