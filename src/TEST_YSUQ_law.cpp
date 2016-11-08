@@ -72,17 +72,17 @@ int main() {
 	bool *neighbors = NULL;
 
 	/* Set robot positions */
-	robots[0].position = Point(0.6, 0.1, 2.5-0.01);
+	// robots[0].position = Point(0.6, 0.1, 2.5-0.01);
 
 	// robots[0].position = Point(1.6, 1.1, 2.5-0.01);
 
 	// robots[0].position = Point(1.0, 0.8, 0.6);
-	// robots[1].position = Point(1.05, 0.8, 0.7);
+	// robots[1].position = Point(1.05, 0.8, 0.6);
 
-	// robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
-	// robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
-	// robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
-	// robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
+	robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
+	robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
+	robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
+	robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
 	for (size_t i=0; i<N; i++) {
 		robots[i].zmin = 0.5;
 		robots[i].zmax = 2.5;
@@ -96,7 +96,7 @@ int main() {
 	}
 
 
-	size_t smax = 200;
+	size_t smax = 300;
 	NPFLOAT dt = 0.1;
 	std::chrono::milliseconds plot_sleep(100);
 
@@ -140,8 +140,8 @@ int main() {
 		/* Control law */
 		for (size_t i=0; i<N; i++) {
 			V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
-			printf("%lu Px %f  Py %f  Pz %f\n", i, robots[i].position.x, robots[i].position.y, robots[i].position.z);
-			printf("%lu Vx %f  Vy %f  Vz %f\n", i, V[i].x, V[i].y, V[i].z);
+			printf("%lu Px % f  Py % f  Pz % f\n", i, robots[i].position.x, robots[i].position.y, robots[i].position.z);
+			printf("%lu Vx % f  Vy % f  Vz % f\n", i, V[i].x, V[i].y, V[i].z);
 		}
 
 

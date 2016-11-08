@@ -6,6 +6,7 @@ ADD_EXECUTABLE(YSUQ_TEST TEST_YSUQ_law.cpp)
 # NRobot
 INCLUDE_DIRECTORIES(NRobot)
 ADD_SUBDIRECTORY(NRobot)
+LINK_DIRECTORIES(/usr/local/lib)
 
 # Link the libraries
 IF(SDL2_FOUND)
