@@ -58,7 +58,7 @@ int main() {
 	region.read("Input Files/region_cb.txt");
 
 	/* Setup robots */
-	size_t N = 4;
+	size_t N = 2;
 	std::vector<MAA> robots;
 	robots.resize(N);
 	Circles sdisks;
@@ -76,29 +76,29 @@ int main() {
 
 	// robots[0].position = Point(1.6, 1.1, 2.5-0.01);
 
-	// robots[0].position = Point(1.0, 0.8, 0.6);
-	// robots[1].position = Point(1.05, 0.8, 0.6);
+	robots[0].position = Point(1.0, 0.8, 0.6);
+	robots[1].position = Point(1.05, 0.8, 0.6);
 
-	robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
-	robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
-	robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
-	robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
+	// robots[0].position = Point(1.256634384155579, 0.266874846382719, 0.55);
+	// robots[1].position = Point(2.180030882721485, 1.17824756490934, 0.75);
+	// robots[2].position = Point(2.701234170811698, 1.56856761860151, 1.55);
+	// robots[3].position = Point(1.232008755529501, 0.752191466863367, 2.00);
 	for (size_t i=0; i<N; i++) {
 		robots[i].zmin = 0.5;
 		robots[i].zmax = 2.5;
 		robots[i].view_angle = 2.0 * 20.0/180.0 * std::acos(-1.0);
 		robots[i].set_quality();
-		robots[i].set_sensing();
-		robots[i].set_sensing_poly();
+		robots[i].create_sensing_disk();
+		robots[i].create_sensing_poly();
 
 		quality[i] = robots[i].quality;
 		sdisks[i] = robots[i].sensing;
 	}
 
 
-	size_t smax = 300;
+	size_t smax = 200;
 	NPFLOAT dt = 0.1;
-	std::chrono::milliseconds plot_sleep(100);
+	std::chrono::milliseconds plot_sleep(10);
 
 	/* Simulation loop */
 	clock_t begin = clock();
@@ -151,8 +151,8 @@ int main() {
 
 			/* Update robot attributes */
 			robots[i].set_quality();
-			robots[i].set_sensing();
-			robots[i].set_sensing_poly();
+			robots[i].create_sensing_disk();
+			robots[i].create_sensing_poly();
 
 			quality[i] = robots[i].quality;
 			sdisks[i] = robots[i].sensing;

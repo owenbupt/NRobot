@@ -50,8 +50,9 @@ namespace nr {
             NPFLOAT get_quality() const;
             NPFLOAT get_dquality() const;
             void set_quality();
-            void set_sensing();
-            void set_sensing_poly();
+            void create_sensing_disk();
+            void create_sensing_poly();
+			void create_cell(const np::Polygon& region, const std::vector<MAA>& robots);
     };
 
 

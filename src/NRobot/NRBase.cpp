@@ -62,12 +62,12 @@ void nr::MAA::set_quality() {
     this->quality = this->get_quality();
 }
 
-void nr::MAA::set_sensing() {
+void nr::MAA::create_sensing_disk() {
     NPFLOAT r = this->position.z * std::tan(this->view_angle/2);
     this->sensing = np::Circle(this->position, r);
 }
 
-void nr::MAA::set_sensing_poly() {
+void nr::MAA::create_sensing_poly() {
     NPFLOAT r = this->position.z * std::tan(this->view_angle/2);
     this->sensing_poly = np::Polygon( np::Circle(this->position, r) );
 }
