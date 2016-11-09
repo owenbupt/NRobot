@@ -41,18 +41,33 @@ namespace nr {
         public:
             NPFLOAT zmin;
             NPFLOAT zmax;
+			/* Maximum and minimum altitude - Set by user */
+
             NPFLOAT view_angle;
+			/* Visual sensor view angle - Set by user */
+
             NPFLOAT quality;
+			/* Coverage quality - Set by set_quality() */
+
             np::Circle sensing;
+			/* Sensing disk - Set by create_sensing_disk() */
+
             np::Polygon sensing_poly;
+			/* Sensing disk as a polygon - Set by create_sensing_poly() */
+
             np::Polygon cell;
+			/* Assigned cell - Set by create_cell() */
+
 
             NPFLOAT get_quality() const;
             NPFLOAT get_dquality() const;
             void set_quality();
             void create_sensing_disk();
             void create_sensing_poly();
-			void create_cell(const np::Polygon& region, const std::vector<MAA>& robots);
+			void create_cell(const np::Polygon& region, const std::vector<MAA>& robots, size_t i);
+			/* i is the index of the current node in robots */
+			np::Point get_velocity(const np::Polygon& region, const std::vector<MAA>& robots, size_t i);
+			/* Get the velocity produced by the control law */
     };
 
 

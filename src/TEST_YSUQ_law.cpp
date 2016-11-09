@@ -105,11 +105,12 @@ int main() {
 	for (size_t s=0; s<smax; s++) {
 		printf("---------- %.2f%% ----------\n", 100.0*s/ (double) smax);
 		/* Partitioning */
-		YS_uniform_quality(region, sdisks, quality, cells, &neighbors);
+		// YS_uniform_quality(region, sdisks, quality, cells, &neighbors);
 
 		/* Copy the cells into the robot class */
 		for (size_t i=0; i<N; i++) {
-			robots[i].cell = cells[i];
+			// robots[i].cell = cells[i];
+			robots[i].create_cell(region, robots, i);
 		}
 
 
@@ -139,7 +140,8 @@ int main() {
 
 		/* Control law */
 		for (size_t i=0; i<N; i++) {
-			V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
+			// V[i] = YS_uniform_quality_control(region, robots, i, &(neighbors[i]));
+			V[i] = robots[i].get_velocity(region, robots, i);
 			printf("%lu Px % f  Py % f  Pz % f\n", i, robots[i].position.x, robots[i].position.y, robots[i].position.z);
 			printf("%lu Vx % f  Vy % f  Vz % f\n", i, V[i].x, V[i].y, V[i].z);
 		}
