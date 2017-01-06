@@ -7,4 +7,4 @@ Distributed under the [GNU General Public License version 3](LICENSE.txt).
 Copyright © 2016 Sotiris Papatheodorou
 <br>
 <br>
-NPart uses [Clipper](http://angusj.com/delphi/clipper.php) and [SDL](https://www.libsdl.org/).
+NRobot requires NPart which uses [Clipper](http://angusj.com/delphi/clipper.php) and [SDL](https://www.libsdl.org/).
