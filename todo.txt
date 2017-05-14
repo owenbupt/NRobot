@@ -1,16 +1,16 @@
-git submodule update --remote NPart
+Structure
+    NRobot (various robot classes and control laws) [NBase, NPart]
+    NPart (Partitioning algorithms) [NBase]
+    NPlot (Visualization and plotting using SDL) [NBase]
+    NBase (Basic geometric classes: point, contour, polygon etc.)
 
-FIXES
-	Check why the check for both points on the boundary of the region is needed in the control law for UAV coverage
+Classes
+    Functions that require only one object->class methods
+    Functions that require multiple objects->general functions
 
-FEATURES
-
-TESTS
-
-STRUCTURE
-	Make it easier to use NPart through NRobot, use cmake
-
-
-Notes on control law
-	Seems to work ok for a single node
-	Problem with control law at region boundaries
+Files to fix
+    src/CMake
+    src/NRobot/*
+    src/NPart/*
+    src/NPlot/*
+    src/NBase/*

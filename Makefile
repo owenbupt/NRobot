@@ -1,26 +1,17 @@
-# NRobot top level Makefile #####################################################
+# NRobot makefile ##############################################################
 .SILENT:
-
-all: debug
-
-debug:
-	cmake -H. -Bbuild/debug -DCMAKE_BUILD_TYPE=Debug
-	cmake --build build/debug -- -j3
+.PHONY: release debug clean
 
 release:
 	cmake -H. -Bbuild/release -DCMAKE_BUILD_TYPE=Release
 	cmake --build build/release -- -j3
 
-install: release
-	cd NPart; make install
-	cd build/release/; make install
-
-uninstall:
-	sudo ldconfig -n /usr/local/lib/
-
-install_npart:
-	cd NPart; sudo make install
+debug:
+	cmake -H. -Bbuild/debug -DCMAKE_BUILD_TYPE=Debug
+	cmake --build build/debug -- -j3
 
 clean:
-	rm -rf bin/*
-	rm -rf build/*
+	rm -rf bin
+	rm -rf build
+
+# End of makefile ##############################################################

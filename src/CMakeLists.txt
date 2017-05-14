@@ -1,20 +1,23 @@
-# NRobot src CMakeLists #########################################################
+# NRobot src CMakeLists ########################################################
 
-# Create testing executables
-ADD_EXECUTABLE(YSUQ_TEST TEST_YSUQ_law.cpp)
+# Libraries to compile
+IF(GOL_USE_SDL)
+    INCLUDE_DIRECTORIES(GOL_SDL)
+    ADD_SUBDIRECTORY(GOL_SDL)
+    SET(GOL_SDL_LIB golsdl)
+ENDIF(GOL_USE_SDL)
 
-# NRobot
-INCLUDE_DIRECTORIES(NRobot)
-ADD_SUBDIRECTORY(NRobot)
-LINK_DIRECTORIES(/usr/local/lib)
+# Source files to compile
+SET(GOL_SRC "GOL.cpp")
+
+# Create executable
+ADD_EXECUTABLE(GameOfLyfe "GOL_Main.cpp" ${GOL_SRC})
 
 # Link the libraries
-IF(SDL2_FOUND)
-    TARGET_LINK_LIBRARIES(YSUQ_TEST npart npsdl nrobot ${SDL2_LIBRARIES})
-ELSE(SDL2_FOUND)
-    TARGET_LINK_LIBRARIES(YSUQ_TEST npart npsdl nrobot)
-ENDIF(SDL2_FOUND)
+# SET(CMAKE_LINK_SEARCH_START_STATIC TRUE)
+# SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+TARGET_LINK_LIBRARIES(GameOfLyfe ${SDL2_LIBRARIES} ${GOL_SDL_LIB})
 
 # Set executable output directory and postfix
-SET_TARGET_PROPERTIES(YSUQ_TEST PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-SET_TARGET_PROPERTIES(YSUQ_TEST PROPERTIES OUTPUT_NAME YSUQ_TEST${BUILD_POSTFIX})
+SET_TARGET_PROPERTIES(GameOfLyfe PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+SET_TARGET_PROPERTIES(GameOfLyfe PROPERTIES OUTPUT_NAME gol${BUILD_POSTFIX})

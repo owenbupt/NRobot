@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
 	This file is part of NRobot.
 
@@ -17,15 +17,25 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NRConfig_h
-#define __NRConfig_h
+#ifndef __N_Config_hpp
+#define __N_Config_hpp
 
 /*******************************************************/
 /*************** cmake exported settings ***************/
 /*******************************************************/
 
 /* Version number */
-#define NR_VERSION_MAJOR @NR_VERSION_MAJOR@
-#define NR_VERSION_MINOR @NR_VERSION_MINOR@
+#define NR_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define NR_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define NR_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+/* Whether the OS is Windows, extra headers are needed */
+#define NR_USING_WINDOWS @NR_USING_WINDOWS@
+
+/* Whether to use SDL */
+#define NR_USE_SDL @NR_USE_SDL@
+
+/* Whether to time program execution */
+#define NR_TIMEIT @NR_TIMEIT@
 
 #endif
