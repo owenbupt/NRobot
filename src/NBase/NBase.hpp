@@ -51,7 +51,7 @@ typedef Contour Points;
 /********************* Point class *********************/
 /*******************************************************/
 /*!
-	Single 3D point class and overloaded operators.
+	Single 3D point class.
 */
 class Point {
 	public:
@@ -63,33 +63,6 @@ class Point {
 		/****** Constructor ******/
 		/* Default behavior is a point at the origin */
 		Point( double x = 0, double y = 0, double z = 0 );
-
-		/****** Overloaded Operators ******/
-		/* Equality, addition and subtraction overloading */
-		bool operator == ( const Point& );
-		bool operator != ( const Point& );
-		Point operator + ( const Point& );
-		Point operator - ( const Point& );
-		Point operator - () const;
-		void operator += ( const Point& );
-		void operator -= ( const Point& );
-
-		/* Scalar multiplication and division oveloading */
-		template <class T> friend Point operator * ( const Point& P, T k ) {
-			return Point(k*P.x, k*P.y, k*P.z);
-		}
-		template <class T> friend Point operator * ( T k, const Point& P ) {
-			return Point(k*P.x, k*P.y, k*P.z);
-		}
-		template <class T> friend Point operator / ( const Point& P, T k ) {
-			return Point(P.x/k, P.y/k, P.z/k);
-		}
-
-		/* Stream output operator */
-		friend std::ostream& operator << ( std::ostream& output, const Point& P ) {
-			output << P.x << " " << P.y << " " << P.z;
-			return output;
-		}
 };
 
 
@@ -105,15 +78,6 @@ class Contour: public std::vector<Point> {
 	public:
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
-
-		/****** Overloaded Operators ******/
-		/* Stream output operator */
-		friend std::ostream& operator << ( std::ostream& output, const Contour& C ) {
-			for (size_t i=0; i<C.size(); i++) {
-				output << C.at(i) << "\n";
-			}
-			return output;
-		}
 };
 
 
@@ -122,6 +86,9 @@ class Contour: public std::vector<Point> {
 /*********************************************************/
 /********************* Polygon class *********************/
 /*********************************************************/
+/*!
+	Signle 2D polygon. Can contain both internal and external contours.
+*/
 class Polygon {
 	public:
 		/****** Data members ******/
@@ -133,6 +100,9 @@ class Polygon {
 		/****** Constructor ******/
 		/* Default behavior is an empty polygon, no contours-vertices */
 		Polygon();
+		Polygon( const Point& P );
+		Polygon( const Contour& C );
+		Polygon( const Circle& C, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -141,10 +111,15 @@ class Polygon {
 /**********************************************************/
 /********************* Polygons class *********************/
 /**********************************************************/
+/*!
+	Vector of 2D polygons.
+*/
 class Polygons: public std::vector<Polygon> {
 	public:
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
+		Polygons();
+		Polygons( const n::Circles& C, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -162,7 +137,7 @@ class Circle {
 		/****** Constructor ******/
 		/* Default behavior is center at origin and zero radius */
 		Circle();
-		Circle( Point& C, double r = 0 );
+		Circle( const Point& C, double r = 0 );
 };
 
 
@@ -175,8 +150,8 @@ class Circles: public std::vector<Circle> {
 	public:
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
-		Circles();
-		Circles( Points& centers, std::vector<double>& radii );
+		Circles(); 													/* TODO */
+		Circles( const Points& centers, const std::vector<double>& radii ); /* TODO */
 };
 
 
@@ -190,14 +165,39 @@ class Circles: public std::vector<Circle> {
 /********************* Non Members **********************/
 /*********************************************************/
 
-/* Point */
-double norm( Point& A );
-double dist( Point& A, Point& B );
-double dist( Point& A, Contour& C ); /* TODO */
-double dist( Point& A, Polygon& P ); /* TODO */
-double dot( Point& A, Point& B );
-n::Point rotate( Point& A, double theta );
-n::Point midpoint( Point& A, Point& B );
+/****** Operator overloads ******/
+bool operator == ( const Point&, const Point& );
+bool operator != ( const Point&, const Point& );
+Point operator + ( const Point&, const Point& );
+Point operator - ( const Point&, const Point& );
+Point operator - ( const Point& );
+void operator += ( Point&, const Point& );
+void operator -= ( Point&, const Point& );
+void operator + ( Polygon&, const Point& );
+void operator + ( const Point&, Polygon& );
+void operator - ( Polygon&, const Point& );
+/* Scalar multiplication and division oveloading */
+template <class T> Point operator * ( const Point& P, T k ) {
+	return Point(k*P.x, k*P.y, k*P.z);
+}
+template <class T> Point operator * ( T k, const Point& P ) {
+	return Point(k*P.x, k*P.y, k*P.z);
+}
+template <class T> Point operator / ( const Point& P, T k ) {
+	return Point(P.x/k, P.y/k, P.z/k);
+}
+/* Stream operator overloading */
+std::ostream& operator << ( std::ostream& output, const Point& P );
+std::ostream& operator << ( std::ostream& output, const Contour& C );
+
+/****** Point ******/
+double norm( const Point& A );
+double dist( const Point& A, const Point& B );
+double dist( const Point& A, const Contour& C ); 					/* TODO */
+double dist( const Point& A, const Polygon& P ); 					/* TODO */
+double dot( const Point& A, const Point& B );
+n::Point rotate( const Point& A, double theta );
+n::Point midpoint( const Point& A, const Point& B );
 // double dist_from_line( Point& A, Point&, Point& );
 // Point closest_to_line( Point& A, Point&, Point& );
 // bool in( Point& A, Contour& C );
@@ -209,53 +209,40 @@ n::Point midpoint( Point& A, Point& B );
 // bool on_dist( Point& A, Contour& C );
 // bool on_dist( Point& A, Polygon& P );
 
-/* Contour */
-int read( Contour& C, const char* fname );
-int write( Contour& C, const char* fname, const char* mode = "w" );
-void print( Contour& C );
-double area( Contour& C, bool signed_area = false );
-n::Point centroid( Contour& C );
-bool is_CW( Contour& C );
+/****** Contour ******/
+int read( Contour* C, const char* fname );
+int write( const Contour& C, const char* fname, const char* mode = "w" );
+void print( const Contour& C );
+double area( const Contour& C, bool signed_area = false );
+n::Point centroid( const Contour& C );
+bool is_CW( const Contour& C );
 void reverse_order( Contour* C );
 void make_CW( Contour* C );
 void make_CCW( Contour* C );
 
-/* Polygon */
-// Polygon( const Point& );
-// Polygon( const Circle&, size_t points_per_circle = NP_PPC );
-// /* C-style read/write/print */
-// Polygon( const char* filename );
-// void read( const char* fname, bool read_hole = false, bool read_open = false );
-// void write( const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
-// void print() const;
-//
-// double diameter() const;
-// double area() const;
-// Point centroid() const;
-// Point normal(size_t& c, size_t& e) const;
-// /* Returns the outwards unit normal vector at edge e of contour c */
-//
-// bool correct_orientation() const;
-// bool is_point() const;
-// bool is_empty() const;
-// void make_empty();
-// void fix_orientation( bool follow_hole_flags = true );
-//
-//
-// void operator + ( Polygon&, const Point& );
-// void operator + ( const Point&, Polygon& );
-// void operator - ( Polygon&, const Point& );
+/****** Polygon ******/
+int read( Polygon* P, const char* fname, bool read_hole = false, bool read_open = false );
+int write( const Polygon& P, const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
+void print( const Polygon& P );
+double diameter( const Polygon& P );
+double area( const Polygon& P );
+Point centroid( const Polygon& P );
+Point normal( const n::Polygon& P, size_t contour, size_t edge );
+bool is_orientation_correct( const Polygon& P );
+bool is_point( const Polygon& P );
+bool is_empty( const Polygon& P );
+void make_empty( Polygon* P );
+void fix_orientation( Polygon* P, bool follow_hole_flags = true );
+void translate( Polygon* P, const Point& p );
+void rotate( Polygon* P, double theta, bool around_origin = false );
+Contour convex_hull( const Polygon& P ); 							/* TODO */
 
-/* Polygons */
-// Polygons( const Circles&, size_t points_per_circle = NP_PPC );
-// void print() const;
+/****** Polygons ******/
+void print( const Polygons& P );
 
-/* Circle */
-double area( Circle& C );
-bool is_point( Circle& C );
-
-/* Private */
-// Contour get_vertices( Polygon ) const;
+/****** Circle ******/
+double area( const Circle& C );
+bool is_point( const Circle& C );
 
 } /* End of namespace */
 

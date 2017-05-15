@@ -38,4 +38,7 @@
 /* Error tolerance when comparing floats */
 #define NR_CMP_ERR 0.00000000001
 
+/* Polygon quality */
+#define NR_PPC 60
+
 #endif

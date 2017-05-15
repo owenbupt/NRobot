@@ -13,7 +13,7 @@ Files to fix
     src/NRobot/*
     src/NPart/*
     src/NPlot/*
-    src/NBase/
+    src/NBase/*
 
 General fixes
     fix licenses-dates
@@ -21,3 +21,10 @@ General fixes
 Testing
 	Contour (non) member functions
 	Circle (non) member functions
+Improve functions
+	double n::diameter( const Polygon& P )
+		use convex hull to reduce complexity
+	double n::area( const Polygon& P )
+		How does it handle non-simple polygons?
+	n::Point n::centroid( const n::Polygon& P )
+		How does it handle non-simple polygons?
