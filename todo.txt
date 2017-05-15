@@ -4,9 +4,14 @@ Structure
     NPlot (Visualization and plotting using SDL) [NBase]
     NBase (Basic geometric classes: point, contour, polygon etc.)
 
-Classes
-    Functions that require only one object (self) -> class methods
-    Functions that require multiple objects -> general functions
+Code Guidelines
+	Classes
+		classes contain ONLY public data members and constructors/destructors
+		all other functionality is implemented as non-member functions
+	Functions
+		Functions that might fail MUST return an int indicating exit status
+		Input arguments are either const references or values for PODs
+		Output arguments are pointers
 
 Files to fix
     src/CMake
@@ -17,10 +22,11 @@ Files to fix
 
 General fixes
     fix licenses-dates
+	add testing executables (and automated tests?)
 
 Testing
-	Contour (non) member functions
-	Circle (non) member functions
+	NBase
+
 Improve functions
 	double n::diameter( const Polygon& P )
 		use convex hull to reduce complexity
@@ -28,3 +34,7 @@ Improve functions
 		How does it handle non-simple polygons?
 	n::Point n::centroid( const n::Polygon& P )
 		How does it handle non-simple polygons?
+	inpolygon
+		must be in at least one external and in no internals
+	info
+		show compile time options (copy gol info)

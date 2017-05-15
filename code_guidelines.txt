@@ -1,7 +1,0 @@
-Classes
-	classes contain ONLY public data members and constructors/destructors
-	all other functionality is implemented as non-member functions
-Functions
-	Functions that might fail MUST return an int indicating exit status
-	Input arguments are either const references or values for PODs
-	Output arguments are pointers
