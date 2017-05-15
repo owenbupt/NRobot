@@ -1,9 +1,9 @@
 # NRobot top level CMakeLists ##################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 SET( CMAKE_VERBOSE_MAKEFILE off )
 
 # Project name, version and language
-PROJECT(NRobot VERSION 0.6.2 LANGUAGES CXX)
+PROJECT(NRobot VERSION 0.0.0 LANGUAGES CXX)
 
 # Compile time parameters
 # Time execution
@@ -28,7 +28,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Find SDL
 FIND_PACKAGE(SDL2)
-# SET(SDL2_FOUND false) # Uncomment to compile without SDL
+SET(SDL2_FOUND false) # Uncomment to compile without SDL
 IF(SDL2_FOUND)
     SET(NR_USE_SDL 1)
     INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
@@ -45,8 +45,8 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # Write cmake settings to header file
 CONFIGURE_FILE(
-"${PROJECT_SOURCE_DIR}/src/N_Config.hpp.in"
-"${PROJECT_BINARY_DIR}/src/N_Config.hpp"
+"${PROJECT_SOURCE_DIR}/src/NConfig.hpp.in"
+"${PROJECT_BINARY_DIR}/src/NConfig.hpp"
 )
 INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/src")
 

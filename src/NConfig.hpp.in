@@ -17,8 +17,8 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __N_Config_hpp
-#define __N_Config_hpp
+#ifndef __NConfig_hpp
+#define __NConfig_hpp
 
 /*******************************************************/
 /*************** cmake exported settings ***************/
@@ -29,13 +29,13 @@
 #define NR_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define NR_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
-/* Whether the OS is Windows, extra headers are needed */
-#define NR_USING_WINDOWS @NR_USING_WINDOWS@
-
 /* Whether to use SDL */
 #define NR_USE_SDL @NR_USE_SDL@
 
 /* Whether to time program execution */
 #define NR_TIMEIT @NR_TIMEIT@
+
+/* Error tolerance when comparing floats */
+#define NR_CMP_ERR 0.00000000001
 
 #endif

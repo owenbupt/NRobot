@@ -5,12 +5,15 @@ Structure
     NBase (Basic geometric classes: point, contour, polygon etc.)
 
 Classes
-    Functions that require only one object->class methods
-    Functions that require multiple objects->general functions
+    Functions that require only one object (self) -> class methods
+    Functions that require multiple objects -> general functions
 
 Files to fix
     src/CMake
     src/NRobot/*
     src/NPart/*
     src/NPlot/*
-    src/NBase/*
+    src/NBase/
+
+General fixes
+    fix licenses-dates

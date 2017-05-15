@@ -1,14 +1,14 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
-	This file is part of NPart.
+	This file is part of NBase.
 
-    NPart is free software: you can redistribute it and/or modify
+    NBase is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    NPart is distributed in the hope that it will be useful,
+    NBase is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -17,13 +17,13 @@
     along with NPart.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#ifndef __NPBase_h
-#define __NPBase_h
+#ifndef __NBase_hpp
+#define __NBase_hpp
 
 #include <iostream>
 #include <vector>
-#include "NPConfig.hpp"
+
+#include "NConfig.hpp"
 
 
 /* Define Pi */
@@ -33,7 +33,7 @@
 
 
 
-namespace np {
+namespace n {
 
 /* Forward class declarations */
 class Point;
@@ -42,51 +42,32 @@ class Polygon;
 class Polygons;
 class Circle;
 class Circles;
+/* Typedef for ease of use */
 typedef Contour Points;
+
+
+
+
 
 /*******************************************************/
 /********************* Point class *********************/
 /*******************************************************/
 /*!
-	A class representing a 2D point.
+	Single 3D point class and overloaded operators.
 */
 class Point {
 	public:
-		/*----- Public Members -----*/
-		NPFLOAT x;
-		NPFLOAT y;
-		/* Define z coordinate if desired */
-		#if NP_3D_POINTS
-			NPFLOAT z;
-		#endif
+		/****** Data members ******/
+		double x;
+		double y;
+		double z;
 
-		Point();
-		Point( NPFLOAT x, NPFLOAT y );
-		#if NP_3D_POINTS
-			Point( NPFLOAT X, NPFLOAT Y, NPFLOAT Z );
-		#endif
+		/****** Constructor ******/
+		/* Default behavior is a point at the origin */
+		Point( double x = 0, double y = 0, double z = 0 );
 
-		NPFLOAT norm() const;
-		NPFLOAT dist( const Point& ) const;
-		NPFLOAT dist( const Contour& ) const;
-		NPFLOAT dist( const Polygon& ) const;
-		NPFLOAT dist_from_line( const Point&, const Point& ) const;
-		NPFLOAT dot( const Point& ) const;
-		Point midpoint( const Point& ) const;
-		Point closest_to_line( const Point&, const Point& ) const;
-		void rotate( const NPFLOAT& theta );
-		int in( const Contour& ) const;
-		int on( const Contour& ) const;
-		int in( const Polygon& ) const;
-		int on( const Polygon& ) const;
-		int in( const Circle& ) const;
-		int on( const Circle& ) const;
-		int on_dist( const Contour& ) const;
-		int on_dist( const Polygon& ) const;
-
-
-		/*----- Overloaded Operators -----*/
-		/* Equality, Addition and subtraction overloading */
+		/****** Overloaded Operators ******/
+		/* Equality, addition and subtraction overloading */
 		bool operator == ( const Point& );
 		bool operator != ( const Point& );
 		Point operator + ( const Point& );
@@ -97,45 +78,21 @@ class Point {
 
 		/* Scalar multiplication and division oveloading */
 		template <class T> friend Point operator * ( const Point& P, T k ) {
-			#if NP_3D_POINTS
-				return Point(k*P.x, k*P.y, k*P.z);
-			#else
-				return Point(k*P.x, k*P.y);
-			#endif
+			return Point(k*P.x, k*P.y, k*P.z);
 		}
 		template <class T> friend Point operator * ( T k, const Point& P ) {
-			#if NP_3D_POINTS
-				return Point(k*P.x, k*P.y, k*P.z);
-			#else
-				return Point(k*P.x, k*P.y);
-			#endif
+			return Point(k*P.x, k*P.y, k*P.z);
 		}
 		template <class T> friend Point operator / ( const Point& P, T k ) {
-			#if NP_3D_POINTS
-				return Point(P.x/k, P.y/k, P.z/k);
-			#else
-				return Point(P.x/k, P.y/k);
-			#endif
+			return Point(P.x/k, P.y/k, P.z/k);
 		}
 
-		/* Stream operators */
+		/* Stream output operator */
 		friend std::ostream& operator << ( std::ostream& output, const Point& P ) {
-			#if NP_3D_POINTS
-				output << P.x << " " << P.y << " " << P.z;
-			#else
-				output << P.x << " " << P.y;
-			#endif
+			output << P.x << " " << P.y << " " << P.z;
 			return output;
 		}
-
 };
-
-/*----- Non Members -----*/
-NPFLOAT norm( const Point& A );
-NPFLOAT dist( const Point& A, const Point& B );
-NPFLOAT dot( const Point& A, const Point& B );
-np::Point midpoint( const Point& A, const Point& B );
-
 
 
 
@@ -144,34 +101,39 @@ np::Point midpoint( const Point& A, const Point& B );
 /********************* Contour class *********************/
 /*********************************************************/
 /*!
-	A class representing a list of 2D points. It can be used as a polygon
-	contour or as a series of line segments.
+	Vector of 3D points. Can define a polyline or polygon contour.
 */
 class Contour: public std::vector<Point> {
 	public:
-		/* C-style read/write/print */
-		void read( const char* fname );
-		void write( const char* fname, const char* mode = "w" );
-		void print() const;
+		/****** Constructor ******/
+		/* Uses the default constructor for the vector and its elements */
 
-		NPFLOAT area() const;
-		Point centroid() const;
-
-		void reverse_order();
-		bool is_CW() const;
-		void make_CW();
-		void make_CCW();
-
-		/* Stream operators */
+		/****** Overloaded Operators ******/
+		/* Stream output operator */
 		friend std::ostream& operator << ( std::ostream& output, const Contour& C ) {
 			for (size_t i=0; i<C.size(); i++) {
 				output << C.at(i) << "\n";
 			}
 			return output;
 		}
+};
 
-	private:
-		NPFLOAT area_signed() const ;
+
+
+/*********************************************************/
+/********************* Polygon class *********************/
+/*********************************************************/
+class Polygon {
+	public:
+		/****** Data members ******/
+		std::vector<Contour> contour;
+		std::vector<bool> is_hole;
+		std::vector<bool> is_open;
+		/* External contours are CW, internal ones CCW */
+
+		/****** Constructor ******/
+		/* Default behavior is an empty polygon, no contours-vertices */
+		Polygon();
 };
 
 
@@ -180,24 +142,31 @@ class Contour: public std::vector<Point> {
 
 
 
+/**********************************************************/
+/********************* Polygons class *********************/
+/**********************************************************/
+class Polygons: public std::vector<Polygon> {
+	public:
+		/****** Constructor ******/
+		/* Uses the default constructor for the vector and its elements */
+};
+
+
+
 
 /********************************************************/
 /********************* Circle class *********************/
 /********************************************************/
-/*!
-	A class representing a circle.
-*/
 class Circle {
 	public:
+		/****** Data members ******/
 		Point center;
-		NPFLOAT radius;
+		double radius;
 
+		/****** Constructor ******/
+		/* Default behavior is center at origin and zero radius */
 		Circle();
-		Circle( const Point&, const NPFLOAT& );
-		Circle( const Point& );
-
-		NPFLOAT area() const;
-		bool is_point() const;
+		Circle( Point& C, double r = 0 );
 };
 
 
@@ -207,91 +176,91 @@ class Circle {
 /*********************************************************/
 /********************* Circles class *********************/
 /*********************************************************/
-/*!
-	A class representing a list of circles.
-*/
 class Circles: public std::vector<Circle> {
-
-};
-
-
-
-
-
-
-
-/*********************************************************/
-/********************* Polygon class *********************/
-/*********************************************************/
-/*!
-	A class representing a 2D polygon. The polygon is allowed to have holes
-	and be complex.
-*/
-class Polygon {
-	// friend class Contour;
 	public:
-		std::vector<Contour> contour;
-		std::vector<bool> is_hole;
-		std::vector<bool> is_open;
-		/* External contours are CW, internal ones CCW */
-
-		Polygon();
-		Polygon( const char* filename );
-		Polygon( const Point& );
-		Polygon( const Circle&, size_t points_per_circle = NP_PPC );
-
-		/* C-style read/write/print */
-		void read( const char* fname, bool read_hole = false, bool read_open = false );
-		void write( const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
-		void print() const;
-
-		NPFLOAT diameter() const;
-		NPFLOAT area() const;
-		Point centroid() const;
-		Point normal(size_t& c, size_t& e) const;
-		/* Returns the outwards unit normal vector at edge e of contour c */
-
-		bool correct_orientation() const;
-		bool is_point() const;
-		bool is_empty() const;
-		void make_empty();
-		void fix_orientation( bool follow_hole_flags = true );
-
-		void translate( const Point& );
-		void rotate( const NPFLOAT&, const bool around_origin = false );
-
-		bool contains( const Point& ) const;
-		Polygon convex_hull() const;
-
-	private:
-		Contour get_vertices() const;
-};
-
-/*----- Non Members -----*/
-void operator + ( Polygon&, const Point& );
-void operator + ( const Point&, Polygon& );
-void operator - ( Polygon&, const Point& );
-
-
-
-
-
-/**********************************************************/
-/********************* Polygons class *********************/
-/**********************************************************/
-/*!
-	A class representing a list of 2D polygons.
-*/
-class Polygons: public std::vector<Polygon> {
-	public:
-		Polygons();
-		Polygons( const Circles&, size_t points_per_circle = NP_PPC );
-
-		void print() const;
+		/****** Constructor ******/
+		/* Uses the default constructor for the vector and its elements */
 };
 
 
 
+
+
+
+
+
+
+
+
+/*********** Non Members ***********/
+/* Point */
+double norm( Point& A );
+double dist( Point& A, Point& B );
+double dist( Point& A, Contour& C ); /* TODO */
+double dist( Point& A, Polygon& P ); /* TODO */
+double dot( Point& A, Point& B );
+n::Point rotate( Point& A, double theta );
+n::Point midpoint( Point& A, Point& B );
+// double dist_from_line( Point& A, Point&, Point& );
+// Point closest_to_line( Point& A, Point&, Point& );
+// bool in( Point& A, Contour& C );
+// bool on( Point& A, Contour& C );
+// bool in( Point& A, Polygon& P );
+// bool on( Point& A, Polygon& P );
+// bool in( Point& A, Circle& C );
+// bool on( Point& A, Circle& C );
+// bool on_dist( Point& A, Contour& C );
+// bool on_dist( Point& A, Polygon& P );
+
+/* Contour */
+/* C-style read/write/print */
+int read( Contour& C, const char* fname );
+int write( Contour& C, const char* fname, const char* mode = "w" );
+void print( Contour& C );
+double area( Contour& C, bool signed_area = false );
+n::Point centroid( Contour& C );
+// void reverse_order();
+// bool is_CW() const;
+// void make_CW();
+// void make_CCW();
+
+/* Polygon */
+// Polygon( const Point& );
+// Polygon( const Circle&, size_t points_per_circle = NP_PPC );
+// /* C-style read/write/print */
+// Polygon( const char* filename );
+// void read( const char* fname, bool read_hole = false, bool read_open = false );
+// void write( const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
+// void print() const;
+//
+// double diameter() const;
+// double area() const;
+// Point centroid() const;
+// Point normal(size_t& c, size_t& e) const;
+// /* Returns the outwards unit normal vector at edge e of contour c */
+//
+// bool correct_orientation() const;
+// bool is_point() const;
+// bool is_empty() const;
+// void make_empty();
+// void fix_orientation( bool follow_hole_flags = true );
+//
+//
+// void operator + ( Polygon&, const Point& );
+// void operator + ( const Point&, Polygon& );
+// void operator - ( Polygon&, const Point& );
+
+/* Polygons */
+// Polygons( const Circles&, size_t points_per_circle = NP_PPC );
+// void print() const;
+
+/* Circle */
+// double area() const;
+// bool is_point() const;
+
+/* Private */
+// double area_signed( Contour ) const ;
+// Contour get_vertices( Polygon ) const;
 
 } /* End of namespace */
 
