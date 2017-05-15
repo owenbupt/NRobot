@@ -17,3 +17,7 @@ Files to fix
 
 General fixes
     fix licenses-dates
+
+Testing
+	Contour (non) member functions
+	Circle (non) member functions

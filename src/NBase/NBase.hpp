@@ -32,7 +32,6 @@
 #endif
 
 
-
 namespace n {
 
 /* Forward class declarations */
@@ -44,7 +43,6 @@ class Circle;
 class Circles;
 /* Typedef for ease of use */
 typedef Contour Points;
-
 
 
 
@@ -120,6 +118,7 @@ class Contour: public std::vector<Point> {
 
 
 
+
 /*********************************************************/
 /********************* Polygon class *********************/
 /*********************************************************/
@@ -135,9 +134,6 @@ class Polygon {
 		/* Default behavior is an empty polygon, no contours-vertices */
 		Polygon();
 };
-
-
-
 
 
 
@@ -172,7 +168,6 @@ class Circle {
 
 
 
-
 /*********************************************************/
 /********************* Circles class *********************/
 /*********************************************************/
@@ -180,6 +175,8 @@ class Circles: public std::vector<Circle> {
 	public:
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
+		Circles();
+		Circles( Points& centers, std::vector<double>& radii );
 };
 
 
@@ -189,10 +186,10 @@ class Circles: public std::vector<Circle> {
 
 
 
+/*********************************************************/
+/********************* Non Members **********************/
+/*********************************************************/
 
-
-
-/*********** Non Members ***********/
 /* Point */
 double norm( Point& A );
 double dist( Point& A, Point& B );
@@ -213,16 +210,15 @@ n::Point midpoint( Point& A, Point& B );
 // bool on_dist( Point& A, Polygon& P );
 
 /* Contour */
-/* C-style read/write/print */
 int read( Contour& C, const char* fname );
 int write( Contour& C, const char* fname, const char* mode = "w" );
 void print( Contour& C );
 double area( Contour& C, bool signed_area = false );
 n::Point centroid( Contour& C );
-// void reverse_order();
-// bool is_CW() const;
-// void make_CW();
-// void make_CCW();
+bool is_CW( Contour& C );
+void reverse_order( Contour* C );
+void make_CW( Contour* C );
+void make_CCW( Contour* C );
 
 /* Polygon */
 // Polygon( const Point& );
@@ -255,11 +251,10 @@ n::Point centroid( Contour& C );
 // void print() const;
 
 /* Circle */
-// double area() const;
-// bool is_point() const;
+double area( Circle& C );
+bool is_point( Circle& C );
 
 /* Private */
-// double area_signed( Contour ) const ;
 // Contour get_vertices( Polygon ) const;
 
 } /* End of namespace */

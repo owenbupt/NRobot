@@ -83,88 +83,23 @@ void n::Point::operator -= ( const Point& A ) {
 
 
 
+/********************************************************/
+/********************* Circle class *********************/
+/********************************************************/
+n::Circle::Circle() {
+	this->center = n::Point();
+	this->radius = 0;
+}
+
+n::Circle::Circle( n::Point& P, double r ) {
+	this->center.x = P.x;
+	this->center.y = P.y;
+	this->radius = r;
+}
 
 
 
 
-
-//
-// void n::Contour::reverse_order() {
-// 	np::Point tmp;
-// 	size_t Nv = this->size();
-//
-// 	/* Loop over the first half vertices and swap them with the second half */
-// 	for (size_t i=0; i<std::floor( Nv/2 ); i++) {
-// 		tmp = this->at(i);
-// 		this->at(i) = this->at(Nv-1-i);
-// 		this->at(Nv-1-i) = tmp;
-// 	}
-// }
-//
-// bool n::Contour::is_CW() const {
-// 	if (this->area_signed() < 0) {
-// 		return true;
-// 	} else {
-// 		return false;
-// 	}
-// }
-//
-// void n::Contour::make_CW() {
-// 	if (!this->is_CW()) {
-// 		this->reverse_order();
-// 	}
-// }
-//
-// void n::Contour::make_CCW() {
-// 	if (this->is_CW()) {
-// 		this->reverse_order();
-// 	}
-// }
-//
-//
-//
-//
-//
-//
-// /********************************************************/
-// /********************* Circle class *********************/
-// /********************************************************/
-// np::Circle::Circle() {
-// 	this->center = Point();
-// 	this->radius = 0;
-// }
-//
-// np::Circle::Circle( const n::Point& P, const double& R ) {
-// 	this->center.x = P.x;
-// 	this->center.y = P.y;
-// 	this->radius = R;
-// }
-//
-// np::Circle::Circle( const n::Point& P ) {
-// 	this->center.x = P.x;
-// 	this->center.y = P.y;
-// 	this->radius = 0;
-// }
-//
-//
-// double n::Circle::area() const {
-// 	return M_PI * this->radius * this->radius;
-// }
-//
-// bool n::Circle::is_point() const {
-// 	if (this->radius == 0) {
-// 		return true;
-// 	} else {
-// 		return false;
-// 	}
-// }
-//
-//
-//
-//
-//
-//
-//
 // /*********************************************************/
 // /********************* Polygon class *********************/
 // /*********************************************************/
@@ -585,6 +520,9 @@ void n::Point::operator -= ( const Point& A ) {
 // 	}
 // }
 
+
+
+
 /*********************************************************/
 /********************* Non Members **********************/
 /*********************************************************/
@@ -628,12 +566,12 @@ int n::read( n::Contour& C, const char* fname ) {
 	size_t  num_vertices;
 	double x, y;
 
-	fp = fopen(fname, "r");
+	fp = std::fopen(fname, "r");
 	if (fp != NULL) {
 
 		/* Read vertex number */
-		if ( fscanf(fp, "%lu", &num_vertices) ) {
-			printf("Contour read error: file %s could not be opened\n", fname);
+		if ( std::fscanf(fp, "%lu", &num_vertices) ) {
+			std::printf("Contour read error: file %s could not be opened\n", fname);
 			C.resize(0);
 			return 1;
 		}
@@ -644,8 +582,8 @@ int n::read( n::Contour& C, const char* fname ) {
 		for (size_t i=0; i<num_vertices; i++) {
 
 			/* Read each vertex */
-			if ( fscanf(fp, "%lf %lf", &x, &y) ) {
-				printf("Contour read error: file %s could not be opened\n", fname);
+			if ( std::fscanf(fp, "%lf %lf", &x, &y) ) {
+				std::printf("Contour read error: file %s could not be opened\n", fname);
 				C.resize(0);
 				return 1;
 			}
@@ -653,10 +591,10 @@ int n::read( n::Contour& C, const char* fname ) {
 			C.at(i).y = y;
 		}
 
-		fclose(fp);
+		std::fclose(fp);
 		return 0;
 	} else {
-		printf("Contour read error: file %s could not be opened\n", fname);
+		std::printf("Contour read error: file %s could not be opened\n", fname);
 		C.resize(0);
 		return 1;
 	}
@@ -665,23 +603,23 @@ int n::read( n::Contour& C, const char* fname ) {
 int n::write( n::Contour& C, const char* fname, const char* mode ) {
 	FILE *fp;
 
-	fp = fopen(fname, mode);
+	fp = std::fopen(fname, mode);
 	if (fp != NULL) {
 
 		/* Write vertex number */
-		fprintf(fp, "%lu\n", C.size());
+		std::fprintf(fp, "%lu\n", C.size());
 
 		/* Loop over each vertex */
 		for (size_t i=0; i<C.size(); i++) {
 
 			/* Write each vertex */
-			fprintf(fp, "% lf % lf\n", (double) C.at(i).x,	(double) C.at(i).y);
+			std::fprintf(fp, "% lf % lf\n", (double) C.at(i).x,	(double) C.at(i).y);
 		}
 
-		fclose(fp);
+		std::fclose(fp);
 		return 0;
 	} else {
-		printf("Contour write error: file %s could not be opened\n", fname);
+		std::printf("Contour write error: file %s could not be opened\n", fname);
 		C.resize(0);
 		return 1;
 	}
@@ -707,7 +645,7 @@ double n::area( n::Contour& C, bool signed_area ) {
 	if (signed_area) {
 		return 0.5 * A;
 	} else {
-		return abs(0.5 * A);
+		return std::abs(0.5 * A);
 	}
 }
 
@@ -724,6 +662,52 @@ n::Point n::centroid( n::Contour& C ) {
 	}
 
 	/* Get signed area */
-	double A = area( C, true );
+	double A = n::area( C, true );
 	return 1/(6*A) * centr;
+}
+
+bool n::is_CW( n::Contour& C ) {
+	/* Depends on signed area */
+	if (n::area( C, true ) < 0) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void n::reverse_order( n::Contour* C ) {
+	n::Point tmp;
+	size_t Nv = C->size();
+
+	/* Loop over the first half vertices and swap them with the second half */
+	for (size_t i=0; i<std::floor( Nv/2 ); i++) {
+		tmp = C->at(i);
+		C->at(i) = C->at(Nv-1-i);
+		C->at(Nv-1-i) = tmp;
+	}
+}
+
+void n::make_CW( n::Contour* C ) {
+	if ( !n::is_CW( *C ) ) {
+		n::reverse_order( C );
+	}
+}
+
+void n::make_CCW( n::Contour* C ) {
+	if ( n::is_CW( *C ) ) {
+		n::reverse_order( C );
+	}
+}
+
+/****** Circle ******/
+double n::area( n::Circle& C ) {
+	return M_PI * C.radius * C.radius;
+}
+
+bool n::is_point( n::Circle& C ) {
+	if (C.radius == 0) {
+		return true;
+	} else {
+		return false;
+	}
 }
