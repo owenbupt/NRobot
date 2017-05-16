@@ -130,9 +130,9 @@ n::Circle::Circle( const n::Point& P, double r ) {
 /****** Operator overloads ******/
 
 bool n::operator == ( const n::Point& A, const n::Point& B ) {
-	if ( (std::abs(A.x - B.x) <= NR_CMP_ERR) &&
-		(std::abs(A.y - B.y) <= NR_CMP_ERR) &&
-		(std::abs(A.z - B.z) <= NR_CMP_ERR) ) {
+	if ( (std::abs(A.x - B.x) <= N_CMP_ERR) &&
+		(std::abs(A.y - B.y) <= N_CMP_ERR) &&
+		(std::abs(A.z - B.z) <= N_CMP_ERR) ) {
 		return true;
 	} else {
 		return false;
@@ -140,9 +140,9 @@ bool n::operator == ( const n::Point& A, const n::Point& B ) {
 }
 
 bool n::operator != ( const n::Point& A, const n::Point& B ) {
-	if ( (std::abs(A.x - B.x) <= NR_CMP_ERR) &&
-		(std::abs(A.y - B.y) <= NR_CMP_ERR) &&
-		(std::abs(A.z - B.z) <= NR_CMP_ERR) ) {
+	if ( (std::abs(A.x - B.x) <= N_CMP_ERR) &&
+		(std::abs(A.y - B.y) <= N_CMP_ERR) &&
+		(std::abs(A.z - B.z) <= N_CMP_ERR) ) {
 		return false;
 	} else {
 		return true;

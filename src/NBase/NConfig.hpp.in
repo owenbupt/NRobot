@@ -25,20 +25,20 @@
 /*******************************************************/
 
 /* Version number */
-#define NR_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define NR_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define NR_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define N_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define N_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define N_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
 /* Whether to use SDL */
-#define NR_USE_SDL @NR_USE_SDL@
+#define N_USE_SDL @N_USE_SDL@
 
 /* Whether to time program execution */
-#define NR_TIMEIT @NR_TIMEIT@
+#define N_TIMEIT @N_TIMEIT@
 
 /* Error tolerance when comparing floats */
-#define NR_CMP_ERR 0.00000000001
+#define N_CMP_ERR 0.00000000001
 
 /* Polygon quality */
-#define NR_PPC 60
+#define N_PPC 60
 
 #endif

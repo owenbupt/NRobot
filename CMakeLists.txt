@@ -7,7 +7,7 @@ PROJECT(NRobot VERSION 0.2.0 LANGUAGES CXX)
 
 # Compile time parameters
 # Time execution
-SET(NR_TIMEIT 1)
+SET(N_TIMEIT 1)
 
 
 ############################# DO NOT EDIT THESE ################################
@@ -30,25 +30,26 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 FIND_PACKAGE(SDL2)
 # SET(SDL2_FOUND false) # Uncomment to compile without SDL
 IF(SDL2_FOUND)
-    SET(NR_USE_SDL 1)
+    SET(N_USE_SDL 1)
     INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
 ELSE(SDL2_FOUND)
-    SET(NR_USE_SDL 0)
+    SET(N_USE_SDL 0)
 ENDIF(SDL2_FOUND)
 
 # Detect if the OS is Windows
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    SET(NR_USING_WINDOWS 1)
+    SET(N_USING_WINDOWS 1)
 ELSE(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    SET(NR_USING_WINDOWS 0)
+    SET(N_USING_WINDOWS 0)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # Write cmake settings to header file
 CONFIGURE_FILE(
-"${PROJECT_SOURCE_DIR}/src/NConfig.hpp.in"
-"${PROJECT_BINARY_DIR}/src/NConfig.hpp"
+"${PROJECT_SOURCE_DIR}/src/NBase/NConfig.hpp.in"
+"${PROJECT_BINARY_DIR}/src/NBase/NConfig.hpp"
 )
-INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/src")
+# Include generated header file
+INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/src/NBase")
 
 # Call cmake in subdirectories
 INCLUDE_DIRECTORIES(src)

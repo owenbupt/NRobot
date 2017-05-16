@@ -102,7 +102,7 @@ class Polygon {
 		Polygon();
 		Polygon( const Point& P );
 		Polygon( const Contour& C );
-		Polygon( const Circle& C, size_t points_per_circle = NR_PPC );
+		Polygon( const Circle& C, size_t points_per_circle = N_PPC );
 };
 
 
@@ -119,7 +119,7 @@ class Polygons: public std::vector<Polygon> {
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
 		Polygons();
-		Polygons( const n::Circles& C, size_t points_per_circle = NR_PPC );
+		Polygons( const n::Circles& C, size_t points_per_circle = N_PPC );
 };
 
 

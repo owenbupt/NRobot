@@ -17,7 +17,11 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdio>
+#include "NBase.hpp"
+#if N_USE_SDL
 #include "NPlot.hpp"
+#endif
 
 
 int main() {
@@ -35,7 +39,7 @@ int main() {
 	pC = n::Polygon( C );
 
     /* Plot */
-	#if NR_USE_SDL
+	#if N_USE_SDL
 		if (n::init_SDL()) exit(1);
 		PLOT_SCALE = 20;
 		bool uquit = false;
@@ -55,5 +59,7 @@ int main() {
 			uquit = n::handle_input();
 		}
 		n::quit_SDL();
+    #else
+        std::printf("SDL 2 is required for NPlot\n");
     #endif
 }
