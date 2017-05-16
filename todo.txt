@@ -17,15 +17,18 @@ Files to fix
     src/CMake
     src/NRobot/*
     src/NPart/*
-    src/NPlot/*
     src/NBase/*
 
 General fixes
+    add plot circle(s) function
+    Consistently comment every function
+    make plotting more user friendly (mouse control?)
     fix licenses-dates
 	add testing executables (and automated tests?)
 
 Testing
 	NBase
+    NPlot
 
 Improve functions
 	double n::diameter( const Polygon& P )

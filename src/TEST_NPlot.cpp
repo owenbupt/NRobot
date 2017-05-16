@@ -46,8 +46,10 @@ int main() {
 
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			n::plot_points( P );
+            PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			n::plot_polygon( pC );
-			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
+            PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
+            n::plot_polygon_vertices( pC );
 
 			n::plot_render();
 			uquit = n::handle_input();
