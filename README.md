@@ -7,4 +7,4 @@ Distributed under the [GNU General Public License version 3](LICENSE.txt).
 Copyright © 2016 Sotiris Papatheodorou
 <br>
 <br>
-NRobot uses [Clipper](http://angusj.com/delphi/clipper.php) and [SDL](https://www.libsdl.org/).
+NRobot uses [Clipper 6.4.2](http://angusj.com/delphi/clipper.php) and [SDL 2](https://www.libsdl.org/).
