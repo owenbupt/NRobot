@@ -1,25 +1,25 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
-	This file is part of NPart.
+	This file is part of NRobot.
 
-    NPart is free software: you can redistribute it and/or modify
+    NRobot is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    NPart is distributed in the hope that it will be useful,
+    NRobot is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with NPart.  If not, see <http://www.gnu.org/licenses/>.
+    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <cmath>
 #include <SDL2/SDL.h>
-#include "NPSDL.hpp"
+#include "NPlot.hpp"
 
 
 /********************* Plot initial settings *********************/
@@ -126,7 +126,7 @@ void handle_mouse_move(SDL_Event& e) {
 /********************* Main functions *********************/
 /**********************************************************/
 
-int npsdl::init_SDL() {
+int n::init_SDL() {
 	/* Initialize SDL */
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
@@ -137,7 +137,7 @@ int npsdl::init_SDL() {
 	{
 
 		/* Create window */
-		PLOT_WINDOW = SDL_CreateWindow( "NPart", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, \
+		PLOT_WINDOW = SDL_CreateWindow( "NRobot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, \
 		PLOT_WIDTH, PLOT_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 
 		if( PLOT_WINDOW == NULL )
@@ -170,7 +170,7 @@ int npsdl::init_SDL() {
 	return(0);
 }
 
-void npsdl::quit_SDL() {
+void n::quit_SDL() {
 	/* Destroy the window and renderer */
 	SDL_DestroyRenderer( PLOT_RENDERER );
 	SDL_DestroyWindow( PLOT_WINDOW );
@@ -181,7 +181,7 @@ void npsdl::quit_SDL() {
 	SDL_Quit();
 }
 
-bool npsdl::handle_input() {
+bool n::handle_input() {
 	SDL_Event e;
 	/* Wait for quit event */
 	while ( SDL_PollEvent( &e ) ) {
@@ -206,7 +206,7 @@ bool npsdl::handle_input() {
 }
 
 
-void npsdl::plot_render() {
+void n::plot_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -215,7 +215,7 @@ void npsdl::plot_render() {
 	SDL_RenderPresent( PLOT_RENDERER );
 }
 
-void npsdl::clear_render() {
+void n::clear_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -224,7 +224,7 @@ void npsdl::clear_render() {
 	SDL_RenderClear( PLOT_RENDERER );
 }
 
-void npsdl::show_axes() {
+void n::show_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_AXES_COLOR.r,
 		PLOT_AXES_COLOR.g,
@@ -242,7 +242,7 @@ void npsdl::show_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void npsdl::hide_axes() {
+void n::hide_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -260,7 +260,7 @@ void npsdl::hide_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void npsdl::plot_point( const np::Point& A, const SDL_Color& color, const int& point_size ) {
+void n::plot_point( const n::Point& A, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -278,7 +278,7 @@ void npsdl::plot_point( const np::Point& A, const SDL_Color& color, const int& p
 	// 	PLOT_HEIGHT/2.0 - PLOT_SCALE * (A.y + PLOT_Y_OFFSET) );
 }
 
-void npsdl::plot_points( const np::Points& A, const SDL_Color& color, const int& point_size ) {
+void n::plot_points( const n::Points& A, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -300,7 +300,7 @@ void npsdl::plot_points( const np::Points& A, const SDL_Color& color, const int&
 	}
 }
 
-void npsdl::plot_polygon( const np::Polygon& P, const SDL_Color& color ) {
+void n::plot_polygon( const n::Polygon& P, const SDL_Color& color ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -325,7 +325,7 @@ void npsdl::plot_polygon( const np::Polygon& P, const SDL_Color& color ) {
 	}
 }
 
-void npsdl::plot_polygon_vertices( const np::Polygon& P, const SDL_Color& color, const int& point_size ) {
+void n::plot_polygon_vertices( const n::Polygon& P, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -350,7 +350,7 @@ void npsdl::plot_polygon_vertices( const np::Polygon& P, const SDL_Color& color,
 	}
 }
 
-void npsdl::plot_polygons( const np::Polygons& P, const SDL_Color& color ) {
+void n::plot_polygons( const n::Polygons& P, const SDL_Color& color ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,

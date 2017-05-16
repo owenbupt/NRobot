@@ -28,7 +28,7 @@ endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
 # Find SDL
 FIND_PACKAGE(SDL2)
-SET(SDL2_FOUND false) # Uncomment to compile without SDL
+# SET(SDL2_FOUND false) # Uncomment to compile without SDL
 IF(SDL2_FOUND)
     SET(NR_USE_SDL 1)
     INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})

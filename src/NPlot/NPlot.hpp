@@ -1,28 +1,28 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
-	This file is part of NPart.
+	This file is part of NRobot.
 
-    NPart is free software: you can redistribute it and/or modify
+    NRobot is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    NPart is distributed in the hope that it will be useful,
+    NRobot is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with NPart.  If not, see <http://www.gnu.org/licenses/>.
+    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#ifndef __NPSDL_h
-#define __NPSDL_h
+#ifndef __NPlot_hpp
+#define __NPlot_hpp
 
 #include <SDL2/SDL.h>
-#include "NPBase.hpp"
+#include "NBase.hpp"
 
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;
@@ -38,7 +38,7 @@ extern SDL_Window *PLOT_WINDOW;
 extern SDL_Renderer *PLOT_RENDERER;
 
 
-namespace npsdl {
+namespace n {
 
 	int init_SDL();
 	/* Initialize SDL */
@@ -62,19 +62,19 @@ namespace npsdl {
 	void hide_axes();
 	/* Hide the axes */
 
-	void plot_point( const np::Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_point( const n::Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot a single point */
 
-	void plot_points( const np::Points&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_points( const n::Points&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot a list of points */
 
-	void plot_polygon( const np::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
+	void plot_polygon( const n::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
 	/* Plot a single polygon */
 
-	void plot_polygon_vertices( const np::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_polygon_vertices( const n::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot the vertices of a single polygon */
 
-	void plot_polygons( const np::Polygons&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
+	void plot_polygons( const n::Polygons&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
 	/* Plot a list of polygons */
 }
 #endif
