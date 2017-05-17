@@ -18,11 +18,12 @@
 */
 
 
-#ifndef __NPlot_hpp
-#define __NPlot_hpp
+#ifndef __NRPlot_hpp
+#define __NRPlot_hpp
 
 #include <SDL2/SDL.h>
-#include "NBase.hpp"
+
+#include "NRBase.hpp"
 
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;
@@ -38,7 +39,7 @@ extern SDL_Window *PLOT_WINDOW;
 extern SDL_Renderer *PLOT_RENDERER;
 
 
-namespace n {
+namespace nr {
 
 	int init_SDL();
 	/* Initialize SDL */
@@ -62,19 +63,19 @@ namespace n {
 	void hide_axes();
 	/* Hide the axes */
 
-	void plot_point( const n::Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_point( const Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot a single point */
 
-	void plot_points( const n::Points&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_points( const Points&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot a list of points */
 
-	void plot_polygon( const n::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
+	void plot_polygon( const Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
 	/* Plot a single polygon */
 
-	void plot_polygon_vertices( const n::Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
+	void plot_polygon_vertices( const Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
 	/* Plot the vertices of a single polygon */
 
-	void plot_polygons( const n::Polygons&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
+	void plot_polygons( const Polygons&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
 	/* Plot a list of polygons */
 }
 #endif

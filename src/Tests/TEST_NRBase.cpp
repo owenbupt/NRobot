@@ -17,7 +17,7 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "NBase.hpp"
+#include "NRBase.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
@@ -26,13 +26,13 @@
 
 int main() {
 	int failed_tests = 0;
-	n::Point P, Q, R;
+	nr::Point P, Q, R;
 
 	/****** Point operators ******/
 	std::printf("\nTesting Point operators\n");
 	/* == */
-	P = n::Point();
-	Q = n::Point(1, 2, 3);
+	P = nr::Point();
+	Q = nr::Point(1, 2, 3);
 	if ( (P == P) && (Q == Q) && !(P == Q) ) {
 		std::printf("  [PASS]");
 	} else {
@@ -42,8 +42,8 @@ int main() {
 	std::printf("  Point == Point\n");
 
 	/* != */
-	P = n::Point();
-	Q = n::Point(1, 2, 3);
+	P = nr::Point();
+	Q = nr::Point(1, 2, 3);
 	if ( !(P != P) && !(Q != Q) && (P != Q) ) {
 		std::printf("  [PASS]");
 	} else {
@@ -55,9 +55,9 @@ int main() {
 	/****** Point functions ******/
     std::printf("\nTesting Point functions\n");
 	/* norm() */
-    P = n::Point();
-	Q = n::Point(1, 2, 3);
-	if ( (n::norm(P) == 0) && (n::norm(Q) == std::sqrt(14)) ) {
+    P = nr::Point();
+	Q = nr::Point(1, 2, 3);
+	if ( (nr::norm(P) == 0) && (nr::norm(Q) == std::sqrt(14)) ) {
 		std::printf("  [PASS]");
 	} else {
 		std::printf("  [FAIL]");
@@ -66,10 +66,10 @@ int main() {
 	std::printf("  norm( Point )\n");
 
 	/* dist() point2point*/
-	P = n::Point();
-	Q = n::Point(1, 2, 3);
-	R = n::Point(1, 0, 3);
-	if ( (n::dist(P,Q) == std::sqrt(14)) && (n::dist(Q,R) == 2) ) {
+	P = nr::Point();
+	Q = nr::Point(1, 2, 3);
+	R = nr::Point(1, 0, 3);
+	if ( (nr::dist(P,Q) == std::sqrt(14)) && (nr::dist(Q,R) == 2) ) {
 		std::printf("  [PASS]");
 	} else {
 		std::printf("  [FAIL]");
@@ -78,10 +78,10 @@ int main() {
 	std::printf("  dist( Point, Point )\n");
 
 	/* dot() */
-	P = n::Point();
-	Q = n::Point(1, 2, 3);
-	R = n::Point(1, 0, 3);
-	if ( (n::dot(P,Q) == 0) && (n::dot(Q,R) == 10) ) {
+	P = nr::Point();
+	Q = nr::Point(1, 2, 3);
+	R = nr::Point(1, 0, 3);
+	if ( (nr::dot(P,Q) == 0) && (nr::dot(Q,R) == 10) ) {
 		std::printf("  [PASS]");
 	} else {
 		std::printf("  [FAIL]");

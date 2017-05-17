@@ -19,7 +19,8 @@
 
 #include <cmath>
 #include <SDL2/SDL.h>
-#include "NPlot.hpp"
+
+#include "NRPlot.hpp"
 
 
 /********************* Plot initial settings *********************/
@@ -126,7 +127,7 @@ void handle_mouse_move(SDL_Event& e) {
 /********************* Main functions *********************/
 /**********************************************************/
 
-int n::init_SDL() {
+int nr::init_SDL() {
 	/* Initialize SDL */
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
@@ -170,7 +171,7 @@ int n::init_SDL() {
 	return(0);
 }
 
-void n::quit_SDL() {
+void nr::quit_SDL() {
 	/* Destroy the window and renderer */
 	SDL_DestroyRenderer( PLOT_RENDERER );
 	SDL_DestroyWindow( PLOT_WINDOW );
@@ -181,7 +182,7 @@ void n::quit_SDL() {
 	SDL_Quit();
 }
 
-bool n::handle_input() {
+bool nr::handle_input() {
 	SDL_Event e;
 	/* Wait for quit event */
 	while ( SDL_PollEvent( &e ) ) {
@@ -206,7 +207,7 @@ bool n::handle_input() {
 }
 
 
-void n::plot_render() {
+void nr::plot_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -215,7 +216,7 @@ void n::plot_render() {
 	SDL_RenderPresent( PLOT_RENDERER );
 }
 
-void n::clear_render() {
+void nr::clear_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -224,7 +225,7 @@ void n::clear_render() {
 	SDL_RenderClear( PLOT_RENDERER );
 }
 
-void n::show_axes() {
+void nr::show_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_AXES_COLOR.r,
 		PLOT_AXES_COLOR.g,
@@ -242,7 +243,7 @@ void n::show_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void n::hide_axes() {
+void nr::hide_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -260,7 +261,7 @@ void n::hide_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void n::plot_point( const n::Point& A, const SDL_Color& color, const int& point_size ) {
+void nr::plot_point( const nr::Point& A, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -278,7 +279,7 @@ void n::plot_point( const n::Point& A, const SDL_Color& color, const int& point_
 	// 	PLOT_HEIGHT/2.0 - PLOT_SCALE * (A.y + PLOT_Y_OFFSET) );
 }
 
-void n::plot_points( const n::Points& A, const SDL_Color& color, const int& point_size ) {
+void nr::plot_points( const nr::Points& A, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -300,7 +301,7 @@ void n::plot_points( const n::Points& A, const SDL_Color& color, const int& poin
 	}
 }
 
-void n::plot_polygon( const n::Polygon& P, const SDL_Color& color ) {
+void nr::plot_polygon( const nr::Polygon& P, const SDL_Color& color ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -325,7 +326,7 @@ void n::plot_polygon( const n::Polygon& P, const SDL_Color& color ) {
 	}
 }
 
-void n::plot_polygon_vertices( const n::Polygon& P, const SDL_Color& color, const int& point_size ) {
+void nr::plot_polygon_vertices( const nr::Polygon& P, const SDL_Color& color, const int& point_size ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -350,7 +351,7 @@ void n::plot_polygon_vertices( const n::Polygon& P, const SDL_Color& color, cons
 	}
 }
 
-void n::plot_polygons( const n::Polygons& P, const SDL_Color& color ) {
+void nr::plot_polygons( const nr::Polygons& P, const SDL_Color& color ) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,

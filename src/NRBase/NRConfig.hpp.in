@@ -17,28 +17,28 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NConfig_hpp
-#define __NConfig_hpp
+#ifndef __NRConfig_hpp
+#define __NRConfig_hpp
 
 /*******************************************************/
 /*************** cmake exported settings ***************/
 /*******************************************************/
 
 /* Version number */
-#define N_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define N_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define N_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define NR_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define NR_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define NR_VERSION_PATCH @PROJECT_VERSION_PATCH@
 
-/* Whether to use SDL */
-#define N_USE_SDL @N_USE_SDL@
+/* Whether plot functionality using SDL 2 is available */
+#define NR_PLOT_AVAILABLE @NR_PLOT_AVAILABLE@
 
 /* Whether to time program execution */
-#define N_TIMEIT @N_TIMEIT@
+#define NR_TIME_EXECUTION @NR_TIME_EXECUTION@
 
 /* Error tolerance when comparing floats */
-#define N_CMP_ERR 0.00000000001
+#define NR_CMP_ERR 0.00000000001
 
 /* Polygon quality */
-#define N_PPC 60
+#define NR_PPC 60
 
 #endif

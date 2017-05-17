@@ -21,7 +21,6 @@ Files to fix
 
 TODO
     move info to nrobot
-    make into a single static library?
     Finish in/on functions in NBase
     add plot circle(s) function
     Consistently comment every function

@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
 	This file is part of NRobot.
 

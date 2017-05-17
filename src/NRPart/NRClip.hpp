@@ -18,15 +18,15 @@
 */
 
 
-#ifndef __NClip_hpp
-#define __NClip_hpp
+#ifndef __NRClip_hpp
+#define __NRClip_hpp
 
-#include "NBase.hpp"
+#include "NRBase.hpp"
 
 
 #define STRICTLY_SIMPLE false
 
-namespace n {
+namespace nr {
 	enum Clip_type {
 		AND,
 		OR,

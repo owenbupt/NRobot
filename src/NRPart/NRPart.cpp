@@ -22,16 +22,16 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "NPart.hpp"
-#include "NClip.hpp"
+#include "NRPart.hpp"
+#include "NRClip.hpp"
 
 
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
-n::Polygon halfplane( const n::Point& A, const n::Point& B, const double diam ) {
+nr::Polygon halfplane( const nr::Point& A, const nr::Point& B, const double diam ) {
 	/* Initialize halfplane */
-	n::Polygon H;
+	nr::Polygon H;
 	H.contour.resize(1);
 	H.is_hole.resize(1);
 	H.is_open.resize(1);
@@ -51,20 +51,20 @@ n::Polygon halfplane( const n::Point& A, const n::Point& B, const double diam ) 
 
 	/* Rotate halfplane */
 	double theta = std::atan2(B.y-A.y, B.x-A.x);
-	n::rotate( &H, theta, true);
+	nr::rotate( &H, theta, true);
 
 	/* Translate halfplane */
-	n::translate( &H, n::midpoint(A,B) );
+	nr::translate( &H, nr::midpoint(A,B) );
 
 	return H;
 }
 
-n::Polygon hyperbola_branch( const n::Circle& A, const n::Circle& B, const double diam, const size_t ppb ) {
+nr::Polygon hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const double diam, const size_t ppb ) {
 	/* Initialize hyperbola branch */
-	n::Polygon H;
+	nr::Polygon H;
 
 
-	if (n::is_point(A) && n::is_point(B)) {
+	if (nr::is_point(A) && nr::is_point(B)) {
 		/* If both circles are actually points create the classic voronoi */
 		H.contour.resize(1);
 		H.is_hole.resize(1);
@@ -85,12 +85,12 @@ n::Polygon hyperbola_branch( const n::Circle& A, const n::Circle& B, const doubl
 	} else {
 		/* Create hyperbola branch assuming both foci are on x axis with center on origin */
 		double a = (A.radius + B.radius) / 2;
-		double c = n::dist(A.center, B.center) / 2;
+		double c = nr::dist(A.center, B.center) / 2;
 		double b = std::sqrt( c*c - a*a );
 
 		if ( c < a) {
 			/* The disks overlap and there is no cell */
-			n::make_empty(&H);
+			nr::make_empty(&H);
 			return H;
 		} else {
 			/* Create all hyperbola branch points using the parametric equation */
@@ -116,10 +116,10 @@ n::Polygon hyperbola_branch( const n::Circle& A, const n::Circle& B, const doubl
 
 	/* Rotate halfplane */
 	double theta = std::atan2(B.center.y-A.center.y, B.center.x-A.center.x);
-	n::rotate( &H, theta, true);
+	nr::rotate( &H, theta, true);
 
 	/* Translate halfplane */
-	n::translate( &H, n::midpoint(A.center ,B.center) );
+	nr::translate( &H, nr::midpoint(A.center ,B.center) );
 
 	return H;
 }
@@ -132,9 +132,9 @@ n::Polygon hyperbola_branch( const n::Circle& A, const n::Circle& B, const doubl
 /**********************************************************/
 /********************* Main functions *********************/
 /**********************************************************/
-void n::info() {
-	printf("NPart, version %d.%d\n", N_VERSION_MAJOR, N_VERSION_MINOR);
-	#if N_USE_SDL
+void nr::info() {
+	printf("NPart, version %d.%d.%d\n", NR_VERSION_MAJOR, NR_VERSION_MINOR, NR_VERSION_PATCH);
+	#if NR_PLOT_AVAILABLE
 		printf("NPSDL is available.\n\n");
 	#else
 		printf("NPSDL is NOT available.\n\n");
@@ -156,13 +156,13 @@ You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n\n");
 }
 
-void n::voronoi( const n::Polygon& region, const n::Points& seeds, n::Polygons* cells) {
+void nr::voronoi( const nr::Polygon& region, const nr::Points& seeds, nr::Polygons* cells) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
 	cells->resize(N);
 	/* Region diameter */
-	double diam = n::diameter(region);
+	double diam = nr::diameter(region);
 
 	/* Loop over all seed pairs */
 	for (size_t i=0; i<N; i++) {
@@ -171,21 +171,21 @@ void n::voronoi( const n::Polygon& region, const n::Points& seeds, n::Polygons* 
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the halfplane containing i with respect to j */
-				n::Polygon h = halfplane( seeds[i], seeds[j], diam );
+				nr::Polygon h = halfplane( seeds[i], seeds[j], diam );
 				/* Intersect the current cell with the halfplane with j */
-				n::polygon_clip( n::AND, (*cells)[i], h, &((*cells)[i]) );
+				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 			}
 		}
 	}
 }
 
-void n::g_voronoi( const n::Polygon& region, const n::Circles& seeds, n::Polygons* cells, const size_t points_per_branch) {
+void nr::g_voronoi( const nr::Polygon& region, const nr::Circles& seeds, nr::Polygons* cells, const size_t points_per_branch) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
 	cells->resize(N);
 	/* Region diameter */
-	double diam = n::diameter(region);
+	double diam = nr::diameter(region);
 
 	/* Loop over all seed pairs */
 	for (size_t i=0; i<N; i++) {
@@ -194,15 +194,15 @@ void n::g_voronoi( const n::Polygon& region, const n::Circles& seeds, n::Polygon
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the hyperbola branch containing i with respect to j */
-				n::Polygon h = hyperbola_branch( seeds[i], seeds[j], diam, points_per_branch );
+				nr::Polygon h = hyperbola_branch( seeds[i], seeds[j], diam, points_per_branch );
 				/* Intersect the current cell with the branch with j */
-				n::polygon_clip( n::AND, (*cells)[i], h, &((*cells)[i]) );
+				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 			}
 		}
 	}
 }
 
-void n::ys_partitioning( const n::Polygon& region, const n::Polygons& seeds, n::Polygons* cells) {
+void nr::ys_partitioning( const nr::Polygon& region, const nr::Polygons& seeds, nr::Polygons* cells) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -215,29 +215,29 @@ void n::ys_partitioning( const n::Polygon& region, const n::Polygons& seeds, n::
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Remove the pattern of j from i */
-				n::polygon_clip( n::DIFF, (*cells)[i], seeds[j], &((*cells)[i]) );
+				nr::polygon_clip( nr::DIFF, (*cells)[i], seeds[j], &((*cells)[i]) );
 			} else {
 				/* If this is node i just find the intersection of the current cell with the pattern of i */
 				/* This is done to constrain the cell of i to the region */
-				n::polygon_clip( n::AND, (*cells)[i], seeds[j], &((*cells)[i]) );
+				nr::polygon_clip( nr::AND, (*cells)[i], seeds[j], &((*cells)[i]) );
 			}
 		}
 	}
 
 	/* Add the common sensed region */
-	n::make_empty( &((*cells)[N]) );
+	nr::make_empty( &((*cells)[N]) );
 	Polygon tmpP;
 	for (size_t i=0; i<N; i++) {
 		/* Find the common sensed part of i */
-		n::polygon_clip( n::DIFF, seeds[i], (*cells)[i], &(tmpP) );
+		nr::polygon_clip( nr::DIFF, seeds[i], (*cells)[i], &(tmpP) );
 		/* Add the common sensed part ot i to the total */
-		n::polygon_clip( n::OR, (*cells)[N], tmpP, &((*cells)[N]) );
+		nr::polygon_clip( nr::OR, (*cells)[N], tmpP, &((*cells)[N]) );
 	}
 	/* Intersect it with the region */
-	n::polygon_clip( n::AND, (*cells)[N], region, &((*cells)[N]) );
+	nr::polygon_clip( nr::AND, (*cells)[N], region, &((*cells)[N]) );
 }
 
-void n::ysuq_partitioning( const n::Polygon& region, const n::Circles& seeds, const std::vector<double>& quality, n::Polygons* cells, bool **neighbors) {
+void nr::ysuq_partitioning( const nr::Polygon& region, const nr::Circles& seeds, const std::vector<double>& quality, nr::Polygons* cells, bool **neighbors) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -248,10 +248,10 @@ void n::ysuq_partitioning( const n::Polygon& region, const n::Circles& seeds, co
 		*neighbors = (bool*) malloc( N*N*sizeof(bool) );
 	}
 	/* Convert the circles to polygons */
-	n::Polygons sensing;
+	nr::Polygons sensing;
 	sensing.resize(N);
 	for (size_t i=0; i<N; i++) {
-		sensing = n::Polygons(seeds);
+		sensing = nr::Polygons(seeds);
 	}
 
 	/* Loop over all nodes */
@@ -263,15 +263,15 @@ void n::ysuq_partitioning( const n::Polygon& region, const n::Circles& seeds, co
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Check for overlapping of the sensing disks */
-				if (n::dist(seeds[i].center, seeds[j].center) <= seeds[i].radius + seeds[j].radius) {
+				if (nr::dist(seeds[i].center, seeds[j].center) <= seeds[i].radius + seeds[j].radius) {
 					/* Compare coverage quality */
 					if (quality[i] < quality[j]) {
 						/* Remove the seed polygon of j */
-						n::polygon_clip(n::DIFF, (*cells)[i], sensing[j], &((*cells)[i]));
+						nr::polygon_clip(nr::DIFF, (*cells)[i], sensing[j], &((*cells)[i]));
 					} else if (quality[i] == quality[j]) {
 						/* Use the arbitrary partitioning */
-						n::Polygon H = halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
-						n::polygon_clip(n::DIFF, (*cells)[i], H, &((*cells)[i]));
+						nr::Polygon H = halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
+						nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
 					}
 
 					/* Set neighbor status if required */
@@ -292,6 +292,6 @@ void n::ysuq_partitioning( const n::Polygon& region, const n::Circles& seeds, co
 			}
 		}
 		/* Intersect the cell with the region */
-		n::polygon_clip(n::AND, (*cells)[i], region, &((*cells)[i]));
+		nr::polygon_clip(nr::AND, (*cells)[i], region, &((*cells)[i]));
 	}
 }

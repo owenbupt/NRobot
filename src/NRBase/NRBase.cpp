@@ -24,13 +24,13 @@
 #include <vector>
 #include <fstream>
 
-#include "NBase.hpp"
+#include "NRBase.hpp"
 
 
 /*******************************************************/
 /********************* Point class *********************/
 /*******************************************************/
-n::Point::Point( double x, double y, double z ) {
+nr::Point::Point( double x, double y, double z ) {
 	this->x = x;
 	this->y = y;
 	this->z = z;
@@ -42,13 +42,13 @@ n::Point::Point( double x, double y, double z ) {
 /*********************************************************/
 /********************* Polygon class *********************/
 /*********************************************************/
-n::Polygon::Polygon() {
+nr::Polygon::Polygon() {
 	this->contour.resize(0);
 	this->is_hole.resize(0);
 	this->is_open.resize(0);
 }
 
-n::Polygon::Polygon( const n::Point& P ) {
+nr::Polygon::Polygon( const nr::Point& P ) {
 	this->contour.resize(1);
 	this->is_hole.resize(1);
 	this->is_open.resize(1);
@@ -57,7 +57,7 @@ n::Polygon::Polygon( const n::Point& P ) {
 	this->is_open[0] = true;
 }
 
-n::Polygon::Polygon( const n::Contour& C ) {
+nr::Polygon::Polygon( const nr::Contour& C ) {
 	this->contour.resize(1);
 	this->is_hole.resize(1);
 	this->is_open.resize(1);
@@ -70,7 +70,7 @@ n::Polygon::Polygon( const n::Contour& C ) {
 	}
 }
 
-n::Polygon::Polygon( const n::Circle& C, size_t points_per_circle ) {
+nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle ) {
 	this->contour.resize(1);
 	this->is_hole.resize(1);
 	this->is_open.resize(1);
@@ -92,14 +92,14 @@ n::Polygon::Polygon( const n::Circle& C, size_t points_per_circle ) {
 /**********************************************************/
 /********************* Polygons class *********************/
 /**********************************************************/
-n::Polygons::Polygons() {
+nr::Polygons::Polygons() {
 	this->resize(0);
 }
 
-n::Polygons::Polygons( const n::Circles& C, size_t points_per_circle ) {
+nr::Polygons::Polygons( const nr::Circles& C, size_t points_per_circle ) {
 	this->resize(C.size());
 	for (size_t i=0; i<C.size(); i++) {
-		this->at(i) = n::Polygon( C[i], points_per_circle );
+		this->at(i) = nr::Polygon( C[i], points_per_circle );
 	}
 }
 
@@ -109,12 +109,12 @@ n::Polygons::Polygons( const n::Circles& C, size_t points_per_circle ) {
 /********************************************************/
 /********************* Circle class *********************/
 /********************************************************/
-n::Circle::Circle() {
-	this->center = n::Point();
+nr::Circle::Circle() {
+	this->center = nr::Point();
 	this->radius = 0;
 }
 
-n::Circle::Circle( const n::Point& P, double r ) {
+nr::Circle::Circle( const nr::Point& P, double r ) {
 	this->center.x = P.x;
 	this->center.y = P.y;
 	this->radius = r;
@@ -129,68 +129,68 @@ n::Circle::Circle( const n::Point& P, double r ) {
 
 /****** Operator overloads ******/
 
-bool n::operator == ( const n::Point& A, const n::Point& B ) {
-	if ( (std::abs(A.x - B.x) <= N_CMP_ERR) &&
-		(std::abs(A.y - B.y) <= N_CMP_ERR) &&
-		(std::abs(A.z - B.z) <= N_CMP_ERR) ) {
+bool nr::operator == ( const nr::Point& A, const nr::Point& B ) {
+	if ( (std::abs(A.x - B.x) <= NR_CMP_ERR) &&
+		(std::abs(A.y - B.y) <= NR_CMP_ERR) &&
+		(std::abs(A.z - B.z) <= NR_CMP_ERR) ) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-bool n::operator != ( const n::Point& A, const n::Point& B ) {
-	if ( (std::abs(A.x - B.x) <= N_CMP_ERR) &&
-		(std::abs(A.y - B.y) <= N_CMP_ERR) &&
-		(std::abs(A.z - B.z) <= N_CMP_ERR) ) {
+bool nr::operator != ( const nr::Point& A, const nr::Point& B ) {
+	if ( (std::abs(A.x - B.x) <= NR_CMP_ERR) &&
+		(std::abs(A.y - B.y) <= NR_CMP_ERR) &&
+		(std::abs(A.z - B.z) <= NR_CMP_ERR) ) {
 		return false;
 	} else {
 		return true;
 	}
 }
 
-n::Point n::operator + ( const n::Point& A, const n::Point& B ) {
-	return n::Point( A.x+B.x, A.y+B.y, A.z+B.z );
+nr::Point nr::operator + ( const nr::Point& A, const nr::Point& B ) {
+	return nr::Point( A.x+B.x, A.y+B.y, A.z+B.z );
 }
 
-n::Point n::operator - ( const n::Point& A, const n::Point& B ) {
-	return n::Point( A.x-B.x, A.y-B.y, A.z-B.z );
+nr::Point nr::operator - ( const nr::Point& A, const nr::Point& B ) {
+	return nr::Point( A.x-B.x, A.y-B.y, A.z-B.z );
 }
 
-n::Point n::operator - ( const n::Point& A ) {
-	return n::Point( -A.x, -A.y, -A.z );
+nr::Point nr::operator - ( const nr::Point& A ) {
+	return nr::Point( -A.x, -A.y, -A.z );
 }
 
-void n::operator += ( n::Point& A, const n::Point& B ) {
+void nr::operator += ( nr::Point& A, const nr::Point& B ) {
 	A.x += B.x;
 	A.y += B.y;
 	A.z += B.z;
 }
 
-void n::operator -= ( n::Point& A, const n::Point& B ) {
+void nr::operator -= ( nr::Point& A, const nr::Point& B ) {
 	A.x -= B.x;
 	A.y -= B.y;
 	A.z -= B.z;
 }
 
-void n::operator + ( n::Polygon& P, const n::Point& A ) {
-	n::translate( &P, A );
+void nr::operator + ( nr::Polygon& P, const nr::Point& A ) {
+	nr::translate( &P, A );
 }
 
-void n::operator + ( const n::Point& A, n::Polygon& P ) {
-	n::translate( &P, A );
+void nr::operator + ( const nr::Point& A, nr::Polygon& P ) {
+	nr::translate( &P, A );
 }
 
-void n::operator - ( n::Polygon& P, const n::Point& A ) {
-	n::translate( &P, -A );
+void nr::operator - ( nr::Polygon& P, const nr::Point& A ) {
+	nr::translate( &P, -A );
 }
 
-std::ostream& n::operator << ( std::ostream& output, const n::Point& P ) {
+std::ostream& nr::operator << ( std::ostream& output, const nr::Point& P ) {
 	output << P.x << " " << P.y << " " << P.z;
 	return output;
 }
 
-std::ostream& n::operator << ( std::ostream& output, const n::Contour& C ) {
+std::ostream& nr::operator << ( std::ostream& output, const nr::Contour& C ) {
 	for (size_t i=0; i<C.size(); i++) {
 		output << C.at(i) << "\n";
 	}
@@ -198,27 +198,27 @@ std::ostream& n::operator << ( std::ostream& output, const n::Contour& C ) {
 }
 
 /****** Point ******/
-double n::norm( const n::Point& A ) {
+double nr::norm( const nr::Point& A ) {
 	return sqrt( pow(A.x, 2) + pow(A.y, 2) + pow(A.z, 2) );
 }
 
-double n::dist( const n::Point& A, const n::Point& B ) {
+double nr::dist( const nr::Point& A, const nr::Point& B ) {
 	return sqrt( pow(A.x-B.x, 2) + pow(A.y-B.y, 2) + pow(A.z-B.z, 2) );
 }
 
-double n::dist( const n::Point& A, const n::Contour& C ) {
+double nr::dist( const nr::Point& A, const nr::Contour& C ) {
 	return 0;
 }
 
-double n::dist( const n::Point& A, const n::Polygon& P ) {
+double nr::dist( const nr::Point& A, const nr::Polygon& P ) {
 	return 0;
 }
 
-double n::dot( const n::Point& A, const n::Point& B ) {
+double nr::dot( const nr::Point& A, const nr::Point& B ) {
 	return A.x*B.x + A.y*B.y + A.z*B.z;
 }
 
-n::Point n::rotate( const n::Point& A, double theta ) {
+nr::Point nr::rotate( const nr::Point& A, double theta ) {
 	Point P;
 	P.x = std::cos(theta)*A.x - std::sin(theta)*A.y;
 	P.y = std::sin(theta)*A.x + std::cos(theta)*A.y;
@@ -226,12 +226,12 @@ n::Point n::rotate( const n::Point& A, double theta ) {
 	return P;
 }
 
-n::Point n::midpoint( const n::Point& A, const n::Point& B ) {
-	return n::Point( (A.x+B.x)/2, (A.y+B.y)/2, (A.z+B.z)/2 );
+nr::Point nr::midpoint( const nr::Point& A, const nr::Point& B ) {
+	return nr::Point( (A.x+B.x)/2, (A.y+B.y)/2, (A.z+B.z)/2 );
 }
 
 /****** Contour ******/
-int n::read( n::Contour* C, const char* fname ) {
+int nr::read( nr::Contour* C, const char* fname ) {
 	size_t  num_vertices;
 	double x, y;
 
@@ -261,7 +261,7 @@ int n::read( n::Contour* C, const char* fname ) {
 	}
 }
 
-int n::write( const n::Contour& C, const char* fname, const char* mode ) {
+int nr::write( const nr::Contour& C, const char* fname, const char* mode ) {
 	FILE* fp = std::fopen(fname, mode);
 	if (fp != NULL) {
 
@@ -283,7 +283,7 @@ int n::write( const n::Contour& C, const char* fname, const char* mode ) {
 	}
 }
 
-void n::print( const n::Contour& C ) {
+void nr::print( const nr::Contour& C ) {
 
 	std::printf("Vertices %lu\n", C.size());
 	for (size_t i=0; i<C.size(); i++) {
@@ -291,7 +291,7 @@ void n::print( const n::Contour& C ) {
 	}
 }
 
-double n::area( const n::Contour& C, bool signed_area ) {
+double nr::area( const nr::Contour& C, bool signed_area ) {
 	double A = 0;
 	size_t Nv = C.size();
 
@@ -307,8 +307,8 @@ double n::area( const n::Contour& C, bool signed_area ) {
 	}
 }
 
-n::Point n::centroid( const n::Contour& C ) {
-	n::Point centr;
+nr::Point nr::centroid( const nr::Contour& C ) {
+	nr::Point centr;
 	size_t Nv = C.size();
 
 	for (size_t i=0; i<Nv; i++) {
@@ -320,21 +320,21 @@ n::Point n::centroid( const n::Contour& C ) {
 	}
 
 	/* Get signed area */
-	double A = n::area( C, true );
+	double A = nr::area( C, true );
 	return 1/(6*A) * centr;
 }
 
-bool n::is_CW( const n::Contour& C ) {
+bool nr::is_CW( const nr::Contour& C ) {
 	/* Depends on signed area */
-	if (n::area( C, true ) < 0) {
+	if (nr::area( C, true ) < 0) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
-void n::reverse_order( n::Contour* C ) {
-	n::Point tmp;
+void nr::reverse_order( nr::Contour* C ) {
+	nr::Point tmp;
 	size_t Nv = C->size();
 
 	/* Loop over the first half vertices and swap them with the second half */
@@ -345,20 +345,20 @@ void n::reverse_order( n::Contour* C ) {
 	}
 }
 
-void n::make_CW( n::Contour* C ) {
-	if ( !n::is_CW( *C ) ) {
-		n::reverse_order( C );
+void nr::make_CW( nr::Contour* C ) {
+	if ( !nr::is_CW( *C ) ) {
+		nr::reverse_order( C );
 	}
 }
 
-void n::make_CCW( n::Contour* C ) {
-	if ( n::is_CW( *C ) ) {
-		n::reverse_order( C );
+void nr::make_CCW( nr::Contour* C ) {
+	if ( nr::is_CW( *C ) ) {
+		nr::reverse_order( C );
 	}
 }
 
 /****** Polygon ******/
-int n::read( n::Polygon* P, const char* fname, bool read_hole, bool read_open ) {
+int nr::read( nr::Polygon* P, const char* fname, bool read_hole, bool read_open ) {
 	size_t num_contours, num_vertices;
 	int is_hole, is_open;
 	double x, y;
@@ -407,9 +407,9 @@ int n::read( n::Polygon* P, const char* fname, bool read_hole, bool read_open ) 
 
 			/* Set contour orientation */
 			if (P->is_hole[i]) {
-				n::make_CCW( &(P->contour[i]) );
+				nr::make_CCW( &(P->contour[i]) );
 			} else {
-				n::make_CW( &(P->contour[i]) );
+				nr::make_CW( &(P->contour[i]) );
 			}
 		}
 
@@ -424,7 +424,7 @@ int n::read( n::Polygon* P, const char* fname, bool read_hole, bool read_open ) 
 	}
 }
 
-int n::write( const n::Polygon& P, const char* fname, bool write_hole, bool write_open, const char* mode ) {
+int nr::write( const nr::Polygon& P, const char* fname, bool write_hole, bool write_open, const char* mode ) {
 	FILE* fp = std::fopen(fname, mode);
 	if (fp != NULL) {
 
@@ -464,7 +464,7 @@ int n::write( const n::Polygon& P, const char* fname, bool write_hole, bool writ
 	}
 }
 
-void n::print( const n::Polygon& P ) {
+void nr::print( const nr::Polygon& P ) {
 	std::printf("Contours: %lu\n", P.contour.size());
 	for (size_t i=0; i<P.contour.size(); i++) {
 		std::printf("Contour %lu: Hole %d, Open %d, Vertices %lu\n",
@@ -477,9 +477,9 @@ void n::print( const n::Polygon& P ) {
 	}
 }
 
-double n::diameter( const n::Polygon& P ) {
+double nr::diameter( const nr::Polygon& P ) {
 	/* Put all polygon vertices in a single contour */
-	n::Contour verts;
+	nr::Contour verts;
 	/* Find the total number of vertices */
 	size_t Nv = 0;
 	for (size_t i=0; i<P.contour.size(); i++) {
@@ -510,74 +510,74 @@ double n::diameter( const n::Polygon& P ) {
 	return d;
 }
 
-double n::area( const n::Polygon& P ) {
+double nr::area( const nr::Polygon& P ) {
 	double A = 0;
 
 	/* Loop over all contours */
 	for (size_t i=0; i<P.contour.size(); i++) {
 		/* If the contour is a hole, subtract its area */
 		if (P.is_hole[i] && !P.is_open[i]) {
-			A -= n::area(P.contour[i]);
+			A -= nr::area(P.contour[i]);
 		/* If the contour is not a hole, add its area */
 		} else if (!P.is_hole[i] && !P.is_open[i]) {
-			A += n::area(P.contour[i]);
+			A += nr::area(P.contour[i]);
 		}
 	}
 
 	return A;
 }
 
-n::Point n::centroid( const n::Polygon& P ) {
+nr::Point nr::centroid( const nr::Polygon& P ) {
 	/* https://math.stackexchange.com/questions/623841/finding-centroid-of-polygon-with-holes-polygons */
 
-	n::Point C;
+	nr::Point C;
 
 	/* Loop over all contours */
 	for (size_t i=0; i<P.contour.size(); i++) {
 		/* If the contour is a hole, subtract its weighted centroid */
 		if (P.is_hole[i] && !P.is_open[i]) {
-			C -= n::area(P.contour[i]) * n::centroid(P.contour[i]);
+			C -= nr::area(P.contour[i]) * nr::centroid(P.contour[i]);
 		/* If the contour is not a hole, add its weighted centroid */
 		} else if (!P.is_hole[i] && !P.is_open[i]) {
-			C += n::area(P.contour[i]) * n::centroid(P.contour[i]);
+			C += nr::area(P.contour[i]) * nr::centroid(P.contour[i]);
 		}
 	}
 
-	return C / n::area(P);
+	return C / nr::area(P);
 }
 
-n::Point n::normal( const n::Polygon& P, size_t contour, size_t edge ) {
+nr::Point nr::normal( const nr::Polygon& P, size_t contour, size_t edge ) {
 	/* Get the two edge vertices */
-	n::Point v1, v2, n;
+	nr::Point v1, v2, n;
 	v1 = P.contour[contour][edge];
 	v2 = P.contour[contour][(edge+1) % P.contour[contour].size()];
 	n = v2 - v1;
 
 	/* Assume external contours are CW and internal ones CCW */
 	/* Check the orientation of the contour and rotate accordingly */
-	if ( n::is_CW(P.contour[contour]) ) {
+	if ( nr::is_CW(P.contour[contour]) ) {
 		/* External contour, rotate 90 degrees */
-		n = n::rotate( n, std::asin(1) );
+		n = nr::rotate( n, std::asin(1) );
 	} else {
 		/* Internal contour, rotate -90 degrees */
-		n = n::rotate( n, -std::asin(1) );
+		n = nr::rotate( n, -std::asin(1) );
 	}
 
 	/* Make into a unit vector */
-	n = n / n::norm(n);
+	n = n / nr::norm(n);
 
 	return n;
 }
 
-bool n::is_orientation_correct( const n::Polygon& P ) {
+bool nr::is_orientation_correct( const nr::Polygon& P ) {
 	for (size_t i=0; i<P.contour.size(); i++) {
 		if (P.is_hole[i]) {
-			if ( n::is_CW(P.contour[i]) ) {
+			if ( nr::is_CW(P.contour[i]) ) {
 				/* If an internal contour is CW */
 				return false;
 			}
 		} else {
-			if ( !n::is_CW(P.contour[i]) ) {
+			if ( !nr::is_CW(P.contour[i]) ) {
 				/* If an external contour is CCW */
 				return false;
 			}
@@ -586,7 +586,7 @@ bool n::is_orientation_correct( const n::Polygon& P ) {
 	return true;
 }
 
-bool n::is_point( const n::Polygon& P ) {
+bool nr::is_point( const nr::Polygon& P ) {
 	if ( (P.contour.size() == 1) && (P.contour[0].size() == 1) ) {
 		return true;
 	} else {
@@ -594,7 +594,7 @@ bool n::is_point( const n::Polygon& P ) {
 	}
 }
 
-bool n::is_empty( const n::Polygon& P ) {
+bool nr::is_empty( const nr::Polygon& P ) {
 	if (P.contour.size() == 0) {
 		return true;
 	} else {
@@ -602,32 +602,32 @@ bool n::is_empty( const n::Polygon& P ) {
 	}
 }
 
-void n::make_empty( n::Polygon* P ) {
+void nr::make_empty( nr::Polygon* P ) {
 	P->contour.resize(0);
 	P->is_hole.resize(0);
 	P->is_open.resize(0);
 }
 
-void n::fix_orientation( n::Polygon* P, bool follow_hole_flags ) {
+void nr::fix_orientation( nr::Polygon* P, bool follow_hole_flags ) {
 	if (follow_hole_flags) {
 		/* Set orientation according to hole flags */
 		for (size_t i=0; i<P->contour.size(); i++) {
 			if (P->is_hole[i]) {
-				if ( n::is_CW(P->contour[i]) ) {
+				if ( nr::is_CW(P->contour[i]) ) {
 					/* If an internal contour is CW */
-					n::reverse_order( &(P->contour[i]) );
+					nr::reverse_order( &(P->contour[i]) );
 				}
 			} else {
-				if ( !n::is_CW(P->contour[i]) ) {
+				if ( !nr::is_CW(P->contour[i]) ) {
 					/* If an external contour is CCW */
-					n::reverse_order( &(P->contour[i]) );
+					nr::reverse_order( &(P->contour[i]) );
 				}
 			}
 		}
 	} else {
 		/* Set orientation according to contour vertex order */
 		for (size_t i=0; i<P->contour.size(); i++) {
-			if ( n::is_CW(P->contour[i])) {
+			if ( nr::is_CW(P->contour[i])) {
 				/* Set as external contour */
 				P->is_hole[i] = false;
 			} else {
@@ -638,7 +638,7 @@ void n::fix_orientation( n::Polygon* P, bool follow_hole_flags ) {
 	}
 }
 
-void n::translate( n::Polygon* P, const n::Point& p ) {
+void nr::translate( nr::Polygon* P, const nr::Point& p ) {
 	/* Loop over all contours */
 	for (size_t i=0; i<P->contour.size(); i++) {
 		/* Loop over all vertices */
@@ -649,12 +649,12 @@ void n::translate( n::Polygon* P, const n::Point& p ) {
 	}
 }
 
-void n::rotate( n::Polygon* P, double theta, bool around_origin ) {
-	n::Point C = n::centroid( *P );
+void nr::rotate( nr::Polygon* P, double theta, bool around_origin ) {
+	nr::Point C = nr::centroid( *P );
 
 	if (!around_origin) {
 		/* Translate the polygon so that its centroid is on the origin */
-		n::translate( P, -C );
+		nr::translate( P, -C );
 	}
 
 	/* Loop over all contours */
@@ -662,23 +662,23 @@ void n::rotate( n::Polygon* P, double theta, bool around_origin ) {
 		/* Loop over all vertices */
 		for (size_t j=0; j<P->contour[i].size(); j++) {
 			/* Rotate the vertex */
-			P->contour[i][j] = n::rotate( P->contour[i][j], theta );
+			P->contour[i][j] = nr::rotate( P->contour[i][j], theta );
 		}
 	}
 
 	if (!around_origin) {
 		/* Translate the polygon to its original position */
-		n::translate( P, C );
+		nr::translate( P, C );
 	}
 }
 
-n::Contour n::convex_hull( const n::Polygon& P ) {
+nr::Contour nr::convex_hull( const nr::Polygon& P ) {
 	/* https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain */
-	return n::Contour();
+	return nr::Contour();
 }
 
 /****** Polygons ******/
-void n::print( const n::Polygons& P ) {
+void nr::print( const nr::Polygons& P ) {
 
 	std::printf("Polygons: %lu\n", P.size());
 	for (size_t k=0; k<P.size(); k++) {
@@ -694,11 +694,11 @@ void n::print( const n::Polygons& P ) {
 }
 
 /****** Circle ******/
-double n::area( const n::Circle& C ) {
+double nr::area( const nr::Circle& C ) {
 	return M_PI * C.radius * C.radius;
 }
 
-bool n::is_point( const n::Circle& C ) {
+bool nr::is_point( const nr::Circle& C ) {
 	if (C.radius == 0) {
 		return true;
 	} else {

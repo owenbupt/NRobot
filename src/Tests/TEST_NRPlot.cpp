@@ -18,47 +18,47 @@
 */
 
 #include <cstdio>
-#include "NBase.hpp"
-#if N_USE_SDL
-#include "NPlot.hpp"
+#include "NRBase.hpp"
+#if NR_PLOT_AVAILABLE
+#include "NRPlot.hpp"
 #endif
 
 
 int main() {
 
-    n::Points P;
-	P.push_back( n::Point(-5,5) );
-	P.push_back( n::Point(-5,2) );
-	P.push_back( n::Point(-3,5) );
-	P.push_back( n::Point(-3,-7) );
+    nr::Points P;
+	P.push_back( nr::Point(-5,5) );
+	P.push_back( nr::Point(-5,2) );
+	P.push_back( nr::Point(-3,5) );
+	P.push_back( nr::Point(-3,-7) );
 
-    n::Circle C;
+    nr::Circle C;
 	double r = 1.0;
-    C = n::Circle(P[0], 1.8*r);
-    n::Polygon pC;
-	pC = n::Polygon( C );
+    C = nr::Circle(P[0], 1.8*r);
+    nr::Polygon pC;
+	pC = nr::Polygon( C );
 
     /* Plot */
-	#if N_USE_SDL
-		if (n::init_SDL()) exit(1);
+	#if NR_PLOT_AVAILABLE
+		if (nr::init_SDL()) exit(1);
 		PLOT_SCALE = 20;
 		bool uquit = false;
 
 		while (!uquit) {
-			n::clear_render();
-			// n::show_axes();
+			nr::clear_render();
+			nr::show_axes();
 
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
-			n::plot_points( P );
+			nr::plot_points( P );
             PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			n::plot_polygon( pC );
+			nr::plot_polygon( pC );
             PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
-            n::plot_polygon_vertices( pC );
+            nr::plot_polygon_vertices( pC );
 
-			n::plot_render();
-			uquit = n::handle_input();
+			nr::plot_render();
+			uquit = nr::handle_input();
 		}
-		n::quit_SDL();
+		nr::quit_SDL();
     #else
         std::printf("SDL 2 is required for NPlot\n");
     #endif

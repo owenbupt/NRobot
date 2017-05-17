@@ -21,12 +21,12 @@
 #include <cmath>
 
 #include "clipper.hpp"
-#include "NClip.hpp"
+#include "NRClip.hpp"
 
 // #define USE_EXPONENT_SCALING
 
 
-bool n::polygon_clip_fast( n::Clip_type clip_type,	const n::Polygon& S1, const n::Polygon& S2,	n::Polygon* R ) {
+bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, const nr::Polygon& S2, nr::Polygon* R ) {
 
 	/****** Find the appropriate scaling factor ******/
 	double sc = std::pow(10,15);
@@ -62,11 +62,11 @@ bool n::polygon_clip_fast( n::Clip_type clip_type,	const n::Polygon& S1, const n
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject n::Polygon %p.\n", &S1);
+		printf("Clipper error: Invalid subject nr::Polygon %p.\n", &S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip n::Polygon %p.\n", &S2);
+		printf("Clipper error: Invalid clip nr::Polygon %p.\n", &S2);
 		return false;
 	}
 
@@ -82,7 +82,7 @@ bool n::polygon_clip_fast( n::Clip_type clip_type,	const n::Polygon& S1, const n
 	/****** Execute clipping ******/
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: n::Polygon clipping failed.\n";
+		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
 		return false;
 	}
 
@@ -109,7 +109,7 @@ bool n::polygon_clip_fast( n::Clip_type clip_type,	const n::Polygon& S1, const n
 }
 
 
-bool n::polygon_clip( n::Clip_type clip_type, const n::Polygon& S1, const n::Polygon& S2, n::Polygon* R ) {
+bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr::Polygon& S2, nr::Polygon* R ) {
 
 	/****** Check for empty inputs ******/
 	if (is_empty(S1) && is_empty(S2)) {
@@ -188,11 +188,11 @@ bool n::polygon_clip( n::Clip_type clip_type, const n::Polygon& S1, const n::Pol
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject n::Polygon %p.\n", &S1);
+		printf("Clipper error: Invalid subject nr::Polygon %p.\n", &S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip n::Polygon %p.\n", &S2);
+		printf("Clipper error: Invalid clip nr::Polygon %p.\n", &S2);
 		return false;
 	}
 
@@ -208,7 +208,7 @@ bool n::polygon_clip( n::Clip_type clip_type, const n::Polygon& S1, const n::Pol
 	/****** Execute clipping ******/
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: n::Polygon clipping failed.\n";
+		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
 		return false;
 	}
 

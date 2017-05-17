@@ -18,14 +18,15 @@
 */
 
 
-#ifndef __NPart_h
-#define __NPart_h
+#ifndef __NRPart_h
+#define __NRPart_h
 
 #include <vector>
-#include "NBase.hpp"
+
+#include "NRBase.hpp"
 
 
-namespace n {
+namespace nr {
 
 	void info();
 	/* Displays libary info ***** MOVE TO NRobot ***** */

@@ -17,13 +17,13 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NBase_hpp
-#define __NBase_hpp
+#ifndef __NRBase_hpp
+#define __NRBase_hpp
 
 #include <iostream>
 #include <vector>
 
-#include "NConfig.hpp"
+#include "NRConfig.hpp"
 
 
 /* Define Pi */
@@ -32,7 +32,7 @@
 #endif
 
 
-namespace n {
+namespace nr {
 
 /* Forward class declarations */
 class Point;
@@ -102,7 +102,7 @@ class Polygon {
 		Polygon();
 		Polygon( const Point& P );
 		Polygon( const Contour& C );
-		Polygon( const Circle& C, size_t points_per_circle = N_PPC );
+		Polygon( const Circle& C, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -119,7 +119,7 @@ class Polygons: public std::vector<Polygon> {
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
 		Polygons();
-		Polygons( const n::Circles& C, size_t points_per_circle = N_PPC );
+		Polygons( const Circles& C, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -196,8 +196,8 @@ double dist( const Point& A, const Point& B );
 double dist( const Point& A, const Contour& C ); 					/* TODO */
 double dist( const Point& A, const Polygon& P ); 					/* TODO */
 double dot( const Point& A, const Point& B );
-n::Point rotate( const Point& A, double theta );
-n::Point midpoint( const Point& A, const Point& B );
+Point rotate( const Point& A, double theta );
+Point midpoint( const Point& A, const Point& B );
 // double dist_from_line( Point& A, Point&, Point& );
 // Point closest_to_line( Point& A, Point&, Point& );
 // bool in( Point& A, Contour& C );
@@ -214,7 +214,7 @@ int read( Contour* C, const char* fname );
 int write( const Contour& C, const char* fname, const char* mode = "w" );
 void print( const Contour& C );
 double area( const Contour& C, bool signed_area = false );
-n::Point centroid( const Contour& C );
+Point centroid( const Contour& C );
 bool is_CW( const Contour& C );
 void reverse_order( Contour* C );
 void make_CW( Contour* C );
@@ -227,7 +227,7 @@ void print( const Polygon& P );
 double diameter( const Polygon& P );
 double area( const Polygon& P );
 Point centroid( const Polygon& P );
-Point normal( const n::Polygon& P, size_t contour, size_t edge );
+Point normal( const Polygon& P, size_t contour, size_t edge );
 bool is_orientation_correct( const Polygon& P );
 bool is_point( const Polygon& P );
 bool is_empty( const Polygon& P );
