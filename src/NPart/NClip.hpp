@@ -18,25 +18,37 @@
 */
 
 
-#ifndef __NPart_h
-#define __NPart_h
+#ifndef __NClip_hpp
+#define __NClip_hpp
 
-#include <vector>
 #include "NBase.hpp"
 
 
+#define STRICTLY_SIMPLE false
+
 namespace n {
+	enum Clip_t{
+		AND,
+		OR,
+		XOR,
+		DIFF
+	};
 
-	void np_info();
+	bool polygon_clip_fast( Clip_t, const Polygon& S1, const Polygon& S2, Polygon* R );
+	/*
+		Execute a polygon clipping operation between S1 and S2 storing the
+		result in R. The resulting polygon's contour orientation is not
+		consistent. This function is faster but does not distinguish
+		between external and internal contours.
+	*/
 
-	void voronoi( const Polygon& region, const Points& seeds, Polygons& cells);
-
-	void guaranteed_voronoi( const Polygon& region, const Circles& seeds, Polygons& cells, const size_t points_per_branch = 101);
-
-	void YS_partitioning( const Polygon& region, const Polygons& seeds, Polygons& cells);
-
-	void YS_uniform_quality( const Polygon& region, const Circles& seeds, const std::vector<double>& quality, Polygons& cells, bool **neighbors = NULL);
-
+	bool polygon_clip( Clip_t, const Polygon& S1, const Polygon& S2, Polygon* R );
+	/*
+		Execute a polygon clipping operation between S1 and S2 storing the
+		result in R. This function is slower but the result has correct
+		is_hole and is_open flags for each contour.
+	*/
 }
+
 
 #endif

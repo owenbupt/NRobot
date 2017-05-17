@@ -1,37 +1,35 @@
 /*
-	Copyright (C) 2016 Sotiris Papatheodorou
+	Copyright (C) 2016-2017 Sotiris Papatheodorou
 
-	This file is part of NPart.
+	This file is part of NRobot.
 
-    NPart is free software: you can redistribute it and/or modify
+    NRobot is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    NPart is distributed in the hope that it will be useful,
+    NRobot is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with NPart.  If not, see <http://www.gnu.org/licenses/>.
+    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <iostream>
 #include <cmath>
+
 #include "clipper.hpp"
-#include "NPClip.hpp"
+#include "NClip.hpp"
 
-#define USE_EXPONENT_SCALINGN
+// #define USE_EXPONENT_SCALING
 
 
-bool npclip::polygon_clip_fast(
-	npclip::Clip_t clip_type,
-	const np::Polygon& S1, const np::Polygon& S2,
-	np::Polygon& R ) {
+bool n::polygon_clip_fast( n::Clip_t clip_type,	const n::Polygon& S1, const n::Polygon& S2,	n::Polygon* R ) {
 
 	/****** Find the appropriate scaling factor ******/
-	NPFLOAT sc = std::pow(10,15);
+	double sc = std::pow(10,15);
 	// int sc = 15;
 
 	/****** Create subject Polygon paths from S1 ******/
@@ -64,11 +62,11 @@ bool npclip::polygon_clip_fast(
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject np::Polygon %p.\n", &S1);
+		printf("Clipper error: Invalid subject n::Polygon %p.\n", &S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip np::Polygon %p.\n", &S2);
+		printf("Clipper error: Invalid clip n::Polygon %p.\n", &S2);
 		return false;
 	}
 
@@ -84,26 +82,26 @@ bool npclip::polygon_clip_fast(
 	/****** Execute clipping ******/
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: np::Polygon clipping failed.\n";
+		std::cout << "Clipper error: n::Polygon clipping failed.\n";
 		return false;
 	}
 
 	/****** Create Polygon from paths ******/
 	size_t Nc = result.size();
-	R.contour.resize(Nc);
-	R.is_hole.resize(Nc);
-	R.is_open.resize(Nc);
+	R->contour.resize(Nc);
+	R->is_hole.resize(Nc);
+	R->is_open.resize(Nc);
 	for (size_t i=0; i<Nc; i++) {
-		R.is_hole[i] = false;
-		R.is_open[i] = false;
+		R->is_hole[i] = false;
+		R->is_open[i] = false;
 
 		size_t Nv = result[i].size();
-		R.contour[i].resize(Nv);
+		R->contour[i].resize(Nv);
 		for (size_t j=0; j<Nv; j++) {
-			R.contour[i][j].x = result[i][j].X / sc;
-			R.contour[i][j].y = result[i][j].Y / sc;
-			// R.contour[i][j].x = std::scalbn(result[i][j].X, -sc);
-			// R.contour[i][j].y = std::scalbn(result[i][j].Y, -sc);
+			R->contour[i][j].x = result[i][j].X / sc;
+			R->contour[i][j].y = result[i][j].Y / sc;
+			// R->contour[i][j].x = std::scalbn(result[i][j].X, -sc);
+			// R->contour[i][j].y = std::scalbn(result[i][j].Y, -sc);
 		}
 	}
 
@@ -111,39 +109,36 @@ bool npclip::polygon_clip_fast(
 }
 
 
-bool npclip::polygon_clip(
-	npclip::Clip_t clip_type,
-	const np::Polygon& S1, const np::Polygon& S2,
-	np::Polygon& R ) {
+bool n::polygon_clip( n::Clip_t clip_type, const n::Polygon& S1, const n::Polygon& S2, n::Polygon* R ) {
 
 	/****** Check for empty inputs ******/
-	if (S1.is_empty() && S2.is_empty()) {
+	if (is_empty(S1) && is_empty(S2)) {
 		/* Both polygons are empty */
-		R.make_empty();
+		make_empty(R);
 		return true;
-	} else if (S1.is_empty()) {
+	} else if (is_empty(S1)) {
 		/* Subject polygon is empty */
 		switch (clip_type) {
 			case AND:
 			case DIFF:
-				R.make_empty();
+				make_empty(R);
 				break;
 			case OR:
 			case XOR:
-				R = S2;
+				*R = S2;
 				break;
 		}
 		return true;
-	} else if (S2.is_empty()) {
+	} else if (is_empty(S2)) {
 		/* Clip polygon is empty */
 		switch (clip_type) {
 			case AND:
-				R.make_empty();
+				make_empty(R);
 				break;
 			case OR:
 			case XOR:
 			case DIFF:
-				R = S1;
+				*R = S1;
 				break;
 		}
 		return true;
@@ -152,7 +147,7 @@ bool npclip::polygon_clip(
 
 	/****** Find the appropriate scaling factor ******/
 	#ifndef USE_EXPONENT_SCALING
-		NPFLOAT sc = std::pow(10,15);
+		double sc = std::pow(10,15);
 	#else
 		int sc = 15;
 	#endif
@@ -193,11 +188,11 @@ bool npclip::polygon_clip(
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject np::Polygon %p.\n", &S1);
+		printf("Clipper error: Invalid subject n::Polygon %p.\n", &S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip np::Polygon %p.\n", &S2);
+		printf("Clipper error: Invalid clip n::Polygon %p.\n", &S2);
 		return false;
 	}
 
@@ -213,29 +208,29 @@ bool npclip::polygon_clip(
 	/****** Execute clipping ******/
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: np::Polygon clipping failed.\n";
+		std::cout << "Clipper error: n::Polygon clipping failed.\n";
 		return false;
 	}
 
 	/****** Create Polygon from PolyTree ******/
-	R.contour.resize(result.Total());
-	R.is_hole.resize(result.Total());
-	R.is_open.resize(result.Total());
+	R->contour.resize(result.Total());
+	R->is_hole.resize(result.Total());
+	R->is_open.resize(result.Total());
 
 	ClipperLib::PolyNode *cnode = result.GetFirst();
 	for (int i=0; i<result.Total(); i++) {
 		size_t Nv = cnode->Contour.size();
-		R.is_hole[i] = cnode->IsHole();
-		R.is_open[i] = cnode->IsOpen();
-		R.contour[i].resize(Nv);
+		R->is_hole[i] = cnode->IsHole();
+		R->is_open[i] = cnode->IsOpen();
+		R->contour[i].resize(Nv);
 
 		for (size_t j=0; j<Nv; j++) {
 			#ifndef USE_EXPONENT_SCALING
-				R.contour[i][j].x = cnode->Contour[j].X / sc;
-				R.contour[i][j].y = cnode->Contour[j].Y / sc;
+				R->contour[i][j].x = cnode->Contour[j].X / sc;
+				R->contour[i][j].y = cnode->Contour[j].Y / sc;
 			#else
-				R.contour[i][j].x = std::scalbn(cnode->Contour[j].X, -sc);
-				R.contour[i][j].y = std::scalbn(cnode->Contour[j].Y, -sc);
+				R->contour[i][j].x = std::scalbn(cnode->Contour[j].X, -sc);
+				R->contour[i][j].y = std::scalbn(cnode->Contour[j].Y, -sc);
 			#endif
 		}
 
