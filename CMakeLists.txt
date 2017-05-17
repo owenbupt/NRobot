@@ -3,13 +3,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 SET( CMAKE_VERBOSE_MAKEFILE off )
 
 # Project name, version and language
-PROJECT(NRobot VERSION 0.3.0 LANGUAGES CXX)
+PROJECT(NRobot VERSION 0.4.0 LANGUAGES CXX)
 
 ##### Compile time parameters #####
 # Compile with plot functionality using SDL 2
 SET(NR_PLOT_ENABLE 1)
 # Time execution
 SET(NR_TIME_EXECUTION 0)
+
+
+
+
+
 
 
 ############################# DO NOT EDIT THESE ################################
@@ -28,7 +33,7 @@ else(CMAKE_BUILD_TYPE STREQUAL Debug)
     SET(BUILD_POSTFIX "")
 endif(CMAKE_BUILD_TYPE STREQUAL Debug)
 
-# Find SDL
+# Find SDL2 if plot functionality is desired
 IF(NR_PLOT_ENABLE)
     FIND_PACKAGE(SDL2)
     IF(SDL2_FOUND)
@@ -36,6 +41,7 @@ IF(NR_PLOT_ENABLE)
         INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIRS})
     ELSE(SDL2_FOUND)
         SET(NR_PLOT_AVAILABLE 0)
+        MESSAGE(WARNING "SDL2 was not found. Plot functionality will not be available")
     ENDIF(SDL2_FOUND)
 ENDIF(NR_PLOT_ENABLE)
 

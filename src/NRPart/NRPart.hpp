@@ -28,9 +28,6 @@
 
 namespace nr {
 
-	void info();
-	/* Displays libary info ***** MOVE TO NRobot ***** */
-
 	void voronoi( const Polygon& region, const Points& seeds, Polygons* cells);
 	/* Voronoi diagram */
 

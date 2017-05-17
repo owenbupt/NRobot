@@ -132,29 +132,6 @@ nr::Polygon hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const do
 /**********************************************************/
 /********************* Main functions *********************/
 /**********************************************************/
-void nr::info() {
-	printf("NPart, version %d.%d.%d\n", NR_VERSION_MAJOR, NR_VERSION_MINOR, NR_VERSION_PATCH);
-	#if NR_PLOT_AVAILABLE
-		printf("NPSDL is available.\n\n");
-	#else
-		printf("NPSDL is NOT available.\n\n");
-	#endif
-
-	printf("Copyright (C) 2016 Sotiris Papatheodorou\n\n");
-
-	printf("This program is free software: you can redistribute it and/or modify\n\
-it under the terms of the GNU General Public License as published by\n\
-the Free Software Foundation, either version 3 of the License, or\n\
-(at your option) any later version.\n\
-\n\
-This program is distributed in the hope that it will be useful,\n\
-but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n\
-GNU General Public License for more details.\n\
-\n\
-You should have received a copy of the GNU General Public License\n\
-along with this program. If not, see http://www.gnu.org/licenses/.\n\n");
-}
 
 void nr::voronoi( const nr::Polygon& region, const nr::Points& seeds, nr::Polygons* cells) {
 	/* Number of seeds */

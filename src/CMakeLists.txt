@@ -19,6 +19,10 @@ ENDIF(NR_PLOT_AVAILABLE)
 ADD_LIBRARY(nrobot STATIC ${NRBASE_SRC} ${NRPART_SRC} ${NROBOT_SRC} ${NRPLOT_SRC})
 SET_TARGET_PROPERTIES(nrobot PROPERTIES OUTPUT_NAME nrobot${BUILD_POSTFIX})
 
+# Install library
+# Install headers inside NRobot folder
+# Install static library in standard folder
+
 
 
 ########## Create testing executables ##########

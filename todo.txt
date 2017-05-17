@@ -20,7 +20,8 @@ Files to fix
     src/NBase/*
 
 TODO
-    move info to nrobot
+    fix all compiler warnings
+    make sure compiler adheres to strict c++ standards
     Finish in/on functions in NBase
     add plot circle(s) function
     Consistently comment every function
