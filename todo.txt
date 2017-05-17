@@ -20,11 +20,13 @@ Files to fix
     src/NBase/*
 
 TODO
+    **FIX NRCLip SCALING**
     fix all compiler warnings
     make sure compiler adheres to strict c++ standards
     Finish in/on functions in NBase
     add plot circle(s) function
     Consistently comment every function
+    Change code style in function declarations-definitions (one argument per line)
     make plotting more user friendly (mouse control?)
     fix licenses-dates
 	add testing executables (and automated tests?)
@@ -43,5 +45,5 @@ Improve functions
 		How does it handle non-simple polygons?
 	inpolygon
 		must be in at least one external and in no internals
-	info
-		show compile time options (copy gol info)
+	void nr::ys_partitioning()
+        return neighbor relationships

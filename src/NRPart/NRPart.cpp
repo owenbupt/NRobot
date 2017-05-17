@@ -29,7 +29,11 @@
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
-nr::Polygon nr_halfplane( const nr::Point& A, const nr::Point& B, const double diam ) {
+nr::Polygon nr_halfplane(
+	const nr::Point& A,
+	const nr::Point& B,
+	const double diam
+) {
 	/* Initialize halfplane */
 	nr::Polygon H;
 	H.contour.resize(1);
@@ -59,7 +63,12 @@ nr::Polygon nr_halfplane( const nr::Point& A, const nr::Point& B, const double d
 	return H;
 }
 
-nr::Polygon nr_hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const double diam, const size_t ppb ) {
+nr::Polygon nr_hyperbola_branch(
+	const nr::Circle& A,
+	const nr::Circle& B,
+	const double diam,
+	const size_t ppb
+) {
 	/* Initialize hyperbola branch */
 	nr::Polygon H;
 
@@ -133,7 +142,11 @@ nr::Polygon nr_hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const
 /********************* Main functions *********************/
 /**********************************************************/
 
-void nr::voronoi( const nr::Polygon& region, const nr::Points& seeds, nr::Polygons* cells) {
+void nr::voronoi(
+	const nr::Polygon& region,
+	const nr::Points& seeds,
+	nr::Polygons* cells
+) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -156,7 +169,35 @@ void nr::voronoi( const nr::Polygon& region, const nr::Points& seeds, nr::Polygo
 	}
 }
 
-void nr::g_voronoi( const nr::Polygon& region, const nr::Circles& seeds, nr::Polygons* cells, const size_t points_per_branch) {
+void nr::voronoi_cell(
+	const nr::Polygon& region,
+	const nr::Points& seeds,
+	const size_t subject,
+	nr::Polygon* cell
+) {
+	/* Number of seeds */
+	size_t N = seeds.size();
+	/* Region diameter */
+	double diam = nr::diameter(region);
+	/* Initialize the subject cell to the region */
+	(*cell) = region;
+	/* Loop over all other seeds */
+	for (size_t j=0; j<N; j++) {
+		if (subject != j) {
+			/* Create the halfplane with respect to j containing subject */
+			nr::Polygon h = nr_halfplane( seeds[subject], seeds[j], diam );
+			/* Intersect the current cell with the halfplane with respect to j */
+			nr::polygon_clip( nr::AND, *cell, h, cell );
+		}
+	}
+}
+
+void nr::g_voronoi(
+	const nr::Polygon& region,
+	const nr::Circles& seeds,
+	nr::Polygons* cells,
+	const size_t points_per_branch
+) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -179,7 +220,35 @@ void nr::g_voronoi( const nr::Polygon& region, const nr::Circles& seeds, nr::Pol
 	}
 }
 
-void nr::ys_partitioning( const nr::Polygon& region, const nr::Polygons& seeds, nr::Polygons* cells) {
+void nr::g_voronoi_cell(
+	const nr::Polygon& region,
+	const nr::Circles& seeds,
+	const size_t subject,
+	nr::Polygon* cell,
+	const size_t points_per_branch
+) {
+	/* Number of seeds */
+	size_t N = seeds.size();
+	/* Region diameter */
+	double diam = nr::diameter(region);
+	/* Initialize the subject cell to the region */
+	(*cell) = region;
+	/* Loop over all other seeds */
+	for (size_t j=0; j<N; j++) {
+		if (subject != j) {
+			/* Create the hyperbola branch with respect to j containing subject */
+			nr::Polygon h = nr_hyperbola_branch( seeds[subject], seeds[j], diam, points_per_branch );
+			/* Intersect the current cell with the branch with respect to j */
+			nr::polygon_clip( nr::AND, *cell, h, cell );
+		}
+	}
+}
+
+void nr::ys_partitioning(
+	const nr::Polygon& region,
+	const nr::Polygons& seeds,
+	nr::Polygons* cells
+) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -214,7 +283,13 @@ void nr::ys_partitioning( const nr::Polygon& region, const nr::Polygons& seeds, 
 	nr::polygon_clip( nr::AND, (*cells)[N], region, &((*cells)[N]) );
 }
 
-void nr::ysuq_partitioning( const nr::Polygon& region, const nr::Circles& seeds, const std::vector<double>& quality, nr::Polygons* cells, bool **neighbors) {
+void nr::ysuq_partitioning(
+	const nr::Polygon& region,
+	const nr::Circles& seeds,
+	const std::vector<double>& quality,
+	nr::Polygons* cells,
+	bool **neighbors
+) {
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */

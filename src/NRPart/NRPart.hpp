@@ -28,16 +28,69 @@
 
 namespace nr {
 
-	void voronoi( const Polygon& region, const Points& seeds, Polygons* cells);
-	/* Voronoi diagram */
+	void voronoi(
+		const Polygon& region,
+		const Points& seeds,
+		Polygons* cells
+	);
+	/*
+		Voronoi diagram of the points in seeds. The Voronoi cells are stored in
+		cells. The cells are constrained inside the polygon region.
+	*/
 
-	void g_voronoi( const Polygon& region, const Circles& seeds, Polygons* cells, const size_t points_per_branch = 101);
-	/* Guaranteed Voronoi diagram */
+	void voronoi_cell(
+		const Polygon& region,
+		const Points& seeds,
+		const size_t subject,
+		Polygon* cell
+	);
+	/*
+		Voronoi cell of point subject in seeds with respect to the other seeds.
+		Its Voronoi cell is stored in cell. The cell is constrained inside the
+		polygon region.
+	*/
 
-	void ys_partitioning( const Polygon& region, const Polygons& seeds, Polygons* cells);
+	void g_voronoi(
+		const Polygon& region,
+		const Circles& seeds,
+		Polygons* cells,
+		const size_t points_per_branch = 101
+	);
+	/*
+		Guaranteed Voronoi diagram of the disks in seeds. The GV cells are
+		stored in cells. The cells are constrained inside the polygon region.
+		By increasing points_per_branch, the hyperbolic branches of GV cells
+		are represented with better accuracy.
+	*/
+
+	void g_voronoi_cell(
+		const Polygon& region,
+		const Circles& seeds,
+		const size_t subject,
+		Polygon* cell,
+		const size_t points_per_branch = 101
+	);
+	/*
+		Guaranteed Voronoi cell of disk subject in seeds. The GV cell is
+		stored in cell. The cell is constrained inside the polygon region.
+		By increasing points_per_branch, the hyperbolic branches of the GV cell
+		are represented with better accuracy.
+	*/
+
+	void ys_partitioning(
+		const Polygon& region,
+		const Polygons& seeds,
+		Polygons* cells
+	);
 	/* Yannis Stergiopoulos partitioning (ICRA 2014) */
 
-	void ysuq_partitioning( const Polygon& region, const Circles& seeds, const std::vector<double>& quality, Polygons* cells, bool **neighbors = NULL);
+	void ysuq_partitioning(
+		const Polygon& region,
+		const Circles& seeds,
+		const std::vector<double>& quality,
+		Polygons* cells,
+		bool **neighbors = NULL
+	);
 	/* Yannis Stergiopoulos uniform quality partitioning (RAS 2017) */
 
 }

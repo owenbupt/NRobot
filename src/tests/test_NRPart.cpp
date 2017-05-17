@@ -27,30 +27,51 @@
 int main() {
 	nr::info();
 
+	/* Region to constrain cells into */
 	nr::Polygon region;
 	nr::read( &region, "resources/region_sq.txt", true);
 
+	/* Seed points */
 	nr::Points P;
 	P.push_back( nr::Point(-5,5) );
 	P.push_back( nr::Point(-5,2) );
 	P.push_back( nr::Point(-3,5) );
 	P.push_back( nr::Point(-3,-7) );
 
-	nr::Polygons V, GV, YS, disks;
+	/* Seed disks */
+	nr::Circles disks;
+	double r = 0.5;
+	disks.push_back( nr::Circle(P[0], 1.8*r) );
+	disks.push_back( nr::Circle(P[1], 2.0*r) );
+	disks.push_back( nr::Circle(P[2], 1.7*r) );
+	disks.push_back( nr::Circle(P[3], 1.5*r) );
+	nr::Polygons polydisks;
+	polydisks = nr::Polygons( disks );
+
+	/* Voronoi */
+	nr::Polygons V;
 	nr::voronoi( region, P, &V);
 
-	nr::Circles CC;
-	double r = 1.0;
-	CC.push_back( nr::Circle(P[0], 1.8*r) );
-	CC.push_back( nr::Circle(P[1], 2.0*r) );
-	CC.push_back( nr::Circle(P[2], 1.7*r) );
-	CC.push_back( nr::Circle(P[3], 1.5*r) );
-	disks = nr::Polygons( CC );
+	/* Voronoi cell */
+	nr::Polygons Vc;
+	Vc.resize(P.size());
+	for (size_t i=0; i<P.size(); i++) {
+		nr::voronoi_cell( region, P, i, &(Vc[i]));
+	}
 
-	nr::g_voronoi( region, CC, &GV);
+	/* Guaranteed Voronoi */
+	nr::Polygons GV;
+	nr::g_voronoi( region, disks, &GV);
 
+	/* Guaranteed Voronoi cell */
+	nr::Polygons GVc;
+	GVc.resize(disks.size());
+	for (size_t i=0; i<disks.size(); i++) {
+		nr::g_voronoi_cell( region, disks, i, &(GVc[i]));
+	}
 
-	nr::ys_partitioning(region, disks, &YS);
+	nr::Polygons YS;
+	nr::ys_partitioning(region, polydisks, &YS);
 
 
 
@@ -66,15 +87,22 @@ int main() {
 			nr::plot_clear_render();
 			nr::plot_show_axes();
 
+			/* White for region and seeds */
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_points( P );
-			nr::plot_polygons( disks );
+			nr::plot_polygons( polydisks );
+
+			/* Green for GV and YS */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			nr::plot_polygons( GV );
+			// nr::plot_polygons( GV );
+			nr::plot_polygons( GVc );
 			// nr::plot_polygons( YS );
+
+			/* Blue for Voronoi and YS common region */
 			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
-			nr::plot_polygons( V );
+			// nr::plot_polygons( V );
+			nr::plot_polygons( Vc );
 			// nr::plot_polygon( YS[YS.size()-1] );
 
 			nr::plot_render();
