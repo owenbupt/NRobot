@@ -150,7 +150,7 @@ class Circles: public std::vector<Circle> {
 	public:
 		/****** Constructor ******/
 		/* Uses the default constructor for the vector and its elements */
-		Circles(); 													/* TODO */
+		Circles();
 		Circles( const Points& centers, const std::vector<double>& radii ); /* TODO */
 };
 
