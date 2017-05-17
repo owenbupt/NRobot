@@ -29,7 +29,7 @@
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
-nr::Polygon halfplane( const nr::Point& A, const nr::Point& B, const double diam ) {
+nr::Polygon nr_halfplane( const nr::Point& A, const nr::Point& B, const double diam ) {
 	/* Initialize halfplane */
 	nr::Polygon H;
 	H.contour.resize(1);
@@ -59,7 +59,7 @@ nr::Polygon halfplane( const nr::Point& A, const nr::Point& B, const double diam
 	return H;
 }
 
-nr::Polygon hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const double diam, const size_t ppb ) {
+nr::Polygon nr_hyperbola_branch( const nr::Circle& A, const nr::Circle& B, const double diam, const size_t ppb ) {
 	/* Initialize hyperbola branch */
 	nr::Polygon H;
 
@@ -148,7 +148,7 @@ void nr::voronoi( const nr::Polygon& region, const nr::Points& seeds, nr::Polygo
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the halfplane containing i with respect to j */
-				nr::Polygon h = halfplane( seeds[i], seeds[j], diam );
+				nr::Polygon h = nr_halfplane( seeds[i], seeds[j], diam );
 				/* Intersect the current cell with the halfplane with j */
 				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 			}
@@ -171,7 +171,7 @@ void nr::g_voronoi( const nr::Polygon& region, const nr::Circles& seeds, nr::Pol
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the hyperbola branch containing i with respect to j */
-				nr::Polygon h = hyperbola_branch( seeds[i], seeds[j], diam, points_per_branch );
+				nr::Polygon h = nr_hyperbola_branch( seeds[i], seeds[j], diam, points_per_branch );
 				/* Intersect the current cell with the branch with j */
 				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 			}
@@ -247,7 +247,7 @@ void nr::ysuq_partitioning( const nr::Polygon& region, const nr::Circles& seeds,
 						nr::polygon_clip(nr::DIFF, (*cells)[i], sensing[j], &((*cells)[i]));
 					} else if (quality[i] == quality[j]) {
 						/* Use the arbitrary partitioning */
-						nr::Polygon H = halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
+						nr::Polygon H = nr_halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
 						nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
 					}
 

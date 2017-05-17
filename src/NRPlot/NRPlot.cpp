@@ -47,7 +47,7 @@ SDL_Renderer *PLOT_RENDERER = NULL;
 /********************* Helper functions *********************/
 /************************************************************/
 
-bool handle_keyboard_down(SDL_Event& e) {
+bool nr_handle_keyboard_down(SDL_Event& e) {
 	switch (e.key.keysym.sym) {
 		/* Q pressed - Quit */
 		case SDLK_q:
@@ -100,7 +100,7 @@ bool handle_keyboard_down(SDL_Event& e) {
 	return false;
 }
 
-void handle_window(SDL_Event& e) {
+void nr_handle_window(SDL_Event& e) {
 	switch (e.window.event) {
 		/* Window resized */
 		case SDL_WINDOWEVENT_RESIZED:
@@ -110,14 +110,14 @@ void handle_window(SDL_Event& e) {
 	}
 }
 
-void handle_mouse_wheel(SDL_Event& e) {
+void nr_handle_mouse_wheel(SDL_Event& e) {
 	PLOT_SCALE += e.wheel.y * SCALE_INCREMENT * 10 * std::sqrt( std::tanh(PLOT_SCALE) );
 	if (PLOT_SCALE < 1) {
 		PLOT_SCALE = 1;
 	}
 }
 
-void handle_mouse_move(SDL_Event& e) {
+void nr_handle_mouse_move(SDL_Event& e) {
 	PLOT_X_OFFSET += e.motion.x * OFFSET_INCREMENT;
 	PLOT_Y_OFFSET += e.motion.y * OFFSET_INCREMENT;
 }
@@ -127,36 +127,27 @@ void handle_mouse_move(SDL_Event& e) {
 /********************* Main functions *********************/
 /**********************************************************/
 
-int nr::init_SDL() {
+int nr::plot_init() {
 	/* Initialize SDL */
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-	{
+	if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
 		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
 		return(1);
-	}
-	else
-	{
+	} else {
 
 		/* Create window */
 		PLOT_WINDOW = SDL_CreateWindow( "NRobot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, \
 		PLOT_WIDTH, PLOT_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 
-		if( PLOT_WINDOW == NULL )
-		{
+		if( PLOT_WINDOW == NULL ) {
 			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
 			return(1);
-		}
-		else
-		{
+		} else {
 			/* Create renderer for window */
 			PLOT_RENDERER = SDL_CreateRenderer( PLOT_WINDOW, -1, SDL_RENDERER_ACCELERATED );
-			if( PLOT_RENDERER == NULL )
-			{
+			if( PLOT_RENDERER == NULL ) {
 				printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
 				return(1);
-			}
-			else
-			{
+			} else {
 				/* Initialize renderer color and fill the window */
 				SDL_SetRenderDrawColor( PLOT_RENDERER,
 					PLOT_BACKGROUND_COLOR.r,
@@ -171,7 +162,7 @@ int nr::init_SDL() {
 	return(0);
 }
 
-void nr::quit_SDL() {
+void nr::plot_quit() {
 	/* Destroy the window and renderer */
 	SDL_DestroyRenderer( PLOT_RENDERER );
 	SDL_DestroyWindow( PLOT_WINDOW );
@@ -182,7 +173,7 @@ void nr::quit_SDL() {
 	SDL_Quit();
 }
 
-bool nr::handle_input() {
+bool nr::plot_handle_input() {
 	SDL_Event e;
 	/* Wait for quit event */
 	while ( SDL_PollEvent( &e ) ) {
@@ -191,21 +182,20 @@ bool nr::handle_input() {
 			return true;
 		/* Key pressed */
 		} else if( e.type == SDL_KEYDOWN ) {
-			return handle_keyboard_down(e);
+			return nr_handle_keyboard_down(e);
 		/* Window event */
 		} else if (e.type == SDL_WINDOWEVENT) {
-			handle_window(e);
+			nr_handle_window(e);
 		/* Mouse wheel */
 		} else if (e.type == SDL_MOUSEWHEEL) {
-			handle_mouse_wheel(e);
+			nr_handle_mouse_wheel(e);
 		/* Mouse movement */
 		} else if (e.type == SDL_MOUSEMOTION) {
-			// handle_mouse_move(e);
+			// nr_handle_mouse_move(e);
 		}
 	}
 	return false;
 }
-
 
 void nr::plot_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
@@ -216,7 +206,7 @@ void nr::plot_render() {
 	SDL_RenderPresent( PLOT_RENDERER );
 }
 
-void nr::clear_render() {
+void nr::plot_clear_render() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,
@@ -225,7 +215,7 @@ void nr::clear_render() {
 	SDL_RenderClear( PLOT_RENDERER );
 }
 
-void nr::show_axes() {
+void nr::plot_show_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_AXES_COLOR.r,
 		PLOT_AXES_COLOR.g,
@@ -243,7 +233,7 @@ void nr::show_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void nr::hide_axes() {
+void nr::plot_hide_axes() {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		PLOT_BACKGROUND_COLOR.r,
 		PLOT_BACKGROUND_COLOR.g,

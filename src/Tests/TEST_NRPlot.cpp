@@ -40,13 +40,13 @@ int main() {
 
     /* Plot */
 	#if NR_PLOT_AVAILABLE
-		if (nr::init_SDL()) exit(1);
+		if (nr::plot_init()) exit(1);
 		PLOT_SCALE = 20;
 		bool uquit = false;
 
 		while (!uquit) {
-			nr::clear_render();
-			nr::show_axes();
+			nr::plot_clear_render();
+			nr::plot_show_axes();
 
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			nr::plot_points( P );
@@ -56,10 +56,10 @@ int main() {
             nr::plot_polygon_vertices( pC );
 
 			nr::plot_render();
-			uquit = nr::handle_input();
+			uquit = nr::plot_handle_input();
 		}
-		nr::quit_SDL();
+		nr::plot_quit();
     #else
-        std::printf("SDL 2 is required for NPlot\n");
+        std::printf("SDL 2 is required for NRPlot\n");
     #endif
 }

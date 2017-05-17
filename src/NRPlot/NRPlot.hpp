@@ -41,26 +41,26 @@ extern SDL_Renderer *PLOT_RENDERER;
 
 namespace nr {
 
-	int init_SDL();
-	/* Initialize SDL */
+	int plot_init();
+	/* Initialize plot window */
 
-	void quit_SDL();
-	/* Safely quit SDL */
+	void plot_quit();
+	/* Safely close plot window */
 
-	bool handle_input();
+	bool plot_handle_input();
 	/* Handle user input, returns true if user wants to quit, else false */
 
 
 	void plot_render();
 	/* Render on screen */
 
-	void clear_render();
+	void plot_clear_render();
 	/* Clear the screen */
 
-	void show_axes();
+	void plot_show_axes();
 	/* Show the axes */
 
-	void hide_axes();
+	void plot_hide_axes();
 	/* Hide the axes */
 
 	void plot_point( const Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
