@@ -27,15 +27,20 @@
 
 namespace n {
 
-	void np_info();
+	void info();
+	/* Displays libary info ***** MOVE TO NRobot ***** */
 
-	void voronoi( const Polygon& region, const Points& seeds, Polygons& cells);
+	void voronoi( const Polygon& region, const Points& seeds, Polygons* cells);
+	/* Voronoi diagram */
 
-	void guaranteed_voronoi( const Polygon& region, const Circles& seeds, Polygons& cells, const size_t points_per_branch = 101);
+	void g_voronoi( const Polygon& region, const Circles& seeds, Polygons* cells, const size_t points_per_branch = 101);
+	/* Guaranteed Voronoi diagram */
 
-	void YS_partitioning( const Polygon& region, const Polygons& seeds, Polygons& cells);
+	void ys_partitioning( const Polygon& region, const Polygons& seeds, Polygons* cells);
+	/* Yannis Stergiopoulos partitioning (ICRA 2014) */
 
-	void YS_uniform_quality( const Polygon& region, const Circles& seeds, const std::vector<double>& quality, Polygons& cells, bool **neighbors = NULL);
+	void ysuq_partitioning( const Polygon& region, const Circles& seeds, const std::vector<double>& quality, Polygons* cells, bool **neighbors = NULL);
+	/* Yannis Stergiopoulos uniform quality partitioning (RAS 2017) */
 
 }
 

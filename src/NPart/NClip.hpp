@@ -27,14 +27,14 @@
 #define STRICTLY_SIMPLE false
 
 namespace n {
-	enum Clip_t{
+	enum Clip_type {
 		AND,
 		OR,
 		XOR,
 		DIFF
 	};
 
-	bool polygon_clip_fast( Clip_t, const Polygon& S1, const Polygon& S2, Polygon* R );
+	bool polygon_clip_fast( Clip_type, const Polygon& S1, const Polygon& S2, Polygon* R );
 	/*
 		Execute a polygon clipping operation between S1 and S2 storing the
 		result in R. The resulting polygon's contour orientation is not
@@ -42,7 +42,7 @@ namespace n {
 		between external and internal contours.
 	*/
 
-	bool polygon_clip( Clip_t, const Polygon& S1, const Polygon& S2, Polygon* R );
+	bool polygon_clip( Clip_type, const Polygon& S1, const Polygon& S2, Polygon* R );
 	/*
 		Execute a polygon clipping operation between S1 and S2 storing the
 		result in R. This function is slower but the result has correct

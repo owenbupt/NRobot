@@ -19,7 +19,10 @@ Files to fix
     src/NPart/*
     src/NBase/*
 
-General fixes
+TODO
+    move info to nrobot
+    make into a single static library?
+    Finish in/on functions in NBase
     add plot circle(s) function
     Consistently comment every function
     make plotting more user friendly (mouse control?)
@@ -29,6 +32,7 @@ General fixes
 Testing
 	NBase
     NPlot
+    NPart
 
 Improve functions
 	double n::diameter( const Polygon& P )

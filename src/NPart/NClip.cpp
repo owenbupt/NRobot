@@ -26,7 +26,7 @@
 // #define USE_EXPONENT_SCALING
 
 
-bool n::polygon_clip_fast( n::Clip_t clip_type,	const n::Polygon& S1, const n::Polygon& S2,	n::Polygon* R ) {
+bool n::polygon_clip_fast( n::Clip_type clip_type,	const n::Polygon& S1, const n::Polygon& S2,	n::Polygon* R ) {
 
 	/****** Find the appropriate scaling factor ******/
 	double sc = std::pow(10,15);
@@ -109,7 +109,7 @@ bool n::polygon_clip_fast( n::Clip_t clip_type,	const n::Polygon& S1, const n::P
 }
 
 
-bool n::polygon_clip( n::Clip_t clip_type, const n::Polygon& S1, const n::Polygon& S2, n::Polygon* R ) {
+bool n::polygon_clip( n::Clip_type clip_type, const n::Polygon& S1, const n::Polygon& S2, n::Polygon* R ) {
 
 	/****** Check for empty inputs ******/
 	if (is_empty(S1) && is_empty(S2)) {
