@@ -17,14 +17,15 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "NRBase.hpp"
 #include <cstdio>
 #include <cmath>
 #include <iostream>
 
-// using namespace std;
+#include "NRobot.hpp"
 
 int main() {
+	nr::info();
+	
 	int failed_tests = 0;
 	nr::Point P, Q, R;
 

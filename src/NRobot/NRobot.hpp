@@ -17,15 +17,19 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NRobot_h
-#define __NRobot_h
+#ifndef __NRobot_hpp
+#define __NRobot_hpp
 
+/* Include all NRobot library headers */
 #include "NRBase.hpp"
-#include "NRControl.hpp"
+#include "NRPart.hpp"
+#if NR_PLOT_AVAILABLE
+#include "NRPlot.hpp"
+#endif
 
 namespace nr {
 
-	void nr_info();
+	void info();
 
 
 

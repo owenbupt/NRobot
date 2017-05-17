@@ -20,14 +20,13 @@
 #include <cstdio>
 #include <iostream>
 
-#include "NRPart.hpp"
-#if NR_PLOT_AVAILABLE
-#include "NRPlot.hpp"
-#endif
+#include "NRobot.hpp"
 
 
 
 int main() {
+	nr::info();
+	
 	nr::Polygon region;
 	region.read("Input Files/region_sq.txt", true);
 	// R.rotate(-2.9442);

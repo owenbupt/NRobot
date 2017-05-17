@@ -18,13 +18,12 @@
 */
 
 #include <cstdio>
-#include "NRBase.hpp"
-#if NR_PLOT_AVAILABLE
-#include "NRPlot.hpp"
-#endif
+
+#include "NRobot.hpp"
 
 
 int main() {
+    nr::info();
 
     nr::Points P;
 	P.push_back( nr::Point(-5,5) );
