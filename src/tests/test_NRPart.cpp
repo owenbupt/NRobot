@@ -40,7 +40,7 @@ int main() {
 
 	/* Seed disks */
 	nr::Circles disks;
-	double r = 0.5;
+	double r = 0.1;
 	disks.push_back( nr::Circle(P[0], 1.8*r) );
 	disks.push_back( nr::Circle(P[1], 2.0*r) );
 	disks.push_back( nr::Circle(P[2], 1.7*r) );
@@ -61,7 +61,7 @@ int main() {
 
 	/* Guaranteed Voronoi */
 	nr::Polygons GV;
-	nr::g_voronoi( region, disks, &GV);
+	// nr::g_voronoi( region, disks, &GV);
 
 	/* Guaranteed Voronoi cell */
 	nr::Polygons GVc;
@@ -97,6 +97,9 @@ int main() {
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			// nr::plot_polygons( GV );
 			nr::plot_polygons( GVc );
+			for (size_t i=0; i<GVc.size(); i++) {
+				nr::plot_polygon_vertices( GVc[i] );
+			}
 			// nr::plot_polygons( YS );
 
 			/* Blue for Voronoi and YS common region */

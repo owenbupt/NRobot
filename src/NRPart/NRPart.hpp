@@ -77,6 +77,22 @@ namespace nr {
 		are represented with better accuracy.
 	*/
 
+	void awg_voronoi_cell(
+		const Polygon& region,
+		const Circles& seeds,
+		const std::vector<double>& weights,
+		const size_t subject,
+		Polygon* cell,
+		const size_t points_per_branch = 101
+	);
+	/*
+		Additively Weighted Guaranteed Voronoi cell of disk subject in seeds.
+		The AWGV cell is stored in cell. The cell is constrained inside the
+		polygon region. By increasing points_per_branch, the hyperbolic
+		branches of the GV cell are represented with better accuracy. The
+		weights vector contains the weights of all seed disks.
+	*/
+
 	void ys_partitioning(
 		const Polygon& region,
 		const Polygons& seeds,

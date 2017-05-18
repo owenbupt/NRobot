@@ -62,11 +62,11 @@ bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, cons
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject nr::Polygon %p.\n", &S1);
+		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip nr::Polygon %p.\n", &S2);
+		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
 		return false;
 	}
 
@@ -77,6 +77,7 @@ bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, cons
 		case OR: clipType = ClipperLib::ctUnion; break;
 		case XOR: clipType = ClipperLib::ctXor; break;
 		case DIFF: clipType = ClipperLib::ctDifference; break;
+		default: clipType = ClipperLib::ctIntersection;
 	}
 
 	/****** Execute clipping ******/
@@ -188,11 +189,13 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject nr::Polygon %p.\n", &S1);
+		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
+		// nr::print(S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip nr::Polygon %p.\n", &S2);
+		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
+		// nr::print(S2);
 		return false;
 	}
 
@@ -203,6 +206,7 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 		case OR: clipType = ClipperLib::ctUnion; break;
 		case XOR: clipType = ClipperLib::ctXor; break;
 		case DIFF: clipType = ClipperLib::ctDifference; break;
+		default: clipType = ClipperLib::ctIntersection;
 	}
 
 	/****** Execute clipping ******/

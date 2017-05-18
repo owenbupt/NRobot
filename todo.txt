@@ -20,8 +20,11 @@ Files to fix
     src/NBase/*
 
 TODO
+    fix problems in GV with zero uncertainty
+    one clipping operation fails even with nonzero uncertainty
     **FIX NRCLip SCALING**
     fix all compiler warnings
+        fscanf return value = number of %X or else error
     make sure compiler adheres to strict c++ standards
     Finish in/on functions in NBase
     add plot circle(s) function
