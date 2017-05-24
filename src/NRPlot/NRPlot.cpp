@@ -118,8 +118,14 @@ void nr_handle_mouse_wheel(SDL_Event& e) {
 }
 
 void nr_handle_mouse_move(SDL_Event& e) {
-	PLOT_X_OFFSET += e.motion.x * OFFSET_INCREMENT;
-	PLOT_Y_OFFSET += e.motion.y * OFFSET_INCREMENT;
+	PLOT_X_OFFSET += e.motion.xrel * OFFSET_INCREMENT;
+	PLOT_Y_OFFSET += e.motion.yrel * OFFSET_INCREMENT;
+}
+
+void nr_handle_mouse_button(SDL_Event& e) {
+	/* Get values relative to the window center */
+	PLOT_X_OFFSET = -(e.button.x - PLOT_WIDTH/2.0) / PLOT_SCALE;
+	PLOT_Y_OFFSET = (e.button.y - PLOT_HEIGHT/2.0) / PLOT_SCALE;
 }
 
 
@@ -192,6 +198,9 @@ bool nr::plot_handle_input() {
 		/* Mouse movement */
 		} else if (e.type == SDL_MOUSEMOTION) {
 			// nr_handle_mouse_move(e);
+		/* Mouse click */
+		} else if (e.type == SDL_MOUSEBUTTONDOWN) {
+			nr_handle_mouse_button(e);
 		}
 	}
 	return false;
@@ -264,9 +273,6 @@ void nr::plot_point( const nr::Point& A, const SDL_Color& color, const int& poin
 				PLOT_HEIGHT/2.0 - PLOT_SCALE * (A.y + PLOT_Y_OFFSET) + l );
 		}
 	}
-	// SDL_RenderDrawPoint( PLOT_RENDERER,
-	// 	PLOT_WIDTH/2.0 + PLOT_SCALE * (A.x + PLOT_X_OFFSET),
-	// 	PLOT_HEIGHT/2.0 - PLOT_SCALE * (A.y + PLOT_Y_OFFSET) );
 }
 
 void nr::plot_points( const nr::Points& A, const SDL_Color& color, const int& point_size ) {
@@ -285,9 +291,6 @@ void nr::plot_points( const nr::Points& A, const SDL_Color& color, const int& po
 					PLOT_HEIGHT/2.0 - PLOT_SCALE * (A[i].y + PLOT_Y_OFFSET) + l );
 			}
 		}
-		// SDL_RenderDrawPoint( PLOT_RENDERER,
-		// 	PLOT_WIDTH/2.0 + PLOT_SCALE * (A[i].x + PLOT_X_OFFSET),
-		// 	PLOT_HEIGHT/2.0 - PLOT_SCALE * (A[i].y + PLOT_Y_OFFSET) );
 	}
 }
 
@@ -334,9 +337,6 @@ void nr::plot_polygon_vertices( const nr::Polygon& P, const SDL_Color& color, co
 						PLOT_HEIGHT/2.0 - PLOT_SCALE * (P.contour[i][j].y + PLOT_Y_OFFSET) + l );
 				}
 			}
-			// SDL_RenderDrawPoint( PLOT_RENDERER,
-			// 	PLOT_WIDTH/2.0 + PLOT_SCALE * (P.contour[i][j].x + PLOT_X_OFFSET),
-			// 	PLOT_HEIGHT/2.0 - PLOT_SCALE * (P.contour[i][j].y + PLOT_Y_OFFSET) );
 		}
 	}
 }
