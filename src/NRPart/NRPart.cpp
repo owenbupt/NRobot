@@ -363,33 +363,28 @@ void nr::ys_partitioning(
 	size_t N = seeds.size();
 	/* Initialize the result */
 	cells->resize(N+1);
+	/* Initialize the common sensed region */
+	nr::make_empty( &((*cells)[N]) );
 
 	/* Loop over all seed pairs */
 	for (size_t i=0; i<N; i++) {
 		/* Initialize the cell of i to the region */
-		(*cells)[i] = region;
+		(*cells)[i] = seeds[i];
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Remove the pattern of j from i */
 				nr::polygon_clip( nr::DIFF, (*cells)[i], seeds[j], &((*cells)[i]) );
-			} else {
-				/* If this is node i just find the intersection of the current cell with the pattern of i */
-				/* This is done to constrain the cell of i to the region */
-				nr::polygon_clip( nr::AND, (*cells)[i], seeds[j], &((*cells)[i]) );
+				/* Add the overlapping between i and j to the common sensed region */
+				nr::Polygon tmpP;
+				nr::polygon_clip( nr::AND, seeds[i], seeds[j], &tmpP );
+				nr::polygon_clip( nr::OR, (*cells)[N], tmpP, &((*cells)[N]) );
 			}
 		}
+		/* Intersect the cell with the region in order to constrain it */
+		nr::polygon_clip( nr::AND, (*cells)[i], region, &((*cells)[i]) );
 	}
 
-	/* Add the common sensed region */
-	nr::make_empty( &((*cells)[N]) );
-	Polygon tmpP;
-	for (size_t i=0; i<N; i++) {
-		/* Find the common sensed part of i */
-		nr::polygon_clip( nr::DIFF, seeds[i], (*cells)[i], &(tmpP) );
-		/* Add the common sensed part ot i to the total */
-		nr::polygon_clip( nr::OR, (*cells)[N], tmpP, &((*cells)[N]) );
-	}
-	/* Intersect it with the region */
+	/* Intersect the common sensed region with the region */
 	nr::polygon_clip( nr::AND, (*cells)[N], region, &((*cells)[N]) );
 }
 

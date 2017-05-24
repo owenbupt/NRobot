@@ -23,10 +23,13 @@
 #include "clipper.hpp"
 #include "NRClip.hpp"
 
-// #define USE_EXPONENT_SCALING
 
-
-bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, const nr::Polygon& S2, nr::Polygon* R ) {
+bool nr::polygon_clip_fast(
+	nr::Clip_type clip_type,
+	const nr::Polygon& S1,
+	const nr::Polygon& S2,
+	nr::Polygon* R
+) {
 
 	/****** Find the appropriate scaling factor ******/
 	double sc = std::pow(10,15);
@@ -58,7 +61,7 @@ bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, cons
 
 	/****** Initialize Clipper class ******/
 	ClipperLib::Clipper clpr;
-	clpr.StrictlySimple(STRICTLY_SIMPLE);
+	clpr.StrictlySimple(NR_STRICTLY_SIMPLE);
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
@@ -110,7 +113,12 @@ bool nr::polygon_clip_fast( nr::Clip_type clip_type, const nr::Polygon& S1, cons
 }
 
 
-bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr::Polygon& S2, nr::Polygon* R ) {
+bool nr::polygon_clip(
+	nr::Clip_type clip_type,
+	const nr::Polygon& S1,
+	const nr::Polygon& S2,
+	nr::Polygon* R
+) {
 
 	/****** Check for empty inputs ******/
 	if (is_empty(S1) && is_empty(S2)) {
@@ -147,10 +155,10 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 	/* Else continue normally */
 
 	/****** Find the appropriate scaling factor ******/
-	#ifndef USE_EXPONENT_SCALING
-		double sc = std::pow(10,15);
-	#else
+	#if NR_EXPONENT_SCALING
 		int sc = 15;
+	#else
+		double sc = std::pow(10,15);
 	#endif
 
 	/****** Create subject Polygon paths from S1 ******/
@@ -158,12 +166,12 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 	for (size_t i=0; i<S1.contour.size(); i++) {
 		subj[i].resize( S1.contour[i].size() );
 		for (size_t j=0; j<S1.contour[i].size(); j++) {
-			#ifndef USE_EXPONENT_SCALING
-				subj[i][j].Y = sc * S1.contour[i][j].y;
-				subj[i][j].X = sc * S1.contour[i][j].x;
-			#else
+			#if NR_EXPONENT_SCALING
 				subj[i][j].X = std::scalbn(S1.contour[i][j].x, sc);
 				subj[i][j].Y = std::scalbn(S1.contour[i][j].y, sc);
+			#else
+				subj[i][j].Y = sc * S1.contour[i][j].y;
+				subj[i][j].X = sc * S1.contour[i][j].x;
 			#endif
 		}
 	}
@@ -173,29 +181,29 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 	for (size_t i=0; i<S2.contour.size(); i++) {
 		clip[i].resize( S2.contour[i].size() );
 		for (size_t j=0; j<S2.contour[i].size(); j++) {
-			#ifndef USE_EXPONENT_SCALING
+			#if NR_EXPONENT_SCALING
+				clip[i][j].X = std::scalbn(S2.contour[i][j].x, sc);
+				clip[i][j].Y = std::scalbn(S2.contour[i][j].y, sc);
+			#else
 				clip[i][j].Y = sc * S2.contour[i][j].y;
 				clip[i][j].X = sc * S2.contour[i][j].x;
-			#else
-				subj[i][j].X = std::scalbn(S2.contour[i][j].x, sc);
-				subj[i][j].Y = std::scalbn(S2.contour[i][j].y, sc);
 			#endif
 		}
 	}
 
 	/****** Initialize Clipper class ******/
 	ClipperLib::Clipper clpr;
-	clpr.StrictlySimple(STRICTLY_SIMPLE);
+	clpr.StrictlySimple(NR_STRICTLY_SIMPLE);
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
-		// nr::print(S1);
+		nr::print(S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
-		// nr::print(S2);
+		nr::print(S2);
 		return false;
 	}
 
@@ -229,12 +237,12 @@ bool nr::polygon_clip( nr::Clip_type clip_type, const nr::Polygon& S1, const nr:
 		R->contour[i].resize(Nv);
 
 		for (size_t j=0; j<Nv; j++) {
-			#ifndef USE_EXPONENT_SCALING
-				R->contour[i][j].x = cnode->Contour[j].X / sc;
-				R->contour[i][j].y = cnode->Contour[j].Y / sc;
-			#else
+			#if NR_EXPONENT_SCALING
 				R->contour[i][j].x = std::scalbn(cnode->Contour[j].X, -sc);
 				R->contour[i][j].y = std::scalbn(cnode->Contour[j].Y, -sc);
+			#else
+				R->contour[i][j].x = cnode->Contour[j].X / sc;
+				R->contour[i][j].y = cnode->Contour[j].Y / sc;
 			#endif
 		}
 

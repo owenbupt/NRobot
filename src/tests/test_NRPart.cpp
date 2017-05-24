@@ -23,6 +23,9 @@
 #include "NRobot.hpp"
 
 
+#define CALC_VORONOI 0
+#define CALC_GVORONOI 0
+#define CALC_YS 1
 
 int main() {
 	nr::info();
@@ -50,28 +53,38 @@ int main() {
 
 	/* Voronoi */
 	nr::Polygons V;
+	#if CALC_VORONOI
 	nr::voronoi( region, P, &V);
+	#endif
 
 	/* Voronoi cell */
 	nr::Polygons Vc;
 	Vc.resize(P.size());
 	for (size_t i=0; i<P.size(); i++) {
+		#if CALC_VORONOI
 		nr::voronoi_cell( region, P, i, &(Vc[i]));
+		#endif
 	}
 
 	/* Guaranteed Voronoi */
 	nr::Polygons GV;
-	// nr::g_voronoi( region, disks, &GV);
+	#if CALC_GVORONOI
+	nr::g_voronoi( region, disks, &GV);
+	#endif
 
 	/* Guaranteed Voronoi cell */
 	nr::Polygons GVc;
 	GVc.resize(disks.size());
 	for (size_t i=0; i<disks.size(); i++) {
+		#if CALC_GVORONOI
 		nr::g_voronoi_cell( region, disks, i, &(GVc[i]));
+		#endif
 	}
 
 	nr::Polygons YS;
+	#if CALC_YS
 	nr::ys_partitioning(region, polydisks, &YS);
+	#endif
 
 
 
@@ -95,18 +108,26 @@ int main() {
 
 			/* Green for GV and YS */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			// nr::plot_polygons( GV );
+			#if CALC_GVORONOI
+			nr::plot_polygons( GV );
 			nr::plot_polygons( GVc );
 			for (size_t i=0; i<GVc.size(); i++) {
 				nr::plot_polygon_vertices( GVc[i] );
 			}
-			// nr::plot_polygons( YS );
+			#endif
+			#if CALC_YS
+			nr::plot_polygons( YS );
+			#endif
 
 			/* Blue for Voronoi and YS common region */
 			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
-			// nr::plot_polygons( V );
+			#if CALC_VORONOI
+			nr::plot_polygons( V );
 			nr::plot_polygons( Vc );
-			// nr::plot_polygon( YS[YS.size()-1] );
+			#endif
+			#if CALC_YS
+			nr::plot_polygon( YS[YS.size()-1] );
+			#endif
 
 			nr::plot_render();
 			uquit = nr::plot_handle_input();

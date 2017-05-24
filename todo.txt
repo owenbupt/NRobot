@@ -21,7 +21,6 @@ Files to fix
 
 TODO
     fix problems in GV with zero uncertainty
-    one clipping operation fails even with nonzero uncertainty
     **FIX NRCLip SCALING**
     fix all compiler warnings
         fscanf return value = number of %X or else error
