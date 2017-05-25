@@ -24,7 +24,7 @@
 #include "NRClip.hpp"
 
 
-bool nr::polygon_clip_fast(
+int nr::polygon_clip_fast(
 	nr::Clip_type clip_type,
 	const nr::Polygon& S1,
 	const nr::Polygon& S2,
@@ -32,8 +32,11 @@ bool nr::polygon_clip_fast(
 ) {
 
 	/****** Find the appropriate scaling factor ******/
-	double sc = std::pow(10,15);
-	// int sc = 15;
+	#if NR_EXPONENT_SCALING
+		int sc = NR_SCALING_FACTOR;
+	#else
+		double sc = std::pow(10,NR_SCALING_FACTOR);
+	#endif
 
 	/****** Create subject Polygon paths from S1 ******/
 	ClipperLib::Paths subj( S1.contour.size() );
@@ -66,11 +69,11 @@ bool nr::polygon_clip_fast(
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
-		return false;
+		return 1;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
-		return false;
+		return 1;
 	}
 
 	/****** Set clipping operation ******/
@@ -87,7 +90,7 @@ bool nr::polygon_clip_fast(
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
 		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
-		return false;
+		return 1;
 	}
 
 	/****** Create Polygon from paths ******/
@@ -109,11 +112,11 @@ bool nr::polygon_clip_fast(
 		}
 	}
 
-	return true;
+	return 0;
 }
 
 
-bool nr::polygon_clip(
+int nr::polygon_clip(
 	nr::Clip_type clip_type,
 	const nr::Polygon& S1,
 	const nr::Polygon& S2,
@@ -124,7 +127,7 @@ bool nr::polygon_clip(
 	if (is_empty(S1) && is_empty(S2)) {
 		/* Both polygons are empty */
 		make_empty(R);
-		return true;
+		return 0;
 	} else if (is_empty(S1)) {
 		/* Subject polygon is empty */
 		switch (clip_type) {
@@ -137,7 +140,7 @@ bool nr::polygon_clip(
 				*R = S2;
 				break;
 		}
-		return true;
+		return 0;
 	} else if (is_empty(S2)) {
 		/* Clip polygon is empty */
 		switch (clip_type) {
@@ -150,15 +153,15 @@ bool nr::polygon_clip(
 				*R = S1;
 				break;
 		}
-		return true;
+		return 0;
 	}
 	/* Else continue normally */
 
 	/****** Find the appropriate scaling factor ******/
 	#if NR_EXPONENT_SCALING
-		int sc = 15;
+		int sc = NR_SCALING_FACTOR;
 	#else
-		double sc = std::pow(10,15);
+		double sc = std::pow(10,NR_SCALING_FACTOR);
 	#endif
 
 	/****** Create subject Polygon paths from S1 ******/
@@ -199,12 +202,12 @@ bool nr::polygon_clip(
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
 		// nr::print(S1);
-		return false;
+		return 1;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
 		// nr::print(S2);
-		return false;
+		return 1;
 	}
 
 	/****** Set clipping operation ******/
@@ -221,7 +224,7 @@ bool nr::polygon_clip(
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
 		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
-		return false;
+		return 1;
 	}
 
 	/****** Create Polygon from PolyTree ******/
@@ -249,5 +252,5 @@ bool nr::polygon_clip(
 		cnode = cnode->GetNext();
 	}
 
-	return true;
+	return 0;
 }

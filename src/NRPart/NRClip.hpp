@@ -24,8 +24,9 @@
 #include "NRBase.hpp"
 
 
-#define NR_STRICTLY_SIMPLE false
+#define NR_STRICTLY_SIMPLE false /* Experimental feature of clipper */
 #define NR_EXPONENT_SCALING 1
+#define NR_SCALING_FACTOR 15
 
 namespace nr {
 	enum Clip_type {
@@ -35,7 +36,7 @@ namespace nr {
 		DIFF
 	};
 
-	bool polygon_clip_fast(
+	int polygon_clip_fast(
 		Clip_type,
 		const Polygon& S1,
 		const Polygon& S2,
@@ -48,7 +49,7 @@ namespace nr {
 		between external and internal contours.
 	*/
 
-	bool polygon_clip(
+	int polygon_clip(
 		Clip_type,
 		const Polygon& S1,
 		const Polygon& S2,
