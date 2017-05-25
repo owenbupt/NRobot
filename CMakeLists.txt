@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 SET( CMAKE_VERBOSE_MAKEFILE off )
 
 # Project name, version and language
-PROJECT(NRobot VERSION 0.4.1 LANGUAGES CXX)
+PROJECT(NRobot VERSION 0.4.2 LANGUAGES CXX)
 
 ##### Compile time parameters #####
 # Compile with plot functionality using SDL 2
@@ -21,7 +21,7 @@ SET(NR_TIME_EXECUTION 0)
 # Compiler flags
 SET(CMAKE_CXX_STANDARD 11)
 IF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi -pedantic")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -Wfatal-errors")
     SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -w -O2")
 ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)

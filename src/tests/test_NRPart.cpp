@@ -43,12 +43,17 @@ int main() {
 	P.push_back( nr::Point(-3,-7) );
 
 	/* Uncertainty udisks */
-	nr::Circles udisks;
 	double r = 0.4;
-	udisks.push_back( nr::Circle(P[0], 1.8*r) );
-	udisks.push_back( nr::Circle(P[1], 2.0*r) );
-	udisks.push_back( nr::Circle(P[2], 1.7*r) );
-	udisks.push_back( nr::Circle(P[3], 1.5*r) );
+	std::vector<double> uradii;
+	uradii.push_back( 1.8*r );
+	uradii.push_back( 2.0*r );
+	uradii.push_back( 1.7*r );
+	uradii.push_back( 1.5*r );
+	nr::Circles udisks;
+	udisks.push_back( nr::Circle(P[0], uradii[0]) );
+	udisks.push_back( nr::Circle(P[1], uradii[1]) );
+	udisks.push_back( nr::Circle(P[2], uradii[2]) );
+	udisks.push_back( nr::Circle(P[3], uradii[3]) );
 	nr::Polygons poly_udisks;
 	poly_udisks = nr::Polygons( udisks );
 
@@ -144,13 +149,13 @@ int main() {
 			nr::plot_polygons( GV );
 			nr::plot_polygons( GVc );
 			for (size_t i=0; i<GVc.size(); i++) {
-				nr::plot_polygon_vertices( GVc[i] );
+				// nr::plot_polygon_vertices( GVc[i] );
 			}
 			#endif
 			#if CALC_AWGV
 			nr::plot_polygons( AWGVc );
 			for (size_t i=0; i<AWGVc.size(); i++) {
-				nr::plot_polygon_vertices( AWGVc[i] );
+				// nr::plot_polygon_vertices( AWGVc[i] );
 			}
 			#endif
 			#if CALC_YS

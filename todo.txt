@@ -1,13 +1,11 @@
 TODO
-    Polygon in AWGV without contours
+    Polygon in AWGV without contours (happens when sensing is large)
     fix partitioning for coincident seeds?
     test NRCLip scaling
-    make sure compiler adheres to strict c++ standards
     Finish in/on functions in NBase
     Consistently comment every function
     Change code style in function declarations-definitions (one argument per line)
     make plotting more user friendly (mouse control?)
-    fix licenses-dates
 	add testing executables (and automated tests?)
 
 Files to rewrite

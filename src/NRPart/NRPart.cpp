@@ -144,11 +144,9 @@ nr::Polygon nr_hyperbola_branch(
 	nr::Polygon H;
 
 	if ( a >= c ) {
-		std::printf("emptycell\n");
 		/* The cell of A with respect to B is empty */
 		nr::make_empty(&H);
 	} else if ( a <= -c ) {
-		std::printf("fullcell\n");
 		/* The cell of A with respect to B is the whole region */
 		/* Initialize polygon */
 		H.contour.resize(1);
