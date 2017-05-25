@@ -1,7 +1,7 @@
 Structure
     NRobot (various robot classes and control laws) [NBase, NPart]
-    NPart (Partitioning algorithms) [NBase]
-    NPlot (Visualization and plotting using SDL) [NBase]
+    NPart (Partitioning algorithms) [NBase, Clipper]
+    NPlot (Visualization and plotting) [NBase, SDL]
     NBase (Basic geometric classes: point, contour, polygon etc.)
 
 Code Guidelines
@@ -20,12 +20,9 @@ Files to fix
 
 TODO
     fix partitioning for coincident seeds?
-    **FIX NRCLip SCALING**
-    fix all compiler warnings
-        fscanf return value = number of %X or else error
+    test NRCLip scaling
     make sure compiler adheres to strict c++ standards
     Finish in/on functions in NBase
-    add plot circle(s) function
     Consistently comment every function
     Change code style in function declarations-definitions (one argument per line)
     make plotting more user friendly (mouse control?)
@@ -39,12 +36,12 @@ Testing
 
 Improve functions
 	double n::diameter( const Polygon& P )
-		use convex hull to reduce complexity
+		use convex hull to reduce complexity in non-convex polygons
 	double n::area( const Polygon& P )
-		How does it handle non-simple polygons?
+		How does it handle non-simple polygons? (check clipper)
 	n::Point n::centroid( const n::Polygon& P )
-		How does it handle non-simple polygons?
+		How does it handle non-simple polygons? (check clipper)
 	inpolygon
-		must be in at least one external and in no internals
+		must be in at least one external and in no internals (check clipper)
 	void nr::ys_partitioning()
         return neighbor relationships

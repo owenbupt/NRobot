@@ -50,7 +50,6 @@ namespace nr {
 	bool plot_handle_input();
 	/* Handle user input, returns true if user wants to quit, else false */
 
-
 	void plot_render();
 	/* Render on screen */
 
@@ -63,19 +62,49 @@ namespace nr {
 	void plot_hide_axes();
 	/* Hide the axes */
 
-	void plot_point( const Point&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
-	/* Plot a single point */
+	void plot_point(
+		const Point&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR,
+		const int& point_size = 1
+	);
+	/* Plot a single point. Optionally set its color and size in pixels */
 
-	void plot_points( const Points&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
-	/* Plot a list of points */
+	void plot_points(
+		const Points&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR,
+		const int& point_size = 1
+	);
+	/* Plot a list of points. Optionally set their color and size in pixels */
 
-	void plot_polygon( const Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
-	/* Plot a single polygon */
+	void plot_polygon(
+		const Polygon&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a single polygon. Optionally set its color */
 
-	void plot_polygon_vertices( const Polygon&, const SDL_Color& color = PLOT_FOREGROUND_COLOR, const int& point_size = 1 );
-	/* Plot the vertices of a single polygon */
+	void plot_polygon_vertices(
+		const Polygon&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR,
+		const int& point_size = 1
+	);
+	/* Plot the vertices of a single polygon. Optionally set their color and size in pixels */
 
-	void plot_polygons( const Polygons&, const SDL_Color& color = PLOT_FOREGROUND_COLOR );
-	/* Plot a list of polygons */
+	void plot_polygons(
+		const Polygons&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a list of polygons. Optionally set their color */
+
+	void plot_circle(
+		const Circle&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a single circle. Optionally set its color */
+
+	void plot_circles(
+		const Circles&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a list of circles. Optionally set their color */
 }
 #endif

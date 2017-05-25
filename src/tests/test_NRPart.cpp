@@ -104,7 +104,7 @@ int main() {
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_points( P );
-			nr::plot_polygons( polydisks );
+			nr::plot_circles( disks );
 
 			/* Green for GV and YS */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};

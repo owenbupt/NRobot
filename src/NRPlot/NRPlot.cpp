@@ -260,7 +260,11 @@ void nr::plot_hide_axes() {
 			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
 }
 
-void nr::plot_point( const nr::Point& A, const SDL_Color& color, const int& point_size ) {
+void nr::plot_point(
+	const nr::Point& A,
+	const SDL_Color& color,
+	const int& point_size
+) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -275,7 +279,11 @@ void nr::plot_point( const nr::Point& A, const SDL_Color& color, const int& poin
 	}
 }
 
-void nr::plot_points( const nr::Points& A, const SDL_Color& color, const int& point_size ) {
+void nr::plot_points(
+	const nr::Points& A,
+	const SDL_Color& color,
+	const int& point_size
+) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -294,7 +302,10 @@ void nr::plot_points( const nr::Points& A, const SDL_Color& color, const int& po
 	}
 }
 
-void nr::plot_polygon( const nr::Polygon& P, const SDL_Color& color ) {
+void nr::plot_polygon(
+	const nr::Polygon& P,
+	const SDL_Color& color
+) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -319,7 +330,11 @@ void nr::plot_polygon( const nr::Polygon& P, const SDL_Color& color ) {
 	}
 }
 
-void nr::plot_polygon_vertices( const nr::Polygon& P, const SDL_Color& color, const int& point_size ) {
+void nr::plot_polygon_vertices(
+	const nr::Polygon& P,
+	const SDL_Color& color,
+	const int& point_size
+) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -341,7 +356,10 @@ void nr::plot_polygon_vertices( const nr::Polygon& P, const SDL_Color& color, co
 	}
 }
 
-void nr::plot_polygons( const nr::Polygons& P, const SDL_Color& color ) {
+void nr::plot_polygons(
+	const nr::Polygons& P,
+	const SDL_Color& color
+) {
 	SDL_SetRenderDrawColor( PLOT_RENDERER,
 		color.r,
 		color.g,
@@ -367,4 +385,28 @@ void nr::plot_polygons( const nr::Polygons& P, const SDL_Color& color ) {
 			}
 		}
 	}
+}
+
+void nr::plot_circle(
+	const nr::Circle& C,
+	const SDL_Color& color
+) {
+	/* Create a polygon from the circle */
+	nr::Polygon circle_poly;
+	circle_poly = nr::Polygon( C );
+
+	/* Plot the polygon */
+	nr::plot_polygon( circle_poly, color );
+}
+
+void nr::plot_circles(
+	const nr::Circles& C,
+	const SDL_Color& color
+) {
+	/* Create a polygon list from the circles */
+	nr::Polygons circle_polys;
+	circle_polys = nr::Polygons( C );
+
+	/* Plot the polygon */
+	nr::plot_polygons( circle_polys, color );
 }
