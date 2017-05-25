@@ -246,29 +246,36 @@ int nr::read( nr::Contour* C, const char* fname ) {
 	double x, y;
 
 	FILE* fp = std::fopen(fname, "r");
-	if (fp != NULL) {
-
-		/* Read vertex number */
-		std::fscanf(fp, "%lu", &num_vertices);
-		/* Resize vectors */
-		C->resize(num_vertices);
-
-		/* Loop over each vertex */
-		for (size_t i=0; i<num_vertices; i++) {
-
-			/* Read each vertex */
-			std::fscanf(fp, "%lf %lf", &x, &y);
-			C->at(i).x = x;
-			C->at(i).y = y;
-		}
-
-		std::fclose(fp);
-		return 0;
-	} else {
+	if (fp == NULL) {
 		std::printf("Contour read error: file %s could not be opened\n", fname);
 		C->resize(0);
 		return 1;
 	}
+
+	/* Read vertex number */
+	if ( std::fscanf(fp, "%lu", &num_vertices) != 1 ) {
+		std::printf("Contour read error: file %s could not be read\n", fname);
+		std::fclose(fp);
+		return 1;
+	}
+	/* Resize vectors */
+	C->resize(num_vertices);
+
+	/* Loop over each vertex */
+	for (size_t i=0; i<num_vertices; i++) {
+
+		/* Read each vertex */
+		if ( std::fscanf(fp, "%lf %lf", &x, &y) != 2 ) {
+			std::printf("Contour read error: file %s could not be read\n", fname);
+			std::fclose(fp);
+			return 1;
+		}
+		C->at(i).x = x;
+		C->at(i).y = y;
+	}
+
+	std::fclose(fp);
+	return 0;
 }
 
 int nr::write( const nr::Contour& C, const char* fname, const char* mode ) {
@@ -374,64 +381,83 @@ int nr::read( nr::Polygon* P, const char* fname, bool read_hole, bool read_open 
 	double x, y;
 
 	FILE* fp = fopen(fname, "r");
-	if (fp != NULL) {
-
-		/* Read contour number */
-		std::fscanf(fp, "%lu", &num_contours);
-		/* Resize vectors */
-		P->contour.resize(num_contours);
-		P->is_hole.resize(num_contours);
-		P->is_open.resize(num_contours);
-
-		/* Loop over each contour */
-		for (size_t i=0; i<num_contours; i++) {
-
-			/* Read vertex number */
-			std::fscanf(fp, "%lu", &num_vertices);
-			P->contour[i].resize(num_vertices);
-
-			/* Read hole flag */
-			if (read_hole) {
-				std::fscanf(fp, "%d", &is_hole);
-				P->is_hole[i] = is_hole;
-			} else {
-				P->is_hole[i] = false;
-			}
-
-			/* Read open flag */
-			if (read_open) {
-				std::fscanf(fp, "%d", &is_open);
-				P->is_open[i] = is_open;
-			} else {
-				P->is_open[i] = false;
-			}
-
-			/* Loop over each vertex */
-			for (size_t j=0; j<num_vertices; j++) {
-
-				/* Read each vertex */
-				std::fscanf(fp, "%lf %lf", &x, &y);
-				P->contour[i][j].x = x;
-				P->contour[i][j].y = y;
-			}
-
-			/* Set contour orientation */
-			if (P->is_hole[i]) {
-				nr::make_CCW( &(P->contour[i]) );
-			} else {
-				nr::make_CW( &(P->contour[i]) );
-			}
-		}
-
-		std::fclose(fp);
-		return 0;
-	} else {
+	if (fp == NULL) {
 		std::printf("Polygon read error: file %s could not be opened\n", fname);
 		P->contour.resize(0);
 		P->is_hole.resize(0);
 		P->is_open.resize(0);
 		return 1;
 	}
+
+	/* Read contour number */
+	if ( std::fscanf(fp, "%lu", &num_contours) != 1 ) {
+		std::printf("Polygon read error: file %s could not be read\n", fname);
+		std::fclose(fp);
+		return 1;
+	}
+	/* Resize vectors */
+	P->contour.resize(num_contours);
+	P->is_hole.resize(num_contours);
+	P->is_open.resize(num_contours);
+
+	/* Loop over each contour */
+	for (size_t i=0; i<num_contours; i++) {
+
+		/* Read vertex number */
+		if ( std::fscanf(fp, "%lu", &num_vertices) != 1 ) {
+			std::printf("Polygon read error: file %s could not be read\n", fname);
+			std::fclose(fp);
+			return 1;
+		}
+		P->contour[i].resize(num_vertices);
+
+		/* Read hole flag */
+		if (read_hole) {
+			if ( std::fscanf(fp, "%d", &is_hole) != 1 ) {
+				std::printf("Polygon read error: file %s could not be read\n", fname);
+				std::fclose(fp);
+				return 1;
+			}
+			P->is_hole[i] = is_hole;
+		} else {
+			P->is_hole[i] = false;
+		}
+
+		/* Read open flag */
+		if (read_open) {
+			if ( std::fscanf(fp, "%d", &is_open) != 1 ) {
+				std::printf("Polygon read error: file %s could not be read\n", fname);
+				std::fclose(fp);
+				return 1;
+			}
+			P->is_open[i] = is_open;
+		} else {
+			P->is_open[i] = false;
+		}
+
+		/* Loop over each vertex */
+		for (size_t j=0; j<num_vertices; j++) {
+
+			/* Read each vertex */
+			if ( std::fscanf(fp, "%lf %lf", &x, &y) != 2 ) {
+				std::printf("Polygon read error: file %s could not be read\n", fname);
+				std::fclose(fp);
+				return 1;
+			}
+			P->contour[i][j].x = x;
+			P->contour[i][j].y = y;
+		}
+
+		/* Set contour orientation */
+		if (P->is_hole[i]) {
+			nr::make_CCW( &(P->contour[i]) );
+		} else {
+			nr::make_CW( &(P->contour[i]) );
+		}
+	}
+
+	std::fclose(fp);
+	return 0;
 }
 
 int nr::write( const nr::Polygon& P, const char* fname, bool write_hole, bool write_open, const char* mode ) {
@@ -695,7 +721,7 @@ void nr::print( const nr::Polygons& P ) {
 		std::printf("Polygon %lu: Contours %lu\n", k, P.at(k).contour.size());
 		for (size_t i=0; i<P.at(k).contour.size(); i++) {
 			std::printf("Contour %lu: Hole %d, Open %d, Vertices %lu\n",
-				i, (int) P.at(k).is_hole[i], (int) P.at(k).is_open[i], (int) P.at(k).contour[i].size());
+				i, (int) P.at(k).is_hole[i], (int) P.at(k).is_open[i], P.at(k).contour[i].size());
 
 			for (size_t j=0; j<P.at(k).contour[i].size(); j++) {
 				std::printf("% .5lf % .5lf\n", (double) P.at(k).contour[i][j].x, (double) P.at(k).contour[i][j].y);
