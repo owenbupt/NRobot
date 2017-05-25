@@ -1,24 +1,5 @@
-Structure
-    NRobot (various robot classes and control laws) [NBase, NPart]
-    NPart (Partitioning algorithms) [NBase, Clipper]
-    NPlot (Visualization and plotting) [NBase, SDL]
-    NBase (Basic geometric classes: point, contour, polygon etc.)
-
-Code Guidelines
-	Classes
-		classes contain ONLY public data members and constructors/destructors
-		all other functionality is implemented as non-member functions
-	Functions
-		Functions that might fail MUST return an int indicating exit status
-		Input arguments are either const references or values for PODs
-		Output arguments are pointers
-
-Files to fix
-    src/CMake
-    src/NRobot/*
-    src/NBase/*
-
 TODO
+    Polygon in AWGV without contours
     fix partitioning for coincident seeds?
     test NRCLip scaling
     make sure compiler adheres to strict c++ standards
@@ -28,6 +9,9 @@ TODO
     make plotting more user friendly (mouse control?)
     fix licenses-dates
 	add testing executables (and automated tests?)
+
+Files to rewrite
+    src/NRobot/*
 
 Testing
 	NBase
@@ -45,3 +29,29 @@ Improve functions
 		must be in at least one external and in no internals (check clipper)
 	void nr::ys_partitioning()
         return neighbor relationships
+
+--------------------------------------------------------------------------------
+
+Structure
+    NRobot (various robot classes and control laws) [NBase, NPart]
+    NPart (Partitioning algorithms) [NBase, Clipper]
+    NPlot (Visualization and plotting) [NBase, SDL]
+    NBase (Basic geometric classes: point, contour, polygon etc.)
+
+Code Guidelines
+	Classes
+		classes contain ONLY public data members and constructors/destructors
+		all other functionality is implemented as non-member functions
+	Functions
+		Functions that might fail MUST return an int indicating exit status
+		Input arguments are either const references or values for PODs
+		Output arguments are pointers
+
+Code Style
+    Functions
+        type function(
+            argument1,
+            argument2
+        ) {
+            code
+        }

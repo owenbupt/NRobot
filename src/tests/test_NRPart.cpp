@@ -24,7 +24,8 @@
 
 
 #define CALC_VORONOI 0
-#define CALC_GVORONOI 1
+#define CALC_GVORONOI 0
+#define CALC_AWGV 1
 #define CALC_YS 0
 
 int main() {
@@ -41,49 +42,76 @@ int main() {
 	P.push_back( nr::Point(-3,5) );
 	P.push_back( nr::Point(-3,-7) );
 
-	/* Seed disks */
-	nr::Circles disks;
+	/* Uncertainty udisks */
+	nr::Circles udisks;
 	double r = 0.4;
-	disks.push_back( nr::Circle(P[0], 1.8*r) );
-	disks.push_back( nr::Circle(P[1], 2.0*r) );
-	disks.push_back( nr::Circle(P[2], 1.7*r) );
-	disks.push_back( nr::Circle(P[3], 1.5*r) );
-	nr::Polygons polydisks;
-	polydisks = nr::Polygons( disks );
+	udisks.push_back( nr::Circle(P[0], 1.8*r) );
+	udisks.push_back( nr::Circle(P[1], 2.0*r) );
+	udisks.push_back( nr::Circle(P[2], 1.7*r) );
+	udisks.push_back( nr::Circle(P[3], 1.5*r) );
+	nr::Polygons poly_udisks;
+	poly_udisks = nr::Polygons( udisks );
+
+	/* Sensing disks */
+	r = 2 * r;
+	std::vector<double> sradii;
+	sradii.push_back( 1.0*r );
+	sradii.push_back( 2.0*r );
+	sradii.push_back( 1.7*r );
+	sradii.push_back( 3.5*r );
+	nr::Circles sdisks;
+	sdisks.push_back( nr::Circle(P[0], sradii[0]) );
+	sdisks.push_back( nr::Circle(P[1], sradii[1]) );
+	sdisks.push_back( nr::Circle(P[2], sradii[2]) );
+	sdisks.push_back( nr::Circle(P[3], sradii[3]) );
+	nr::Polygons poly_sdisks;
+	poly_sdisks = nr::Polygons( sdisks );
 
 	/* Voronoi */
-	nr::Polygons V;
 	#if CALC_VORONOI
+	nr::Polygons V;
 	nr::voronoi( region, P, &V);
 	#endif
 
 	/* Voronoi cell */
+	#if CALC_VORONOI
 	nr::Polygons Vc;
 	Vc.resize(P.size());
 	for (size_t i=0; i<P.size(); i++) {
-		#if CALC_VORONOI
 		nr::voronoi_cell( region, P, i, &(Vc[i]));
-		#endif
 	}
+	#endif
 
 	/* Guaranteed Voronoi */
-	nr::Polygons GV;
 	#if CALC_GVORONOI
-	nr::g_voronoi( region, disks, &GV);
+	nr::Polygons GV;
+	nr::g_voronoi( region, udisks, &GV);
 	#endif
 
 	/* Guaranteed Voronoi cell */
+	#if CALC_GVORONOI
 	nr::Polygons GVc;
-	GVc.resize(disks.size());
-	for (size_t i=0; i<disks.size(); i++) {
-		#if CALC_GVORONOI
-		nr::g_voronoi_cell( region, disks, i, &(GVc[i]));
-		#endif
+	GVc.resize(udisks.size());
+	for (size_t i=0; i<udisks.size(); i++) {
+		nr::g_voronoi_cell( region, udisks, i, &(GVc[i]));
 	}
+	#endif
 
-	nr::Polygons YS;
+	/* AW Guaranteed Voronoi cell */
+	#if CALC_AWGV
+	nr::Polygons AWGVc;
+	AWGVc.resize(udisks.size());
+	for (size_t i=0; i<udisks.size(); i++) {
+		// nr::g_voronoi_cell( region, udisks, i, &(AWGVc[i]));
+		nr::awg_voronoi_cell( region, udisks, sradii, i, &(AWGVc[i]) );
+	}
+	nr::print( AWGVc );
+	#endif
+
+	/* YS partitioning */
 	#if CALC_YS
-	nr::ys_partitioning(region, polydisks, &YS);
+	nr::Polygons YS;
+	nr::ys_partitioning(region, poly_udisks, &YS);
 	#endif
 
 
@@ -100,19 +128,29 @@ int main() {
 			nr::plot_clear_render();
 			nr::plot_show_axes();
 
-			/* White for region and seeds */
+			/* White for region and udisks */
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_points( P );
-			nr::plot_circles( disks );
+			nr::plot_circles( udisks );
 
-			/* Green for GV and YS */
+			/* Red for sdisks */
+			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
+			nr::plot_circles( sdisks );
+
+			/* Green for GV, AWGV and YS */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			#if CALC_GVORONOI
 			nr::plot_polygons( GV );
 			nr::plot_polygons( GVc );
 			for (size_t i=0; i<GVc.size(); i++) {
 				nr::plot_polygon_vertices( GVc[i] );
+			}
+			#endif
+			#if CALC_AWGV
+			nr::plot_polygons( AWGVc );
+			for (size_t i=0; i<AWGVc.size(); i++) {
+				nr::plot_polygon_vertices( AWGVc[i] );
 			}
 			#endif
 			#if CALC_YS
