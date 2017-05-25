@@ -24,8 +24,8 @@
 
 
 #define CALC_VORONOI 0
-#define CALC_GVORONOI 0
-#define CALC_YS 1
+#define CALC_GVORONOI 1
+#define CALC_YS 0
 
 int main() {
 	nr::info();

@@ -25,7 +25,7 @@
 
 
 #define NR_STRICTLY_SIMPLE false
-#define NR_EXPONENT_SCALING 0
+#define NR_EXPONENT_SCALING 1
 
 namespace nr {
 	enum Clip_type {

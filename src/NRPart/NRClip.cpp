@@ -198,12 +198,12 @@ bool nr::polygon_clip(
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
-		nr::print(S1);
+		// nr::print(S1);
 		return false;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
-		nr::print(S2);
+		// nr::print(S2);
 		return false;
 	}
 

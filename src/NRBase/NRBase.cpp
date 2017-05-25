@@ -475,7 +475,7 @@ int nr::write( const nr::Polygon& P, const char* fname, bool write_hole, bool wr
 }
 
 void nr::print( const nr::Polygon& P ) {
-	std::printf("Contours: %lu\n", P.contour.size());
+	std::printf("Contours %lu\n", P.contour.size());
 	for (size_t i=0; i<P.contour.size(); i++) {
 		std::printf("Contour %lu: Hole %d, Open %d, Vertices %lu\n",
 			i, (int) P.is_hole[i], (int) P.is_open[i], P.contour[i].size());
@@ -690,11 +690,12 @@ nr::Contour nr::convex_hull( const nr::Polygon& P ) {
 /****** Polygons ******/
 void nr::print( const nr::Polygons& P ) {
 
-	std::printf("Polygons: %lu\n", P.size());
+	std::printf("Polygons %lu\n", P.size());
 	for (size_t k=0; k<P.size(); k++) {
-		std::printf("Polygon %lu Contours: %lu\n", k, P.at(k).contour.size());
+		std::printf("Polygon %lu: Contours %lu\n", k, P.at(k).contour.size());
 		for (size_t i=0; i<P.at(k).contour.size(); i++) {
-			std::printf("Contour %lu: Hole %d, Open %d\n", i, (int) P.at(k).is_hole[i], (int) P.at(k).is_open[i]);
+			std::printf("Contour %lu: Hole %d, Open %d, Vertices %lu\n",
+				i, (int) P.at(k).is_hole[i], (int) P.at(k).is_open[i], (int) P.at(k).contour[i].size());
 
 			for (size_t j=0; j<P.at(k).contour[i].size(); j++) {
 				std::printf("% .5lf % .5lf\n", (double) P.at(k).contour[i][j].x, (double) P.at(k).contour[i][j].y);

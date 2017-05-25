@@ -20,7 +20,7 @@ Files to fix
     src/NBase/*
 
 TODO
-    fix problems in GV with zero uncertainty
+    fix partitioning for coincident seeds?
     **FIX NRCLip SCALING**
     fix all compiler warnings
         fscanf return value = number of %X or else error
