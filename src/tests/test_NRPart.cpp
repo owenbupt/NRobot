@@ -23,9 +23,9 @@
 #include "NRobot.hpp"
 
 
-#define CALC_VORONOI 1
+#define CALC_VORONOI 0
 #define CALC_GVORONOI 1
-#define CALC_YS 1
+#define CALC_YS 0
 
 int main() {
 	nr::info();
@@ -43,7 +43,7 @@ int main() {
 
 	/* Seed disks */
 	nr::Circles disks;
-	double r = 0.1;
+	double r = 0.4;
 	disks.push_back( nr::Circle(P[0], 1.8*r) );
 	disks.push_back( nr::Circle(P[1], 2.0*r) );
 	disks.push_back( nr::Circle(P[2], 1.7*r) );

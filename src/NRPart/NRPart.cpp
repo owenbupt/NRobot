@@ -144,12 +144,9 @@ nr::Polygon nr_hyperbola_branch(
 	nr::Polygon H;
 
 	if ( a >= c ) {
-		std::printf("a>=c: empty cell\n");
 		/* The cell of A with respect to B is empty */
 		nr::make_empty(&H);
-		return H;
 	} else if ( a <= -c ) {
-		std::printf("a<=-c: whole region\n");
 		/* The cell of A with respect to B is the whole region */
 		/* Initialize polygon */
 		H.contour.resize(1);
@@ -168,13 +165,9 @@ nr::Polygon nr_hyperbola_branch(
 		H.contour[0][3].x = diam;
 		H.contour[0][3].y = diam;
 	} else if ( a == 0 ) {
-		std::printf("a==0: voronoi cell\n");
 		/* The cell of A with respect to B is a halfplane */
 		H = nr_halfplane( A, B, diam );
-		nr::print(H);
-		return H;
 	} else {
-		std::printf("else: hyperbola cell\n");
 		/* The cell of A with respect to B is bound by a hyperbola branch */
 		double b = std::sqrt( c*c - a*a );
 		/* Create all hyperbola branch points using the parametric equation */
@@ -195,14 +188,14 @@ nr::Polygon nr_hyperbola_branch(
 			H.contour[0][i].x = -a * std::cosh(t);
 			H.contour[0][i].y = b * std::sinh(t);
 		}
+
+		/* Rotate cell */
+		double theta = std::atan2(B.y-A.y, B.x-A.x);
+		nr::rotate( &H, theta, true);
+
+		/* Translate cell */
+		nr::translate( &H, nr::midpoint(A ,B) );
 	}
-
-	/* Rotate cell */
-	double theta = std::atan2(B.y-A.y, B.x-A.x);
-	nr::rotate( &H, theta, true);
-
-	/* Translate cell */
-	nr::translate( &H, nr::midpoint(A ,B) );
 
 	return H;
 }
@@ -289,8 +282,8 @@ void nr::g_voronoi(
 				double a = (seeds[i].radius + seeds[j].radius) / 2;
 				double c = nr::dist(seeds[i].center, seeds[j].center) / 2;
 				/* Create the hyperbola branch containing i with respect to j */
-				// nr::Polygon h = nr_hyperbola_branch( seeds[i].center, seeds[j].center, a, c, diam, points_per_branch );
-				nr::Polygon h = nr_hyperbola_branch_old( seeds[i], seeds[j], diam, points_per_branch );
+				nr::Polygon h = nr_hyperbola_branch( seeds[i].center, seeds[j].center, a, c, diam, points_per_branch );
+				// nr::Polygon h = nr_hyperbola_branch_old( seeds[i], seeds[j], diam, points_per_branch );
 				/* Intersect the current cell with the branch with j */
 				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 			}
@@ -318,8 +311,8 @@ void nr::g_voronoi_cell(
 			double a = (seeds[subject].radius + seeds[j].radius) / 2;
 			double c = nr::dist(seeds[subject].center, seeds[j].center) / 2;
 			/* Create the hyperbola branch with respect to j containing subject */
-			// nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
-			nr::Polygon h = nr_hyperbola_branch_old( seeds[subject], seeds[j], diam, points_per_branch );
+			nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
+			// nr::Polygon h = nr_hyperbola_branch_old( seeds[subject], seeds[j], diam, points_per_branch );
 			/* Intersect the current cell with the branch with respect to j */
 			nr::polygon_clip( nr::AND, *cell, h, cell );
 		}
