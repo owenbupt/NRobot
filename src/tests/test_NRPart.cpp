@@ -23,9 +23,9 @@
 #include "NRobot.hpp"
 
 
-#define CALC_VORONOI 0
+#define CALC_VORONOI 1
 #define CALC_GVORONOI 1
-#define CALC_YS 0
+#define CALC_YS 1
 
 int main() {
 	nr::info();

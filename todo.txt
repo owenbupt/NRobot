@@ -16,7 +16,6 @@ Code Guidelines
 Files to fix
     src/CMake
     src/NRobot/*
-    src/NPart/*
     src/NBase/*
 
 TODO
