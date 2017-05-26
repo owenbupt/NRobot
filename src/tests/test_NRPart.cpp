@@ -63,7 +63,7 @@ int main() {
 	sradii.push_back( 1.0*r );
 	sradii.push_back( 2.0*r );
 	sradii.push_back( 1.7*r );
-	sradii.push_back( 3.5*r );
+	sradii.push_back( 4.5*r );
 	nr::Circles sdisks;
 	sdisks.push_back( nr::Circle(P[0], sradii[0]) );
 	sdisks.push_back( nr::Circle(P[1], sradii[1]) );
@@ -110,7 +110,7 @@ int main() {
 		// nr::g_voronoi_cell( region, udisks, i, &(AWGVc[i]));
 		nr::awg_voronoi_cell( region, udisks, sradii, i, &(AWGVc[i]) );
 	}
-	nr::print( AWGVc );
+	// nr::print( AWGVc );
 	#endif
 
 	/* YS partitioning */

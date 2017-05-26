@@ -1,5 +1,4 @@
 TODO
-    Polygon in AWGV without contours (happens when sensing is large)
     fix partitioning for coincident seeds?
     test NRCLip scaling
     Finish in/on functions in NBase

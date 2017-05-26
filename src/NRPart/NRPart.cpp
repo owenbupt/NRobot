@@ -164,11 +164,11 @@ nr::Polygon nr_hyperbola_branch(
 		H.contour[0][2].y = diam;
 		H.contour[0][3].x = diam;
 		H.contour[0][3].y = diam;
-	} else if ( a == 0 ) {
+	} else if ( std::abs(a) <= NR_CMP_ERR ) {
 		/* The cell of A with respect to B is a halfplane */
 		H = nr_halfplane( A, B, diam );
-	} else {
-		/* The cell of A with respect to B is bound by a hyperbola branch */
+	} else if (a > 0) {
+		/* The convex cell of A with respect to B is bound by a hyperbola branch */
 		double b = std::sqrt( c*c - a*a );
 		/* Create all hyperbola branch points using the parametric equation */
 		H.contour.resize(1);
@@ -188,6 +188,46 @@ nr::Polygon nr_hyperbola_branch(
 			H.contour[0][i].x = -a * std::cosh(t);
 			H.contour[0][i].y = b * std::sinh(t);
 		}
+
+		/* Rotate cell */
+		double theta = std::atan2(B.y-A.y, B.x-A.x);
+		nr::rotate( &H, theta, true);
+
+		/* Translate cell */
+		nr::translate( &H, nr::midpoint(A ,B) );
+	} else if (a < 0) {
+		/* The non convex cell of A with respect to B is bound by a hyperbola branch */
+		double b = std::sqrt( c*c - a*a );
+		/* Create all hyperbola branch points using the parametric equation */
+		H.contour.resize(1);
+		H.is_hole.resize(1);
+		H.is_open.resize(1);
+		H.is_hole[0] = false;
+		H.is_open[0] = false;
+		/* Allocate space for the 4 extra vertices needed to form the non convex cell */
+		H.contour[0].resize(ppb+4);
+
+		/* Parameter step */
+		double dt = 2*std::acosh(diam/std::abs(a))/ppb;
+		/* Initial parameter value. Parameter range [-pi/2, pi/2] */
+		double t = -std::acosh(diam/std::abs(a)) - dt;
+
+		for (size_t i=0; i<ppb; i++) {
+			t = t + dt;
+			H.contour[0][i].x = -a * std::cosh(t);
+			H.contour[0][i].y = b * std::sinh(t);
+		}
+
+		/* Vector from j to i and vector from j to i rotated -90 degrees */
+		nr::Point v, vr;
+		v = nr::Point( A.x-B.x, A.y-B.y );
+		vr = nr::rotate( v, -M_PI/2 );
+
+		/* Add the four extra vertices needed to form the non convex cell */
+		H.contour[0][ppb] = H.contour[0][ppb-1] + diam*vr;
+		H.contour[0][ppb+1] = H.contour[0][ppb] + diam*v;
+		H.contour[0][ppb+3] = H.contour[0][0] - diam*vr;
+		H.contour[0][ppb+2] = H.contour[0][ppb+3] + diam*v;
 
 		/* Rotate cell */
 		double theta = std::atan2(B.y-A.y, B.x-A.x);
