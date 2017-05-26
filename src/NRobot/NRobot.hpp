@@ -29,9 +29,24 @@
 
 namespace nr {
 
-	void info();
+/*******************************************************/
+/********************* MA class *********************/
+/*******************************************************/
+/*!
+	Mobile Agent class.
+*/
+class MA {
+	public:
+		/****** Data members ******/
+		Point position;
+		Orientation attitude;
+
+		/****** Constructor ******/
+};
 
 
+
+void info();
 
 }
 

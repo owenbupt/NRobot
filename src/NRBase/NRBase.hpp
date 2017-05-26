@@ -157,6 +157,27 @@ class Circles: public std::vector<Circle> {
 
 
 
+/*******************************************************/
+/******************* Attitude class ********************/
+/*******************************************************/
+/*!
+	3D attitude class. Angles in radians. Domains for roll and yaw are [0, 2pi]
+	and for pitch [-pi/2, pi/2].
+*/
+class Orientation {
+	public:
+		/****** Data members ******/
+		double roll;
+		double pitch;
+		double yaw;
+
+		/****** Constructor ******/
+		/* Default behavior is all angles being zero */
+		Orientation( double r = 0, double p = 0, double y = 0 );
+};
+
+
+
 
 
 

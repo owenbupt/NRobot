@@ -27,7 +27,7 @@
 /********************* Main functions *********************/
 /**********************************************************/
 void nr::info() {
-	std::printf("NRobot, version %d.%d.%d\n",
+	std::printf("NRobot %d.%d.%d\n",
 		NR_VERSION_MAJOR, NR_VERSION_MINOR, NR_VERSION_PATCH);
 	std::printf("Copyright (C) 2016-2017 Sotiris Papatheodorou\n");
 	std::printf("License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n");
