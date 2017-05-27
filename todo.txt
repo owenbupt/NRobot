@@ -21,7 +21,7 @@ Improve functions
 	double n::area( const Polygon& P )
 		How does it handle non-simple polygons? (check clipper)
 	n::Point n::centroid( const n::Polygon& P )
-		How does it handle non-simple polygons? (check clipper)
+		How does it handle non-simple polygons?
 	inpolygon
 		must be in at least one external and in no internals (check clipper)
 	void nr::ys_partitioning()
