@@ -23,6 +23,49 @@
 
 
 
+/*******************************************************/
+/********************** MA class ***********************/
+/*******************************************************/
+nr::MA::MA() {
+	this->sensing_radius = 0;
+	this->uncertainty_radius = 0;
+	this->communication_radius = 0;
+	/* The other data members use their default constructors */
+}
+
+nr::MA::MA(
+	Point& pos,
+	double sradius,
+	double uradius,
+	double cradius
+) {
+	this->position = pos;
+	this->sensing_radius = sradius;
+	this->uncertainty_radius = uradius;
+	this->communication_radius = cradius;
+	/* The other data members use their default constructors */
+}
+
+nr::MA::MA(
+	Point& pos,
+	Orientation& att,
+	double sradius,
+	double uradius,
+	double cradius
+) {
+	this->position = pos;
+	this->attitude = att;
+	this->sensing_radius = sradius;
+	this->uncertainty_radius = uradius;
+	this->communication_radius = cradius;
+	/* The other data members use their default constructors */
+}
+
+
+
+
+
+
 /**********************************************************/
 /********************* Main functions *********************/
 /**********************************************************/

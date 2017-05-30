@@ -30,7 +30,7 @@
 namespace nr {
 
 /*******************************************************/
-/********************* MA class *********************/
+/********************** MA class ***********************/
 /*******************************************************/
 /*!
 	Mobile Agent class.
@@ -38,14 +38,71 @@ namespace nr {
 class MA {
 	public:
 		/****** Data members ******/
+		size_t ID;
 		Point position;
 		Orientation attitude;
+		double sensing_radius;
+		double uncertainty_radius;
+		double communication_radius;
+		Polygon sensing;
+		Polygon cell;
+		Polygon rlimited_cell;
+		std::vector<MA> neighbors;
 
-		/****** Constructor ******/
+		/****** Constructors ******/
+		MA();
+		MA(
+			Point& pos,
+			double sradius = 0,
+			double uradius = 0,
+			double cradius = 0
+		);
+		MA(
+			Point& pos,
+			Orientation& att,
+			double sradius = 0,
+			double uradius = 0,
+			double cradius = 0
+		);
 };
 
 
 
+
+/*******************************************************/
+/********************** MAs class **********************/
+/*******************************************************/
+/*!
+	Mobile Agents class.
+*/
+class MAs: public std::vector<MA> {
+	public:
+		/****** Data members ******/
+
+		/****** Constructors ******/
+		MAs();
+		MAs(
+			Points& pos,
+			std::vector<double>& sradius,
+			std::vector<double>& uradius,
+			std::vector<double>& cradius
+		);
+		MAs(
+			Points& pos,
+			Orientations& att,
+			std::vector<double>& sradius,
+			std::vector<double>& uradius,
+			std::vector<double>& cradius
+		);
+};
+
+
+
+
+
+/**********************************************************/
+/********************* Main functions *********************/
+/**********************************************************/
 void info();
 
 }

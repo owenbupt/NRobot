@@ -41,8 +41,10 @@ class Polygon;
 class Polygons;
 class Circle;
 class Circles;
+class Orientation;
 /* Typedef for ease of use */
 typedef Contour Points;
+typedef std::vector<Orientation> Orientations;
 
 
 

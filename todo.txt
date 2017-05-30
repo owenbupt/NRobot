@@ -1,4 +1,6 @@
 TODO
+    Finish MAs constructors (add default vector values)
+    finalize MA and MAs classes
     fix partitioning for coincident seeds?
     test NRCLip scaling
     Finish in/on functions in NBase
