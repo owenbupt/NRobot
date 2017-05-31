@@ -83,16 +83,16 @@ class MAs: public std::vector<MA> {
 		MAs();
 		MAs(
 			Points& pos,
-			std::vector<double>& sradius,
-			std::vector<double>& uradius,
-			std::vector<double>& cradius
+			std::vector<double>& sradii,
+			std::vector<double>& uradii,
+			std::vector<double>& cradii
 		);
 		MAs(
 			Points& pos,
 			Orientations& att,
-			std::vector<double>& sradius,
-			std::vector<double>& uradius,
-			std::vector<double>& cradius
+			std::vector<double>& sradii,
+			std::vector<double>& uradii,
+			std::vector<double>& cradii
 		);
 };
 

@@ -64,6 +64,47 @@ nr::MA::MA(
 
 
 
+/*******************************************************/
+/********************** MAs class ***********************/
+/*******************************************************/
+nr::MAs::MAs() {
+	/* All members use the default MA constructor */
+}
+
+nr::MAs::MAs(
+	Points& pos,
+	std::vector<double>& sradii,
+	std::vector<double>& uradii,
+	std::vector<double>& cradii
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector member */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA( pos[i], sradii[i], uradii[i], cradii[i] );
+	}
+}
+
+nr::MAs::MAs(
+	Points& pos,
+	Orientations& att,
+	std::vector<double>& sradii,
+	std::vector<double>& uradii,
+	std::vector<double>& cradii
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector member */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA( pos[i], att[i], sradii[i], uradii[i], cradii[i] );
+	}
+}
+
+
+
+
 
 
 /**********************************************************/
