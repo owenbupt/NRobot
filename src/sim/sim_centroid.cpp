@@ -30,7 +30,7 @@ int main() {
 
 	/****** Region of interest ******/
 	nr::Polygon region;
-	nr::read( &region, "resources/region_cb.txt", true);
+	nr::read( &region, "resources/region_sq.txt", true);
 	double rdiameter = diameter( region );
 
 	/****** Setup agents ******/
@@ -46,16 +46,9 @@ int main() {
 	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
-	/* Sensing disks */
-	nr::Circles sensing_disks;
-	sensing_disks.push_back( nr::Circle(P[0], sradii[0]) );
-	sensing_disks.push_back( nr::Circle(P[1], sradii[1]) );
-	sensing_disks.push_back( nr::Circle(P[2], sradii[2]) );
-	sensing_disks.push_back( nr::Circle(P[3], sradii[3]) );
-	nr::Polygons sensing_polygons;
-	sensing_polygons = nr::Polygons( sensing_disks );
 	/* Initialize agents */
 	nr::MAs agents (P, sradii, uradii, cradii);
+	nr::create_sensing_disks( &agents );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -84,12 +77,17 @@ int main() {
 			/* White for region, nodes and udisks */
 			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 			nr::plot_polygon( region );
-			nr::plot_points( P );
+			nr::plot_positions( agents );
+			nr::plot_uncertainty( agents );
 			/* Red for sdisks */
 			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
-			nr::plot_circles( sensing_disks );
+			nr::plot_sensing( agents );
 			/* Blue for cells */
 			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
+			nr::plot_cells( agents );
+			/* Green for communication */
+			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
+			nr::plot_communication( agents );
 			nr::plot_render();
 		#endif
 

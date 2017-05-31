@@ -73,7 +73,7 @@ class MA {
 /********************** MAs class **********************/
 /*******************************************************/
 /*!
-	Mobile Agents class.
+	Vector of Mobile Agents.
 */
 class MAs: public std::vector<MA> {
 	public:
@@ -104,6 +104,21 @@ class MAs: public std::vector<MA> {
 /********************* Main functions *********************/
 /**********************************************************/
 void info();
+/****** MA ******/
+void create_sensing_disk( MA* agent );
+void plot_position( const MA& agent );
+void plot_cell( const MA& agent );
+void plot_sensing( const MA& agent );
+void plot_uncertainty( const MA& agent );
+void plot_communication( const MA& agent );
+
+/****** MAs ******/
+void create_sensing_disks( MAs* agents );
+void plot_positions( const MAs& agents );
+void plot_cells( const MAs& agents );
+void plot_sensing( const MAs& agents );
+void plot_uncertainty( const MAs& agents );
+void plot_communication( const MAs& agents );
 
 }
 

@@ -1,22 +1,9 @@
 TODO
     MA
+        find_neighbors( MA&, MAs& ) (private function to copy agent without neighbor vector?)
         cell( MA& )
-        sensing_disk( MA& )
-        find_neighbors( MA&, MAs& )
         control( MA& )
-        plot_position( MA& )
-        plot_cell( MA& )
-        plot_sensing( MA& )
-        plot_uncert( MA& )
-        plot_comm( MA& )
-    MAs
-        plot_positions( MA& )
-        plot_cells( MAs& )
-        plot_sensing( MAs& )
-        plot_uncert( MAs& )
-        plot_comm( MAs& )
     Finish MAs constructors (add default vector values)
-    finalize MA and MAs classes
     fix partitioning for coincident seeds?
     test NRCLip scaling
     Finish in/on functions in NBase

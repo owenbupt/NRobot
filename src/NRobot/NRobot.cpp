@@ -65,7 +65,7 @@ nr::MA::MA(
 
 
 /*******************************************************/
-/********************** MAs class ***********************/
+/********************** MAs class **********************/
 /*******************************************************/
 nr::MAs::MAs() {
 	/* All members use the default MA constructor */
@@ -107,9 +107,9 @@ nr::MAs::MAs(
 
 
 
-/**********************************************************/
-/********************* Main functions *********************/
-/**********************************************************/
+/*******************************************************/
+/********************* Non Members *********************/
+/*******************************************************/
 void nr::info() {
 	std::printf("NRobot %d.%d.%d\n",
 		NR_VERSION_MAJOR, NR_VERSION_MINOR, NR_VERSION_PATCH);
@@ -127,5 +127,120 @@ void nr::info() {
 	#endif
 	#if NR_TIME_EXECUTION
 		std::printf("Execution is being timed\n");
+	#endif
+}
+
+
+
+
+/****** MA ******/
+void nr::create_sensing_disk( nr::MA* agent ) {
+	nr::Circle C (agent->position, agent->sensing_radius);
+	agent->sensing = nr::Polygon( C );
+}
+
+void nr::plot_position( const nr::MA& agent ) {
+	#if NR_PLOT_AVAILABLE
+		nr::plot_point( agent.position );
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_cell( const nr::MA& agent ) {
+	#if NR_PLOT_AVAILABLE
+		nr::plot_polygon( agent.cell );
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_sensing( const nr::MA& agent ) {
+	#if NR_PLOT_AVAILABLE
+		nr::plot_polygon( agent.sensing );
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_uncertainty( const nr::MA& agent ) {
+	#if NR_PLOT_AVAILABLE
+		nr::plot_circle( nr::Circle(agent.position, agent.uncertainty_radius) );
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_communication( const nr::MA& agent ) {
+	#if NR_PLOT_AVAILABLE
+		nr::plot_circle( nr::Circle(agent.position, agent.communication_radius) );
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+
+
+
+/****** MAs ******/
+void nr::create_sensing_disks( nr::MAs* agents ) {
+	/* Create the sensing disk of each agent */
+	for (size_t i=0; i<agents->size(); i++) {
+		nr::create_sensing_disk( &(agents->at(i)) );
+	}
+}
+
+void nr::plot_positions( const nr::MAs& agents ) {
+	#if NR_PLOT_AVAILABLE
+		/* Plot the sensing disk of each agent */
+		for (size_t i=0; i<agents.size(); i++) {
+			nr::plot_point( agents[i].position );
+		}
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_cells( const nr::MAs& agents ) {
+	#if NR_PLOT_AVAILABLE
+		/* Plot the sensing disk of each agent */
+		for (size_t i=0; i<agents.size(); i++) {
+			nr::plot_polygon( agents[i].cell );
+		}
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_sensing( const nr::MAs& agents ) {
+	#if NR_PLOT_AVAILABLE
+		/* Plot the sensing disk of each agent */
+		for (size_t i=0; i<agents.size(); i++) {
+			nr::plot_polygon( agents[i].sensing );
+		}
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_uncertainty( const nr::MAs& agents ) {
+	#if NR_PLOT_AVAILABLE
+		/* Plot the sensing disk of each agent */
+		for (size_t i=0; i<agents.size(); i++) {
+			nr::plot_circle( nr::Circle(agents[i].position, agents[i].uncertainty_radius) );
+		}
+	#else
+		std::printf("Plotting functionality is not available\n");
+	#endif
+}
+
+void nr::plot_communication( const nr::MAs& agents ) {
+	#if NR_PLOT_AVAILABLE
+		/* Plot the sensing disk of each agent */
+		for (size_t i=0; i<agents.size(); i++) {
+			nr::plot_circle( nr::Circle(agents[i].position, agents[i].communication_radius) );
+		}
+	#else
+		std::printf("Plotting functionality is not available\n");
 	#endif
 }
