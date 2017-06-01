@@ -179,6 +179,7 @@ void nr::print( const nr::MA& agent, const bool verbose ) {
 	std::printf("  Uncertainty radius: %f\n", agent.uncertainty_radius);
 	std::printf("  Communication radius: %f\n", agent.communication_radius);
 	if (verbose) {
+		/* Print all polygon vertices if verbose is set */
 		std::printf("  Sensing: ");
 		nr::print( agent.sensing );
 		std::printf("  Cell: ");
@@ -192,6 +193,7 @@ void nr::print( const nr::MA& agent, const bool verbose ) {
 	}
 	std::printf("\n");
 	if (verbose) {
+		/* Print neighbor members if verbose is set */
 		for (size_t j=0; j<agent.neighbors.size(); j++) {
 			nr::print(agent.neighbors[j], verbose);
 		}

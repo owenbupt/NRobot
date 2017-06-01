@@ -1,9 +1,9 @@
 TODO
     MA
-        find_neighbors( MA&, MAs& ) (copy required members)
+        add velocity members (used as control inputs in single integrator dynamics)
+        add dynamics member?
         cell( MA& )
         control( MA& )
-        print verbose
     Finish MAs constructors (add default vector values)
     fix partitioning for coincident seeds?
     test NRCLip scaling
@@ -13,12 +13,8 @@ TODO
     make plotting more user friendly (mouse control?)
 	add testing executables (and automated tests?)
 
-Files to rewrite
-    src/NRobot/*
-
 Testing
 	test EVERYTHING
-
 
 Improve functions
 	double n::diameter( const Polygon& P )
@@ -31,6 +27,8 @@ Improve functions
 		must be in at least one external and in no internals (check clipper)
 	void nr::ys_partitioning()
         return neighbor relationships
+    void nr::print( const nr::MA& agent, const bool verbose )
+        more readable output when verbose is set
 
 --------------------------------------------------------------------------------
 
