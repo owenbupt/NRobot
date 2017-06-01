@@ -1,8 +1,9 @@
 TODO
     MA
-        find_neighbors( MA&, MAs& ) (private function to copy agent without neighbor vector?)
+        find_neighbors( MA&, MAs& ) (copy required members)
         cell( MA& )
         control( MA& )
+        print verbose
     Finish MAs constructors (add default vector values)
     fix partitioning for coincident seeds?
     test NRCLip scaling

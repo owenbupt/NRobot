@@ -156,15 +156,20 @@ void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
 			double d = nr::dist( agent->position, agents[j].position );
 			if (d <= agent->communication_radius) {
 				/* Add agent j to the neighbor list */
-					/* Copy only the required attributes of agent j to the neighbors vector */
+				/* Copy only the required members of agent j to the neighbors vector */
 				agent->neighbors.push_back( nr::MA() );
 				agent->neighbors.back().ID = agents[j].ID;
+				agent->neighbors.back().position = agents[j].position;
+				agent->neighbors.back().attitude = agents[j].attitude;
+				agent->neighbors.back().sensing_radius = agents[j].sensing_radius;
+				agent->neighbors.back().uncertainty_radius = agents[j].uncertainty_radius;
+				agent->neighbors.back().communication_radius = agents[j].communication_radius;
 			}
 		}
 	}
 }
 
-void nr::print( const nr::MA& agent ) {
+void nr::print( const nr::MA& agent, const bool verbose ) {
 	std::printf("MA %lu\n", agent.ID);
 	std::printf("  Position: %f %f %f\n",
 		agent.position.x, agent.position.y, agent.position.z);
@@ -173,11 +178,24 @@ void nr::print( const nr::MA& agent ) {
 	std::printf("  Sensing radius: %f\n", agent.sensing_radius);
 	std::printf("  Uncertainty radius: %f\n", agent.uncertainty_radius);
 	std::printf("  Communication radius: %f\n", agent.communication_radius);
+	if (verbose) {
+		std::printf("  Sensing: ");
+		nr::print( agent.sensing );
+		std::printf("  Cell: ");
+		nr::print( agent.cell );
+		std::printf("  R-limited cell: ");
+		nr::print( agent.rlimited_cell );
+	}
 	std::printf("  Neighbors:");
 	for (size_t j=0; j<agent.neighbors.size(); j++) {
 		std::printf(" %lu", agent.neighbors[j].ID);
 	}
 	std::printf("\n");
+	if (verbose) {
+		for (size_t j=0; j<agent.neighbors.size(); j++) {
+			nr::print(agent.neighbors[j], verbose);
+		}
+	}
 }
 
 void nr::plot_position( const nr::MA& agent ) {
@@ -231,10 +249,10 @@ void nr::create_sensing_disks( nr::MAs* agents ) {
 	}
 }
 
-void nr::print( const nr::MAs& agents ) {
+void nr::print( const nr::MAs& agents, const bool verbose ) {
 	/* Print each agent */
 	for (size_t i=0; i<agents.size(); i++) {
-		nr::print( agents[i] );
+		nr::print( agents[i], verbose );
 	}
 }
 

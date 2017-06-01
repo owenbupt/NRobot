@@ -70,7 +70,7 @@ int main() {
 			/* Computes own control input */
 		}
 
-		nr::print( agents );
+		nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
