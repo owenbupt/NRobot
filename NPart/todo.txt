@@ -1,0 +1,27 @@
+FIXES
+	Polygon::normal() doesnt check for valid input (actually probably no function does...)
+	point in/on polygon test is wrong when the point is inside an external contour which is inside an internal one
+	"Clipper error: Invalid subject np::Polygon." in YS_partitioning()
+	In NPart functions, handle same input and output arguments correctly
+
+FEATURES
+	Write cell variants for functions in NPart.hpp (or use function overloading?)
+	Return overlaps in YS partitioning? (Laplacian matrix)
+	Make YSUQ faster by giving Polygons as optional arguments (maybe function overload?)
+	Use correct scaling in NPClip (use significant digits of NPFLOAT?)
+	Define << and >> for polygons (file,stream input/output)
+	Write convex_hull in Polygon
+	Use delaunay neighbors in V and GV
+	Use mouse to move view in NPSDL
+
+TESTS
+	Test all on/in functions
+	Check out the clean and other options of clipper and relevant bugs
+	Save the results of YS and plot them in matlab to check for problems
+	Compare clipper speed with gpc
+	Add GPC wrapper and compare speed (DO NOT RELEASE THIS, PERSONAL USE ONLY)
+
+STRUCTURE
+	Write separate NPSDL functions for keyboard and mouse handling
+	Find a way for cmake to always use the build/bin/lib folders (no need for the makefile)
+	Make sure it works correctly as a submodule
