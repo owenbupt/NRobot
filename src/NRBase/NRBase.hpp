@@ -267,6 +267,17 @@ void print( const Polygons& P );
 double area( const Circle& C );
 bool is_point( const Circle& C );
 
+/*******************************************************/
+/********************* Error enum **********************/
+/*******************************************************/
+enum error_type {
+	SUCCESS,
+	ERROR_INVALID_SUBJECT,
+	ERROR_INVALID_CLIP,
+	ERROR_CLIPPING_FAILED,
+	ERROR_PARTITIONING_FAILED
+};
+
 } /* End of namespace */
 
 #endif

@@ -23,6 +23,7 @@
 /* Include all NRobot library headers */
 #include "NRBase.hpp"
 #include "NRPart.hpp"
+#include "NRControl.hpp"
 #if NR_PLOT_AVAILABLE
 #include "NRPlot.hpp"
 #endif
@@ -41,6 +42,8 @@ class MA {
 		size_t ID;
 		Point position;
 		Orientation attitude;
+		Point velocity_translational;
+		Orientation velocity_rotational;
 		double sensing_radius;
 		double uncertainty_radius;
 		double communication_radius;

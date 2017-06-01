@@ -175,6 +175,10 @@ void nr::print( const nr::MA& agent, const bool verbose ) {
 		agent.position.x, agent.position.y, agent.position.z);
 	std::printf("  Attitude: %f %f %f\n",
 		agent.attitude.roll, agent.attitude.pitch, agent.attitude.yaw);
+	std::printf("  Translational velocity: %f %f %f\n",
+		agent.velocity_translational.x, agent.velocity_translational.y, agent.velocity_translational.z);
+	std::printf("  Rotational velocity: %f %f %f\n",
+		agent.velocity_rotational.roll, agent.velocity_rotational.pitch, agent.velocity_rotational.yaw);
 	std::printf("  Sensing radius: %f\n", agent.sensing_radius);
 	std::printf("  Uncertainty radius: %f\n", agent.uncertainty_radius);
 	std::printf("  Communication radius: %f\n", agent.communication_radius);

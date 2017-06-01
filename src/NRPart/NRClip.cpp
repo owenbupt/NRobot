@@ -69,11 +69,11 @@ int nr::polygon_clip_fast(
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
-		return 1;
+		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
-		return 1;
+		return nr::ERROR_INVALID_CLIP;
 	}
 
 	/****** Set clipping operation ******/
@@ -90,7 +90,7 @@ int nr::polygon_clip_fast(
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
 		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
-		return 1;
+		return nr::ERROR_CLIPPING_FAILED;
 	}
 
 	/****** Create Polygon from paths ******/
@@ -112,7 +112,7 @@ int nr::polygon_clip_fast(
 		}
 	}
 
-	return 0;
+	return nr::SUCCESS;
 }
 
 
@@ -127,7 +127,7 @@ int nr::polygon_clip(
 	if (is_empty(S1) && is_empty(S2)) {
 		/* Both polygons are empty */
 		make_empty(R);
-		return 0;
+		return nr::SUCCESS;
 	} else if (is_empty(S1)) {
 		/* Subject polygon is empty */
 		switch (clip_type) {
@@ -140,7 +140,7 @@ int nr::polygon_clip(
 				*R = S2;
 				break;
 		}
-		return 0;
+		return nr::SUCCESS;
 	} else if (is_empty(S2)) {
 		/* Clip polygon is empty */
 		switch (clip_type) {
@@ -153,7 +153,7 @@ int nr::polygon_clip(
 				*R = S1;
 				break;
 		}
-		return 0;
+		return nr::SUCCESS;
 	}
 	/* Else continue normally */
 
@@ -202,12 +202,12 @@ int nr::polygon_clip(
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
 		// nr::print(S1);
-		return 1;
+		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
 		// nr::print(S2);
-		return 1;
+		return nr::ERROR_INVALID_CLIP;
 	}
 
 	/****** Set clipping operation ******/
@@ -224,7 +224,7 @@ int nr::polygon_clip(
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
 		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
-		return 1;
+		return nr::ERROR_CLIPPING_FAILED;
 	}
 
 	/****** Create Polygon from PolyTree ******/
@@ -252,5 +252,5 @@ int nr::polygon_clip(
 		cnode = cnode->GetNext();
 	}
 
-	return 0;
+	return nr::SUCCESS;
 }

@@ -28,7 +28,7 @@
 
 namespace nr {
 
-	void voronoi(
+	int voronoi(
 		const Polygon& region,
 		const Points& seeds,
 		Polygons* cells
@@ -38,7 +38,7 @@ namespace nr {
 		cells. The cells are constrained inside the polygon region.
 	*/
 
-	void voronoi_cell(
+	int voronoi_cell(
 		const Polygon& region,
 		const Points& seeds,
 		const size_t subject,
@@ -50,7 +50,7 @@ namespace nr {
 		polygon region.
 	*/
 
-	void g_voronoi(
+	int g_voronoi(
 		const Polygon& region,
 		const Circles& seeds,
 		Polygons* cells,
@@ -63,7 +63,7 @@ namespace nr {
 		are represented with better accuracy.
 	*/
 
-	void g_voronoi_cell(
+	int g_voronoi_cell(
 		const Polygon& region,
 		const Circles& seeds,
 		const size_t subject,
@@ -77,7 +77,7 @@ namespace nr {
 		are represented with better accuracy.
 	*/
 
-	void awg_voronoi_cell(
+	int awg_voronoi_cell(
 		const Polygon& region,
 		const Circles& seeds,
 		const std::vector<double>& weights,
@@ -93,14 +93,14 @@ namespace nr {
 		weights vector contains the weights of all seed disks.
 	*/
 
-	void ys_partitioning(
+	int ys_partitioning(
 		const Polygon& region,
 		const Polygons& seeds,
 		Polygons* cells
 	);
 	/* Yannis Stergiopoulos partitioning (ICRA 2014) */
 
-	void ysuq_partitioning(
+	int ysuq_partitioning(
 		const Polygon& region,
 		const Circles& seeds,
 		const std::vector<double>& quality,

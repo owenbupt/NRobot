@@ -249,7 +249,7 @@ nr::Polygon nr_hyperbola_branch(
 /********************* Main functions *********************/
 /**********************************************************/
 
-void nr::voronoi(
+int nr::voronoi(
 	const nr::Polygon& region,
 	const nr::Points& seeds,
 	nr::Polygons* cells
@@ -270,13 +270,18 @@ void nr::voronoi(
 				/* Create the halfplane containing i with respect to j */
 				nr::Polygon h = nr_halfplane( seeds[i], seeds[j], diam );
 				/* Intersect the current cell with the halfplane with j */
-				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
+				int err = nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
 			}
 		}
 	}
+	return nr::SUCCESS;
 }
 
-void nr::voronoi_cell(
+int nr::voronoi_cell(
 	const nr::Polygon& region,
 	const nr::Points& seeds,
 	const size_t subject,
@@ -294,12 +299,17 @@ void nr::voronoi_cell(
 			/* Create the halfplane with respect to j containing subject */
 			nr::Polygon h = nr_halfplane( seeds[subject], seeds[j], diam );
 			/* Intersect the current cell with the halfplane with respect to j */
-			nr::polygon_clip( nr::AND, *cell, h, cell );
+			int err = nr::polygon_clip( nr::AND, *cell, h, cell );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
 		}
 	}
+	return nr::SUCCESS;
 }
 
-void nr::g_voronoi(
+int nr::g_voronoi(
 	const nr::Polygon& region,
 	const nr::Circles& seeds,
 	nr::Polygons* cells,
@@ -325,13 +335,18 @@ void nr::g_voronoi(
 				nr::Polygon h = nr_hyperbola_branch( seeds[i].center, seeds[j].center, a, c, diam, points_per_branch );
 				// nr::Polygon h = nr_hyperbola_branch_old( seeds[i], seeds[j], diam, points_per_branch );
 				/* Intersect the current cell with the branch with j */
-				nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
+				int err = nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
 			}
 		}
 	}
+	return nr::SUCCESS;
 }
 
-void nr::g_voronoi_cell(
+int nr::g_voronoi_cell(
 	const nr::Polygon& region,
 	const nr::Circles& seeds,
 	const size_t subject,
@@ -354,12 +369,17 @@ void nr::g_voronoi_cell(
 			nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
 			// nr::Polygon h = nr_hyperbola_branch_old( seeds[subject], seeds[j], diam, points_per_branch );
 			/* Intersect the current cell with the branch with respect to j */
-			nr::polygon_clip( nr::AND, *cell, h, cell );
+			int err = nr::polygon_clip( nr::AND, *cell, h, cell );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
 		}
 	}
+	return nr::SUCCESS;
 }
 
-void nr::awg_voronoi_cell(
+int nr::awg_voronoi_cell(
 	const nr::Polygon& region,
 	const nr::Circles& seeds,
 	const std::vector<double>& weights,
@@ -382,16 +402,23 @@ void nr::awg_voronoi_cell(
 			/* Create the hyperbola branch with respect to j containing subject */
 			nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
 			/* Intersect the current cell with the branch with respect to j */
-			nr::polygon_clip( nr::AND, *cell, h, cell );
+			int err = nr::polygon_clip( nr::AND, *cell, h, cell );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
 		}
 	}
+	return nr::SUCCESS;
 }
 
-void nr::ys_partitioning(
+int nr::ys_partitioning(
 	const nr::Polygon& region,
 	const nr::Polygons& seeds,
 	nr::Polygons* cells
 ) {
+	/* return value of clipping operations */
+	int err;
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -406,28 +433,52 @@ void nr::ys_partitioning(
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Remove the pattern of j from i */
-				nr::polygon_clip( nr::DIFF, (*cells)[i], seeds[j], &((*cells)[i]) );
+				err = nr::polygon_clip( nr::DIFF, (*cells)[i], seeds[j], &((*cells)[i]) );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
 				/* Add the overlapping between i and j to the common sensed region */
 				nr::Polygon tmpP;
-				nr::polygon_clip( nr::AND, seeds[i], seeds[j], &tmpP );
-				nr::polygon_clip( nr::OR, (*cells)[N], tmpP, &((*cells)[N]) );
+				err = nr::polygon_clip( nr::AND, seeds[i], seeds[j], &tmpP );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+				err = nr::polygon_clip( nr::OR, (*cells)[N], tmpP, &((*cells)[N]) );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
 			}
 		}
 		/* Intersect the cell with the region in order to constrain it */
-		nr::polygon_clip( nr::AND, (*cells)[i], region, &((*cells)[i]) );
+		err = nr::polygon_clip( nr::AND, (*cells)[i], region, &((*cells)[i]) );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
 	}
 
 	/* Intersect the common sensed region with the region */
-	nr::polygon_clip( nr::AND, (*cells)[N], region, &((*cells)[N]) );
+	err = nr::polygon_clip( nr::AND, (*cells)[N], region, &((*cells)[N]) );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_PARTITIONING_FAILED;
+	}
+
+	return nr::SUCCESS;
 }
 
-void nr::ysuq_partitioning(
+int nr::ysuq_partitioning(
 	const nr::Polygon& region,
 	const nr::Circles& seeds,
 	const std::vector<double>& quality,
 	nr::Polygons* cells,
 	bool **neighbors
 ) {
+	/* return value of clipping operations */
+	int err;
 	/* Number of seeds */
 	size_t N = seeds.size();
 	/* Initialize the result */
@@ -457,11 +508,19 @@ void nr::ysuq_partitioning(
 					/* Compare coverage quality */
 					if (quality[i] < quality[j]) {
 						/* Remove the seed polygon of j */
-						nr::polygon_clip(nr::DIFF, (*cells)[i], sensing[j], &((*cells)[i]));
+						err = nr::polygon_clip(nr::DIFF, (*cells)[i], sensing[j], &((*cells)[i]));
+						if (err) {
+							std::printf("Clipping operation returned error %d\n", err);
+							return nr::ERROR_PARTITIONING_FAILED;
+						}
 					} else if (quality[i] == quality[j]) {
 						/* Use the arbitrary partitioning */
 						nr::Polygon H = nr_halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
-						nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
+						err = nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
+						if (err) {
+							std::printf("Clipping operation returned error %d\n", err);
+							return nr::ERROR_PARTITIONING_FAILED;
+						}
 					}
 
 					/* Set neighbor status if required */
@@ -482,6 +541,11 @@ void nr::ysuq_partitioning(
 			}
 		}
 		/* Intersect the cell with the region */
-		nr::polygon_clip(nr::AND, (*cells)[i], region, &((*cells)[i]));
+		err = nr::polygon_clip(nr::AND, (*cells)[i], region, &((*cells)[i]));
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
 	}
+	return nr::SUCCESS;
 }
