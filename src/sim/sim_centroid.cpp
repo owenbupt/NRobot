@@ -63,12 +63,14 @@ int main() {
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
-				/* Do not copy their neighbor vectors */
+			nr::find_neighbors( &(agents[i]), agents );
 
 			/* Compute own cell using its neighbors vector */
 
 			/* Computes own control input */
 		}
+
+		nr::print( agents );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE

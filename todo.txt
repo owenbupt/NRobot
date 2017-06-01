@@ -16,9 +16,8 @@ Files to rewrite
     src/NRobot/*
 
 Testing
-	NBase
-    NPlot
-    NPart
+	test EVERYTHING
+
 
 Improve functions
 	double n::diameter( const Polygon& P )

@@ -106,6 +106,8 @@ class MAs: public std::vector<MA> {
 void info();
 /****** MA ******/
 void create_sensing_disk( MA* agent );
+void find_neighbors( MA* agent, const MAs& agents );
+void print( const MA& agent );
 void plot_position( const MA& agent );
 void plot_cell( const MA& agent );
 void plot_sensing( const MA& agent );
@@ -114,6 +116,7 @@ void plot_communication( const MA& agent );
 
 /****** MAs ******/
 void create_sensing_disks( MAs* agents );
+void print( const MAs& agents );
 void plot_positions( const MAs& agents );
 void plot_cells( const MAs& agents );
 void plot_sensing( const MAs& agents );

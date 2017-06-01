@@ -27,6 +27,7 @@
 /********************** MA class ***********************/
 /*******************************************************/
 nr::MA::MA() {
+	this->ID = 0;
 	this->sensing_radius = 0;
 	this->uncertainty_radius = 0;
 	this->communication_radius = 0;
@@ -39,6 +40,7 @@ nr::MA::MA(
 	double uradius,
 	double cradius
 ) {
+	this->ID = 0;
 	this->position = pos;
 	this->sensing_radius = sradius;
 	this->uncertainty_radius = uradius;
@@ -53,6 +55,7 @@ nr::MA::MA(
 	double uradius,
 	double cradius
 ) {
+	this->ID = 0;
 	this->position = pos;
 	this->attitude = att;
 	this->sensing_radius = sradius;
@@ -80,9 +83,11 @@ nr::MAs::MAs(
 	/* Number of elements */
 	size_t N = pos.size();
 	this->resize(N);
-	/* Initialize each vector member */
+	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
 		this->at(i) = nr::MA( pos[i], sradii[i], uradii[i], cradii[i] );
+		/* Set the ID for each element */
+		this->at(i).ID = i+1;
 	}
 }
 
@@ -96,9 +101,11 @@ nr::MAs::MAs(
 	/* Number of elements */
 	size_t N = pos.size();
 	this->resize(N);
-	/* Initialize each vector member */
+	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
 		this->at(i) = nr::MA( pos[i], att[i], sradii[i], uradii[i], cradii[i] );
+		/* Set the ID for each element */
+		this->at(i).ID = i+1;
 	}
 }
 
@@ -137,6 +144,40 @@ void nr::info() {
 void nr::create_sensing_disk( nr::MA* agent ) {
 	nr::Circle C (agent->position, agent->sensing_radius);
 	agent->sensing = nr::Polygon( C );
+}
+
+void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
+	/* Clear the current neighbor vector */
+	agent->neighbors.resize(0);
+	/* Loop over all other agents */
+	for (size_t j=0; j<agents.size(); j++) {
+		if (agent->ID != agents[j].ID) {
+			/* Find distance from agent j */
+			double d = nr::dist( agent->position, agents[j].position );
+			if (d <= agent->communication_radius) {
+				/* Add agent j to the neighbor list */
+					/* Copy only the required attributes of agent j to the neighbors vector */
+				agent->neighbors.push_back( nr::MA() );
+				agent->neighbors.back().ID = agents[j].ID;
+			}
+		}
+	}
+}
+
+void nr::print( const nr::MA& agent ) {
+	std::printf("MA %lu\n", agent.ID);
+	std::printf("  Position: %f %f %f\n",
+		agent.position.x, agent.position.y, agent.position.z);
+	std::printf("  Attitude: %f %f %f\n",
+		agent.attitude.roll, agent.attitude.pitch, agent.attitude.yaw);
+	std::printf("  Sensing radius: %f\n", agent.sensing_radius);
+	std::printf("  Uncertainty radius: %f\n", agent.uncertainty_radius);
+	std::printf("  Communication radius: %f\n", agent.communication_radius);
+	std::printf("  Neighbors:");
+	for (size_t j=0; j<agent.neighbors.size(); j++) {
+		std::printf(" %lu", agent.neighbors[j].ID);
+	}
+	std::printf("\n");
 }
 
 void nr::plot_position( const nr::MA& agent ) {
@@ -187,6 +228,13 @@ void nr::create_sensing_disks( nr::MAs* agents ) {
 	/* Create the sensing disk of each agent */
 	for (size_t i=0; i<agents->size(); i++) {
 		nr::create_sensing_disk( &(agents->at(i)) );
+	}
+}
+
+void nr::print( const nr::MAs& agents ) {
+	/* Print each agent */
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::print( agents[i] );
 	}
 }
 
