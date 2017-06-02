@@ -44,11 +44,12 @@ int main() {
 
 	/* Uncertainty udisks */
 	double r = 0.4;
-	std::vector<double> uradii;
-	uradii.push_back( 1.8*r );
-	uradii.push_back( 2.0*r );
-	uradii.push_back( 1.7*r );
-	uradii.push_back( 1.5*r );
+	// std::vector<double> uradii;
+	// uradii.push_back( 1.8*r );
+	// uradii.push_back( 2.0*r );
+	// uradii.push_back( 1.7*r );
+	// uradii.push_back( 1.5*r );
+	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
 	nr::Circles udisks;
 	udisks.push_back( nr::Circle(P[0], uradii[0]) );
 	udisks.push_back( nr::Circle(P[1], uradii[1]) );
@@ -59,11 +60,12 @@ int main() {
 
 	/* Sensing disks */
 	r = 2 * r;
-	std::vector<double> sradii;
-	sradii.push_back( 1.0*r );
-	sradii.push_back( 2.0*r );
-	sradii.push_back( 1.7*r );
-	sradii.push_back( 4.5*r );
+	// std::vector<double> sradii;
+	// sradii.push_back( 1.0*r );
+	// sradii.push_back( 2.0*r );
+	// sradii.push_back( 1.7*r );
+	// sradii.push_back( 4.5*r );
+	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
 	nr::Circles sdisks;
 	sdisks.push_back( nr::Circle(P[0], sradii[0]) );
 	sdisks.push_back( nr::Circle(P[1], sradii[1]) );

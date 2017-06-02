@@ -30,7 +30,7 @@ int main() {
 
 	/****** Simulation parameters ******/
 	double Tfinal = 10;
-	double Tstep = 0.1;
+	double Tstep = 0.01;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -48,7 +48,7 @@ int main() {
 	P.push_back( nr::Point(-3,-7) );
 	/* Sensing, uncertainty and communication radii */
 	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
-	std::vector<double> uradii (N, 0);
+	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
 	nr::MAs agents (P, sradii, uradii, cradii);
@@ -61,6 +61,7 @@ int main() {
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
+	smax = 1;
 	bool uquit = false;
 	clock_t begin, end;
 	begin = std::clock();

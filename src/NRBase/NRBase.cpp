@@ -253,6 +253,10 @@ nr::Point nr::midpoint( const nr::Point& A, const nr::Point& B ) {
 	return nr::Point( (A.x+B.x)/2, (A.y+B.y)/2, (A.z+B.z)/2 );
 }
 
+bool nr::in( nr::Point& A, nr::Polygon& P ) {
+	return true;
+}
+
 /****** Contour ******/
 int nr::read( nr::Contour* C, const char* fname ) {
 	size_t  num_vertices;

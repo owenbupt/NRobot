@@ -29,11 +29,14 @@ namespace nr {
 /***************** Space partitioning ******************/
 /*******************************************************/
 int cell_voronoi( MA* agent, const Polygon& region );
+int cell_gvoronoi( MA* agent, const Polygon& region );
+int cell_awgvoronoi( MA* agent, const Polygon& region );
 
 /*******************************************************/
 /******************** Control laws *********************/
 /*******************************************************/
 void control_centroid( MA* agent );
+void control_free_arc( MA* agent );
 
 } /* End of namespace */
 

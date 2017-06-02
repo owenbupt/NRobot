@@ -225,7 +225,7 @@ Point midpoint( const Point& A, const Point& B );
 // Point closest_to_line( Point& A, Point&, Point& );
 // bool in( Point& A, Contour& C );
 // bool on( Point& A, Contour& C );
-// bool in( Point& A, Polygon& P );
+bool in( Point& A, Polygon& P );									/* TODO */
 // bool on( Point& A, Polygon& P );
 // bool in( Point& A, Circle& C );
 // bool on( Point& A, Circle& C );
