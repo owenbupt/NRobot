@@ -30,7 +30,7 @@
 /*******************************************************/
 /********************* Point class *********************/
 /*******************************************************/
-nr::Point::Point( double x, double y, double z ) {
+nr::Point::Point( const double x, const double y, const double z ) {
 	this->x = x;
 	this->y = y;
 	this->z = z;

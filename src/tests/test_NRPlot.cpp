@@ -19,7 +19,7 @@
 
 #include <cstdio>
 
-#include "NRobot.hpp"
+#include "NR.hpp"
 
 
 int main() {

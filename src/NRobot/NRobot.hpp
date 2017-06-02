@@ -20,13 +20,7 @@
 #ifndef __NRobot_hpp
 #define __NRobot_hpp
 
-/* Include all NRobot library headers */
 #include "NRBase.hpp"
-#include "NRPart.hpp"
-#include "NRControl.hpp"
-#if NR_PLOT_AVAILABLE
-#include "NRPlot.hpp"
-#endif
 
 namespace nr {
 
@@ -126,6 +120,6 @@ void plot_sensing( const MAs& agents );
 void plot_uncertainty( const MAs& agents );
 void plot_communication( const MAs& agents );
 
-}
+} /* End of namespace */
 
 #endif

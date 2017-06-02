@@ -21,11 +21,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "NRobot.hpp"
+#include "NR.hpp"
 
 int main() {
 	nr::info();
-	
+
 	int failed_tests = 0;
 	nr::Point P, Q, R;
 

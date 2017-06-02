@@ -22,11 +22,15 @@
 #include <chrono>
 #include <thread>
 
-#include "NRobot.hpp"
+#include "NR.hpp"
 
 
 int main() {
 	nr::info();
+
+	/****** Simulation parameters ******/
+	double Tfinal = 3;
+	double Tstep = 0.1;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -48,7 +52,6 @@ int main() {
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
 	nr::MAs agents (P, sradii, uradii, cradii);
-	nr::create_sensing_disks( &agents );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -57,20 +60,27 @@ int main() {
 	#endif
 
 	/****** Simulate agents ******/
-	size_t smax = 1;
+	size_t smax = std::floor(Tfinal/Tstep);
+	bool uquit = false;
 
 	for (size_t s=1; s<=smax; s++) {
+		// std::printf("Iteration: %d\n", s);
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
+			/* Create sensing region */
+			nr::create_sensing_disk( &(agents[i]) );
+
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 
 			/* Compute own cell using its neighbors vector */
+			nr::cell_voronoi( &(agents[i]), region );
 
-			/* Computes own control input */
+			/* Compute own control input */
+			nr::control_centroid( &(agents[i]) );
 		}
 
-		nr::print( agents, false );
+		// nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
@@ -91,15 +101,24 @@ int main() {
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			nr::plot_communication( agents );
 			nr::plot_render();
+
+			uquit = nr::plot_handle_input();
+			if (uquit) {
+				break;
+			}
 		#endif
 
 		/* The movement of each agent is simulated */
-
+		for (size_t i=0; i<N; i++) {
+			agents[i].position += Tstep * agents[i].velocity_translational;
+		}
 	}
+
+	/****** Print simulation info ******/
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
-		bool uquit = false;
+		uquit = false;
 		while (!uquit) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			uquit = nr::plot_handle_input();

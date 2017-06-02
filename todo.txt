@@ -1,9 +1,11 @@
 TODO
+    fix header file logic
     MA
         add dynamics member?
         cell( MA& )
         control( MA& )
     add error handling function to make code cleaner (return appropriate error message)
+    can NRPlot functions fail? (and plot functions in general)
     Finish MAs constructors (add default vector values)
     fix partitioning for coincident seeds?
     test NRCLip scaling

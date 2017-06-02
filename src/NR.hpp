@@ -17,24 +17,22 @@
     along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __NRControl_hpp
-#define __NRControl_hpp
-
-#include "NRBase.hpp"
-#include "NRobot.hpp"
-
-namespace nr {
+#ifndef __NR_hpp
+#define __NR_hpp
 
 /*******************************************************/
-/***************** Space partitioning ******************/
+/********************** NR headers *********************/
 /*******************************************************/
-int cell_voronoi( MA* agent, const Polygon& region );
+#include "NRBase/NRBase.hpp"
 
-/*******************************************************/
-/******************** Control laws *********************/
-/*******************************************************/
-void control_centroid( MA* agent );
+#include "NRPart/NRClip.hpp"
+#include "NRPart/NRPart.hpp"
 
-} /* End of namespace */
+#include "NRobot/NRobot.hpp"
+#include "NRobot/NRControl.hpp"
+
+// #if NR_PLOT_AVAILABLE
+#include "NRPlot/NRPlot.hpp"
+// #endif
 
 #endif

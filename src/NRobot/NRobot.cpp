@@ -20,7 +20,10 @@
 #include <cstdio>
 
 #include "NRobot.hpp"
-
+#include "NRPart.hpp"
+#if NR_PLOT_AVAILABLE
+#include "NRPlot.hpp"
+#endif
 
 
 /*******************************************************/

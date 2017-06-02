@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include "NRobot.hpp"
+#include "NR.hpp"
 
 
 #define CALC_VORONOI 0

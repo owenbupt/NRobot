@@ -18,3 +18,35 @@
 */
 
 #include "NRControl.hpp"
+#include "NRPart.hpp"
+
+/*******************************************************/
+/***************** Space partitioning ******************/
+/*******************************************************/
+int nr::cell_voronoi( nr::MA* agent, const nr::Polygon& region ) {
+    /* Create a vector containing all neighbor positions */
+    nr::Points positions;
+    for (size_t j=0; j<agent->neighbors.size(); j++) {
+        positions.push_back( agent->neighbors[j].position );
+    }
+    /* Add the position of the current agent to the vector */
+    positions.push_back( agent->position );
+
+    /* Compute voronoi cell */
+    nr::voronoi_cell( region, positions, positions.size()-1, &(agent->cell) );
+
+    return nr::SUCCESS;
+}
+
+
+
+
+/*******************************************************/
+/******************** Control laws *********************/
+/*******************************************************/
+void nr::control_centroid( MA* agent ) {
+    /* Vector from the agent to its cell centroid */
+    nr::Point v;
+    v = nr::centroid( agent->cell ) - agent->position;
+    agent->velocity_translational = v;
+}
