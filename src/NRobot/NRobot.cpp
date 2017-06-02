@@ -132,11 +132,11 @@ void nr::info() {
 		SDL_version sdl_linked_version;
 		SDL_GetVersion( &sdl_linked_version );
 		std::printf("Plotting functionality is available\n");
-		std::printf("Using SDL version %d.%d.%d\n", sdl_linked_version.major,
+		std::printf("Using SDL version %d.%d.%d\n\n", sdl_linked_version.major,
 			sdl_linked_version.minor, sdl_linked_version.patch);
 	#endif
 	#if NR_TIME_EXECUTION
-		std::printf("Execution is being timed\n");
+		std::printf("Execution is being timed\n\n");
 	#endif
 }
 

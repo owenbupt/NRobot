@@ -29,7 +29,7 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 3;
+	double Tfinal = 10;
 	double Tstep = 0.1;
 
 	/****** Region of interest ******/
@@ -62,6 +62,8 @@ int main() {
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
 	bool uquit = false;
+	clock_t begin, end;
+	begin = std::clock();
 
 	for (size_t s=1; s<=smax; s++) {
 		// std::printf("Iteration: %d\n", s);
@@ -115,6 +117,11 @@ int main() {
 	}
 
 	/****** Print simulation info ******/
+	end = clock();
+	double elapsed_time = (double)(end - begin) / CLOCKS_PER_SEC;
+	double average_iteration = elapsed_time / smax;
+	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
+	std::printf("Average iteration %.5f seconds\n", average_iteration);
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
