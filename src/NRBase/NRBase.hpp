@@ -221,16 +221,16 @@ double dist( const Point& A, const Polygon& P ); 					/* TODO */
 double dot( const Point& A, const Point& B );
 Point rotate( const Point& A, double theta );
 Point midpoint( const Point& A, const Point& B );
-// double dist_from_line( Point& A, Point&, Point& );
-// Point closest_to_line( Point& A, Point&, Point& );
-// bool in( Point& A, Contour& C );
-// bool on( Point& A, Contour& C );
-bool in( Point& A, Polygon& P );									/* TODO */
-// bool on( Point& A, Polygon& P );
-// bool in( Point& A, Circle& C );
-// bool on( Point& A, Circle& C );
-// bool on_dist( Point& A, Contour& C );
-// bool on_dist( Point& A, Polygon& P );
+// double dist_from_line( const Point& A, const Point&, const Point& );
+// Point closest_to_line( const Point& A, const Point&, const Point& );
+bool in( const Point& A, const Contour& C );
+// bool on( const Point& A, const Contour& C );
+bool in( const Point& A, const Polygon& P );						/* TODO */
+// bool on( const Point& A, const Polygon& P );
+// bool in( const Point& A, const Circle& C );
+// bool on( const Point& A, const Circle& C );
+// bool on_dist( const Point& A, const Contour& C );
+// bool on_dist( const Point& A, const Polygon& P );
 
 /****** Contour ******/
 int read( Contour* C, const char* fname );

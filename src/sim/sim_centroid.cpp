@@ -77,11 +77,11 @@ int main() {
 			nr::find_neighbors( &(agents[i]), agents );
 
 			/* Compute own cell using its neighbors vector */
-			nr::cell_voronoi( &(agents[i]), region );
+			nr::cell_awgvoronoi( &(agents[i]), region );
 
 			/* Compute own control input */
-			nr::control_centroid( &(agents[i]) );
-			// nr::control_free_arc( &(agents[i]) );
+			// nr::control_centroid( &(agents[i]) );
+			nr::control_free_arc( &(agents[i]) );
 		}
 
 		// nr::print( agents, false );
@@ -117,6 +117,8 @@ int main() {
 			agents[i].position += Tstep * agents[i].velocity_translational;
 		}
 	}
+
+	// nr::print( agents[1].sensing );
 
 	/****** Print simulation info ******/
 	end = clock();

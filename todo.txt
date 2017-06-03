@@ -24,12 +24,16 @@ Improve functions
 		How does it handle non-simple polygons? (check clipper)
 	n::Point n::centroid( const n::Polygon& P )
 		How does it handle non-simple polygons?
-	inpolygon
-		must be in at least one external and in no internals (check clipper)
+    bool nr::in( const nr::Point& A, const nr::Polygon& P )
+        make it work for polygons with multiple contours
 	void nr::ys_partitioning()
         return neighbor relationships
     void nr::print( const nr::MA& agent, const bool verbose )
         more readable output when verbose is set
+
+Optimizations
+    nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
+        make contour CW on setup (do not use reverse_order)
 
 --------------------------------------------------------------------------------
 

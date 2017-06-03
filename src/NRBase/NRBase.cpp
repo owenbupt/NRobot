@@ -84,6 +84,9 @@ nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle ) {
 		this->contour[0][i].x = C.radius * std::cos( i*dt ) + C.center.x;
 		this->contour[0][i].y = C.radius * std::sin( i*dt ) + C.center.y;
 	}
+
+	/* Make CW */
+	nr::reverse_order( &(this->contour[0]) );
 }
 
 
@@ -253,8 +256,74 @@ nr::Point nr::midpoint( const nr::Point& A, const nr::Point& B ) {
 	return nr::Point( (A.x+B.x)/2, (A.y+B.y)/2, (A.z+B.z)/2 );
 }
 
-bool nr::in( nr::Point& A, nr::Polygon& P ) {
-	return true;
+bool nr::in( const nr::Point& A, const nr::Contour& C ) {
+	/*
+	   Jimenez, Juan Jose, Francisco R. Feito, and Rafael Jesus Segura.
+	   "Robust and Optimized Algorithms for the Point‐in‐Polygon Inclusion
+	   Test without Pre‐processing."
+	   Computer Graphics Forum. Vol. 28. No. 8. Blackwell Publishing Ltd, 2009.
+	*/
+
+	int inc = 0;
+
+	/* Number of contour vertices */
+	size_t Ne = C.size();
+	/* Translate all contour vertices by minus the point */
+	nr::Contour tmpC = C;
+	for (size_t k=0; k<Ne; k++) {
+		tmpC[k] -= A;
+	}
+	/* Loop over all edges of contour */
+	for (size_t k=0; k<Ne; k++) {
+		nr::Point Vi = tmpC[k];
+		double xi = Vi.x;
+		double yi = Vi.y;
+		nr::Point Vj = tmpC[(k+1) % Ne];
+		double xj = Vj.x;
+		double yj = Vj.y;
+
+		if (xi*xj <= 0) {
+			if ((yi >= 0) || (yj >= 0)) {
+				if (xi > xj) {
+					double a = xi*yj;
+					double b = xj*yi;
+					if (a > b) {
+						if ((xi == 0) || (xj == 0)) {
+							inc += 1;
+						} else {
+							inc += 2;
+						}
+					} else if (a == b) {
+						return true;
+					}
+				} else if (xi < xj) {
+					double a = xi*yj;
+					double b = xj*yi;
+					if (a < b) {
+						if ((xi == 0) || (xj == 0)) {
+							inc -= 1;
+						} else {
+							inc -= 2;
+						}
+					} else if (a == b) {
+						return true;
+					}
+				} else if ((yi <= 0) || (yj <= 0)) {
+					return true;
+				}
+			}
+		}
+	}
+
+	if (inc == 2) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool nr::in( const nr::Point& A, const nr::Polygon& P ) {
+	return nr::in( A, P.contour[0] );
 }
 
 /****** Contour ******/
