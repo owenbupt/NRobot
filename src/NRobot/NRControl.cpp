@@ -100,10 +100,25 @@ void nr::control_centroid( MA* agent ) {
 }
 
 void nr::control_free_arc( nr::MA* agent ) {
-    /* */
-    nr::Point v;
+    /* Initialize the vector resulting from the integral to zero */
+    nr::Point integral_vector;
+    /* Number of sensing region edges */
+    size_t Ne = agent->sensing.contour[0].size();
+    /* Loop over all sensing region edges */
+    for (size_t k=0; k<Ne; k++) {
+        nr::Point v1 = agent->sensing.contour[0][k];
+        nr::Point v2 = agent->sensing.contour[0][(k+1) % Ne];
 
-    /* Check all sensing region edges. if they are inside the cell, integrate */
+        /* Check if both edge vertices are inside the agent's cell */
+        bool v1_in_cell = nr::in( v1, agent->cell );
+        bool v2_in_cell = nr::in( v2, agent->cell );
+        if (v1_in_cell && v2_in_cell) {
+            /* Add the edge to the integral */
+            /* Since external contours are CW, the vector v2-v1 rotated by 90
+               degrees points outwards */
+            integral_vector += nr::rotate( v2-v1, M_PI/2 );
+        }
+    }
 
-    agent->velocity_translational = v;
+    agent->velocity_translational = integral_vector;
 }

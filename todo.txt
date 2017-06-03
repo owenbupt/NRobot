@@ -56,3 +56,7 @@ Code Style
         ) {
             code
         }
+
+Other
+    The last vertex of a polygon contour must NOT be the same as the first. This is what
+        the open flag is for.

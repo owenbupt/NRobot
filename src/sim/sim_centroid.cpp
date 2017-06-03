@@ -61,7 +61,7 @@ int main() {
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
-	smax = 1;
+	// smax = 1;
 	bool uquit = false;
 	clock_t begin, end;
 	begin = std::clock();
@@ -81,6 +81,7 @@ int main() {
 
 			/* Compute own control input */
 			nr::control_centroid( &(agents[i]) );
+			// nr::control_free_arc( &(agents[i]) );
 		}
 
 		// nr::print( agents, false );
