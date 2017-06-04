@@ -42,37 +42,30 @@ int main() {
 	P.push_back( nr::Point(-3,5) );
 	P.push_back( nr::Point(-3,-7) );
 
-	/* Uncertainty udisks */
-	double r = 0.4;
-	// std::vector<double> uradii;
-	// uradii.push_back( 1.8*r );
-	// uradii.push_back( 2.0*r );
-	// uradii.push_back( 1.7*r );
-	// uradii.push_back( 1.5*r );
+	/* Seed radii */
 	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
+	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
+	// std::vector<double> uradii { 0.15, 0.1 };
+	// std::vector<double> sradii { 0.8, 1.4 };
+
+	/* Number of seeds */
+	size_t N = P.size();
+
+	/* Uncertainty udisks */
 	nr::Circles udisks;
-	udisks.push_back( nr::Circle(P[0], uradii[0]) );
-	udisks.push_back( nr::Circle(P[1], uradii[1]) );
-	udisks.push_back( nr::Circle(P[2], uradii[2]) );
-	udisks.push_back( nr::Circle(P[3], uradii[3]) );
-	nr::Polygons poly_udisks;
-	poly_udisks = nr::Polygons( udisks );
+	for (size_t i=0; i<N; i++) {
+		udisks.push_back( nr::Circle(P[i], uradii[i]) );
+	}
 
 	/* Sensing disks */
-	r = 2 * r;
-	// std::vector<double> sradii;
-	// sradii.push_back( 1.0*r );
-	// sradii.push_back( 2.0*r );
-	// sradii.push_back( 1.7*r );
-	// sradii.push_back( 4.5*r );
-	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
 	nr::Circles sdisks;
-	sdisks.push_back( nr::Circle(P[0], sradii[0]) );
-	sdisks.push_back( nr::Circle(P[1], sradii[1]) );
-	sdisks.push_back( nr::Circle(P[2], sradii[2]) );
-	sdisks.push_back( nr::Circle(P[3], sradii[3]) );
+	for (size_t i=0; i<N; i++) {
+		sdisks.push_back( nr::Circle(P[i], sradii[i]) );
+	}
 	nr::Polygons poly_sdisks;
 	poly_sdisks = nr::Polygons( sdisks );
+
+
 
 	/* Voronoi */
 	#if CALC_VORONOI
@@ -109,7 +102,6 @@ int main() {
 	nr::Polygons AWGVc;
 	AWGVc.resize(udisks.size());
 	for (size_t i=0; i<udisks.size(); i++) {
-		// nr::g_voronoi_cell( region, udisks, i, &(AWGVc[i]));
 		nr::awg_voronoi_cell( region, udisks, sradii, i, &(AWGVc[i]) );
 	}
 	// nr::print( AWGVc );
@@ -118,7 +110,7 @@ int main() {
 	/* YS partitioning */
 	#if CALC_YS
 	nr::Polygons YS;
-	nr::ys_partitioning(region, poly_udisks, &YS);
+	nr::ys_partitioning(region, poly_sdisks, &YS);
 	#endif
 
 

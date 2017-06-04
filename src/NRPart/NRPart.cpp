@@ -26,6 +26,7 @@
 #include "NRClip.hpp"
 
 
+
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
@@ -140,6 +141,19 @@ nr::Polygon nr_hyperbola_branch(
 	const double diam,
 	const size_t ppb
 ) {
+	/*
+	   Assume A = [-c 0]^T and B = [c 0]^T. Thus the hyperbola parameterization
+	   is x = +-a*cosh(t) and y = b*sinh(t).
+
+	   For a > 0, the branch of A is the left branch of the hyperbola,
+	   given by-a*cosh(t).
+	   For a < 0, the branch of A is the right branch of the hyperbola and
+	   since a < 0 it is also given by -a*cosh(t).
+
+	   After computing the hyperbola branch, rotate it by the angle of the
+	   vector B-A and translate it by the vector (A+B)/2.
+	*/
+
 	/* Initialize hyperbola branch */
 	nr::Polygon H;
 
@@ -219,15 +233,16 @@ nr::Polygon nr_hyperbola_branch(
 		}
 
 		/* Vector from j to i and vector from j to i rotated -90 degrees */
-		nr::Point v, vr;
-		v = nr::Point( A.x-B.x, A.y-B.y );
-		vr = nr::rotate( v, -M_PI/2 );
+		nr::Point BA, BAr;
+		BA = nr::Point( A.x-B.x, A.y-B.y );
+		BA = -BA; /* I don't know why this is needed yet */
+		BAr = nr::rotate( BA, -M_PI/2 );
 
 		/* Add the four extra vertices needed to form the non convex cell */
-		H.contour[0][ppb] = H.contour[0][ppb-1] + diam*vr;
-		H.contour[0][ppb+1] = H.contour[0][ppb] + diam*v;
-		H.contour[0][ppb+3] = H.contour[0][0] - diam*vr;
-		H.contour[0][ppb+2] = H.contour[0][ppb+3] + diam*v;
+		H.contour[0][ppb] = H.contour[0][ppb-1] + diam*BAr;
+		H.contour[0][ppb+1] = H.contour[0][ppb] + diam*BA;
+		H.contour[0][ppb+3] = H.contour[0][0] - diam*BAr;
+		H.contour[0][ppb+2] = H.contour[0][ppb+3] + diam*BA;
 
 		/* Rotate cell */
 		double theta = std::atan2(B.y-A.y, B.x-A.x);
@@ -399,6 +414,9 @@ int nr::awg_voronoi_cell(
 			/* Hyperbola parameters */
 			double a = (seeds[subject].radius + seeds[j].radius + weights[j] - weights[subject]) / 2;
 			double c = nr::dist(seeds[subject].center, seeds[j].center) / 2;
+
+			std::printf("a%lu%lu %f  c%lu%lu %f\n", subject,j,a, subject,j,c);
+
 			/* Create the hyperbola branch with respect to j containing subject */
 			nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
 			/* Intersect the current cell with the branch with respect to j */

@@ -30,6 +30,8 @@ Improve functions
         return neighbor relationships
     void nr::print( const nr::MA& agent, const bool verbose )
         more readable output when verbose is set
+    nr::Polygon nr_hyperbola_branch()
+        add cases for ray and plane minus ray cells
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
