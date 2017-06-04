@@ -38,20 +38,23 @@ int main() {
 	double rdiameter = diameter( region );
 
 	/****** Setup agents ******/
-	/* Number of agents */
-	size_t N = 4;
 	/* Node initial positions */
 	nr::Points P;
 	P.push_back( nr::Point(-5,5) );
 	P.push_back( nr::Point(-5,2) );
 	P.push_back( nr::Point(-3,5) );
 	P.push_back( nr::Point(-3,-7) );
+	/* Number of agents */
+	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
 	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
 	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
 	nr::MAs agents (P, sradii, uradii, cradii);
+	/* Set partitioning and control law */
+	nr::set_partitioning( &agents, nr::PARTITIONING_AWGVORONOI );
+	nr::set_control( &agents, nr::CONTROL_CENTROID );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -61,13 +64,13 @@ int main() {
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
-	// smax = 1;
 	bool uquit = false;
 	clock_t begin, end;
 	begin = std::clock();
 
 	for (size_t s=1; s<=smax; s++) {
-		// std::printf("Iteration: %d\n", s);
+		std::printf("Iteration: %lu\r", s);
+
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
 			/* Create sensing region */
@@ -77,11 +80,10 @@ int main() {
 			nr::find_neighbors( &(agents[i]), agents );
 
 			/* Compute own cell using its neighbors vector */
-			nr::cell_awgvoronoi( &(agents[i]), region );
+			nr::compute_cell( &(agents[i]), region );
 
 			/* Compute own control input */
-			// nr::control_centroid( &(agents[i]) );
-			nr::control_free_arc( &(agents[i]) );
+			nr::compute_control( &(agents[i]) );
 		}
 
 		// nr::print( agents, false );

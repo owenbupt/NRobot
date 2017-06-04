@@ -268,14 +268,26 @@ double area( const Circle& C );
 bool is_point( const Circle& C );
 
 /*******************************************************/
-/********************* Error enum **********************/
+/*********************** enums *************************/
 /*******************************************************/
 enum error_type {
 	SUCCESS,
 	ERROR_INVALID_SUBJECT,
 	ERROR_INVALID_CLIP,
 	ERROR_CLIPPING_FAILED,
-	ERROR_PARTITIONING_FAILED
+	ERROR_PARTITIONING_FAILED,
+	ERROR_INVALID_PARTITIONING
+};
+
+enum partitioning_type{
+    PARTITIONING_VORONOI,
+    PARTITIONING_GVORONOI,
+    PARTITIONING_AWGVORONOI
+};
+
+enum control_type{
+    CONTROL_CENTROID,
+    CONTROL_FREE_ARC
 };
 
 } /* End of namespace */

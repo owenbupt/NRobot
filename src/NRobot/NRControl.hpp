@@ -28,6 +28,7 @@ namespace nr {
 /*******************************************************/
 /***************** Space partitioning ******************/
 /*******************************************************/
+int compute_cell( MA* agent, const Polygon& region );
 int cell_voronoi( MA* agent, const Polygon& region );
 int cell_gvoronoi( MA* agent, const Polygon& region );
 int cell_awgvoronoi( MA* agent, const Polygon& region );
@@ -35,6 +36,7 @@ int cell_awgvoronoi( MA* agent, const Polygon& region );
 /*******************************************************/
 /******************** Control laws *********************/
 /*******************************************************/
+void compute_control( MA* agent );
 void control_centroid( MA* agent );
 void control_free_arc( MA* agent );
 

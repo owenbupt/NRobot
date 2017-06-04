@@ -23,6 +23,29 @@
 /*******************************************************/
 /***************** Space partitioning ******************/
 /*******************************************************/
+int nr::compute_cell( nr::MA* agent, const nr::Polygon& region ) {
+	int err;
+	/* Select the partitioning scheme based on the relevant data member */
+	switch (agent->partitioning) {
+		case nr::PARTITIONING_VORONOI:
+		err = nr::cell_voronoi( agent, region );
+		break;
+
+		case nr::PARTITIONING_GVORONOI:
+		err = nr::cell_gvoronoi( agent, region );
+		break;
+
+		case nr::PARTITIONING_AWGVORONOI:
+		err = nr::cell_awgvoronoi( agent, region );
+		break;
+
+		default:
+		err = nr::ERROR_INVALID_PARTITIONING;
+		break;
+	}
+	return err;
+}
+
 int nr::cell_voronoi( nr::MA* agent, const nr::Polygon& region ) {
     /* Create a vector containing all agent positions */
     nr::Points positions;
@@ -92,7 +115,23 @@ int nr::cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
 /*******************************************************/
 /******************** Control laws *********************/
 /*******************************************************/
-void nr::control_centroid( MA* agent ) {
+
+void nr::compute_control( nr::MA* agent ) {
+	/* Select the control law based on the relevant data member */
+	switch (agent->control) {
+		case nr::CONTROL_CENTROID:
+		nr::control_centroid( agent );
+		break;
+
+		case nr::CONTROL_FREE_ARC:
+		nr::control_free_arc( agent );
+		break;
+
+		default: break;
+	}
+}
+
+void nr::control_centroid( nr::MA* agent ) {
     /* Vector from the agent to its cell centroid */
     nr::Point v;
     v = nr::centroid( agent->cell ) - agent->position;

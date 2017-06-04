@@ -1,6 +1,5 @@
 TODO
     fix header file logic
-    fix bug in awgv, check testNRPart
     MA
         add dynamics member?
     add error handling function to make code cleaner (return appropriate error message)
@@ -32,6 +31,8 @@ Improve functions
         more readable output when verbose is set
     nr::Polygon nr_hyperbola_branch()
         add cases for ray and plane minus ray cells
+    nr::Polygon nr_hyperbola_branch()
+        why is BA = -BA; needed when a < 0?
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )

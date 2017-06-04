@@ -415,8 +415,6 @@ int nr::awg_voronoi_cell(
 			double a = (seeds[subject].radius + seeds[j].radius + weights[j] - weights[subject]) / 2;
 			double c = nr::dist(seeds[subject].center, seeds[j].center) / 2;
 
-			std::printf("a%lu%lu %f  c%lu%lu %f\n", subject,j,a, subject,j,c);
-
 			/* Create the hyperbola branch with respect to j containing subject */
 			nr::Polygon h = nr_hyperbola_branch( seeds[subject].center, seeds[j].center, a, c, diam, points_per_branch );
 			/* Intersect the current cell with the branch with respect to j */

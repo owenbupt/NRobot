@@ -45,6 +45,8 @@ class MA {
 		Polygon cell;
 		Polygon rlimited_cell;
 		std::vector<MA> neighbors;
+		partitioning_type partitioning;
+		control_type control;
 
 		/****** Constructors ******/
 		MA();
@@ -114,6 +116,8 @@ void plot_communication( const MA& agent );
 /****** MAs ******/
 void create_sensing_disks( MAs* agents );
 void print( const MAs& agents, const bool verbose = false );
+void set_partitioning( MAs* agents, const partitioning_type partitioning );
+void set_control( MAs* agents, const control_type control );
 void plot_positions( const MAs& agents );
 void plot_cells( const MAs& agents );
 void plot_sensing( const MAs& agents );

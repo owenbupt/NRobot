@@ -34,6 +34,8 @@ nr::MA::MA() {
 	this->sensing_radius = 0;
 	this->uncertainty_radius = 0;
 	this->communication_radius = 0;
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_CENTROID;
 	/* The other data members use their default constructors */
 }
 
@@ -48,6 +50,8 @@ nr::MA::MA(
 	this->sensing_radius = sradius;
 	this->uncertainty_radius = uradius;
 	this->communication_radius = cradius;
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_CENTROID;
 	/* The other data members use their default constructors */
 }
 
@@ -64,6 +68,8 @@ nr::MA::MA(
 	this->sensing_radius = sradius;
 	this->uncertainty_radius = uradius;
 	this->communication_radius = cradius;
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_CENTROID;
 	/* The other data members use their default constructors */
 }
 
@@ -74,7 +80,7 @@ nr::MA::MA(
 /********************** MAs class **********************/
 /*******************************************************/
 nr::MAs::MAs() {
-	/* All members use the default MA constructor */
+	/* All data members use their default constructors */
 }
 
 nr::MAs::MAs(
@@ -262,6 +268,20 @@ void nr::print( const nr::MAs& agents, const bool verbose ) {
 	/* Print each agent */
 	for (size_t i=0; i<agents.size(); i++) {
 		nr::print( agents[i], verbose );
+	}
+}
+
+void nr::set_partitioning( nr::MAs* agents, const nr::partitioning_type partitioning ) {
+	/* Change the partitioning of each agent */
+	for (size_t i=0; i<agents->size(); i++) {
+		agents->at(i).partitioning = partitioning;
+	}
+}
+
+void nr::set_control( nr::MAs* agents, const nr::control_type control ) {
+	/* Change the control law of each agent */
+	for (size_t i=0; i<agents->size(); i++) {
+		agents->at(i).control = control;
 	}
 }
 
