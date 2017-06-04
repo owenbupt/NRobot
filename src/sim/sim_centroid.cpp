@@ -62,6 +62,8 @@ int main() {
 		PLOT_SCALE = 20;
 	#endif
 
+
+
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
 	bool uquit = false;
@@ -75,13 +77,10 @@ int main() {
 		for (size_t i=0; i<N; i++) {
 			/* Create sensing region */
 			nr::create_sensing_disk( &(agents[i]) );
-
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
-
-			/* Compute own cell using its neighbors vector */
+			/* Compute own cell using neighbors vector */
 			nr::compute_cell( &(agents[i]), region );
-
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
 		}
@@ -120,7 +119,7 @@ int main() {
 		}
 	}
 
-	// nr::print( agents[1].sensing );
+
 
 	/****** Print simulation info ******/
 	end = clock();

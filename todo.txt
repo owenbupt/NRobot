@@ -17,11 +17,11 @@ Testing
 	test EVERYTHING
 
 Improve functions
-	double n::diameter( const Polygon& P )
-		use convex hull to reduce complexity in non-convex polygons
 	double n::area( const Polygon& P )
 		How does it handle non-simple polygons? (check clipper)
 	n::Point n::centroid( const n::Polygon& P )
+        make it work for polygons with multiple contours
+            (add centroids of external and subtract centroids of internal contours?)
 		How does it handle non-simple polygons?
     bool nr::in( const nr::Point& A, const nr::Polygon& P )
         make it work for polygons with multiple contours
@@ -31,12 +31,13 @@ Improve functions
         more readable output when verbose is set
     nr::Polygon nr_hyperbola_branch()
         add cases for ray and plane minus ray cells
-    nr::Polygon nr_hyperbola_branch()
         why is BA = -BA; needed when a < 0?
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
         make contour CW on setup (do not use reverse_order)
+    double n::diameter( const Polygon& P )
+		use convex hull to reduce complexity in non-convex polygons
 
 --------------------------------------------------------------------------------
 
