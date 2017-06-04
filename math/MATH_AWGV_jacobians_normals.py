@@ -93,7 +93,8 @@ nj = - sign(aj) * nj / nj.norm();
 Jni = Ji*ni
 Jnj = Jj*nj
 
+Jin = Hij.jacobian(Matrix([xi, yi]))
 # print("Hij=")
 # pprint(Hij)
-print("Jni=")
-pprint(Jni)
+# print("Jni=")
+# pprint(Jni)
