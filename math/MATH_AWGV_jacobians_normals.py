@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
 
+# Using SymPy 1.0
 # http://docs.sympy.org/latest/index.html
-# http://docs.sympy.org/latest/modules/printing.html#module-sympy.printing.ccode
 
 # TODO
 # find how not to print xi as greek ksi in unicode pprint
@@ -25,11 +25,11 @@
 from sympy import *
 from sympy.printing import print_ccode
 from time import time
-init_printing(use_unicode=True)
+init_printing(use_unicode=False,wrap_line=False)
 begin = time()
 
 x, y, xi, yi, xj, yj, ri, rj, Ri, Rj, t = \
-symbols("x, y, x_i, yi, xj, yj, ri, rj, Ri, Rj, t", real=True)
+symbols("x, y, xi, yi, xj, yj, ri, rj, Ri, Rj, t", real=True)
 
 # Hyperbola parameters
 qi = Matrix([xi, yi])
@@ -102,10 +102,42 @@ nj = - sign(aj) * nj
 Jni = Ji*ni
 Jnj = Jj*nj
 
-# print("Hij=")
-# pprint(Hij)
-# print("Jni=")
-# pprint(Jni)
+# Create c functions ###########################################################
+# Jni
+f = open('Jn.c','w')
+f.write( "/* This file was created by SymPy 1.0 */\n" )
+
+f.write( "double nr_FJni_x( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj ) {\n\treturn " )
+f.write( ccode(Jni[0]) )
+f.write( ";\n}\n\n" )
+
+f.write( "double nr_FJni_y( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj ) {\n\treturn " )
+f.write( ccode(Jni[1]) )
+f.write( ";\n}\n\n" )
+
+f.write( "double nr_FJnj_x( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj ) {\n\treturn " )
+f.write( ccode(Jnj[0]) )
+f.write( ";\n}\n\n" )
+
+f.write( "double nr_FJnj_y( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj ) {\n\treturn " )
+f.write( ccode(Jnj[1]) )
+f.write( ";\n}\n" )
+
+f.close()
+
+# Export expressions in txt ####################################################
+# Jni
+f = open('Jni.txt','w')
+f.write( pretty(Jni[0]) )
+f.write( "\n\n" )
+f.write( pretty(Jni[1]) )
+f.close()
+# Jnj
+f = open('Jnj.txt','w')
+f.write( pretty(Jnj[0]) )
+f.write( "\n\n" )
+f.write( pretty(Jnj[1]) )
+f.close()
 
 end = time()
-print("Elapsed time "+str(end-begin))
+print("Elapsed time "+"{0:.2f}".format(end-begin)+" seconds")
