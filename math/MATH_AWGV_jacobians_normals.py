@@ -102,5 +102,4 @@ Jnj = Jj*nj
 # pprint(Jni)
 
 end = time()
-print("a")
 print("Elapsed time "+str(end-begin))
