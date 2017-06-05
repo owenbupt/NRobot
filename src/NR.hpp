@@ -29,7 +29,6 @@
 #include "NRPart/NRPart.hpp"
 
 #include "NRobot/NRobot.hpp"
-#include "NRobot/NRControl.hpp"
 
 // #if NR_PLOT_AVAILABLE
 #include "NRPlot/NRPlot.hpp"

@@ -279,17 +279,6 @@ enum error_type {
 	ERROR_INVALID_PARTITIONING
 };
 
-enum partitioning_type{
-    PARTITIONING_VORONOI,
-    PARTITIONING_GVORONOI,
-    PARTITIONING_AWGVORONOI
-};
-
-enum control_type{
-    CONTROL_CENTROID,
-    CONTROL_FREE_ARC
-};
-
 } /* End of namespace */
 
 #endif

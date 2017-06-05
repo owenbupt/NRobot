@@ -149,6 +149,114 @@ void nr::info() {
 
 
 
+/*******************************************************/
+/***************** Space partitioning ******************/
+/*******************************************************/
+
+int nr_cell_voronoi( nr::MA* agent, const nr::Polygon& region ) {
+    /* Create a vector containing all agent positions */
+    nr::Points positions;
+    /* Add the position of the current agent to the vector */
+    positions.push_back( agent->position );
+    /* Add the positions of the current agent's neighbors to the vector */
+    for (size_t j=0; j<agent->neighbors.size(); j++) {
+        positions.push_back( agent->neighbors[j].position );
+    }
+
+    /* Compute voronoi cell */
+    int err = nr::voronoi_cell( region, positions, 0, &(agent->cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+    return nr::SUCCESS;
+}
+
+int nr_cell_gvoronoi( nr::MA* agent, const nr::Polygon& region ) {
+    /* Create a vector containing all agent positioning uncertainty disks */
+    nr::Circles uncert_disks;
+    /* Add the positioning uncertainty of the current agent to the vector */
+    uncert_disks.push_back( nr::Circle(agent->position, agent->uncertainty_radius) );
+    /* Add the positioning uncertainty of the current agent's neighbors to the vector */
+    for (size_t j=0; j<agent->neighbors.size(); j++) {
+        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].uncertainty_radius) );
+    }
+
+    /* Compute voronoi cell */
+    int err = nr::g_voronoi_cell( region, uncert_disks, 0, &(agent->cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+    return nr::SUCCESS;
+}
+
+int nr_cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
+    /* Create vectors containing all agent positioning uncertainty disks and sensing radii */
+    nr::Circles uncert_disks;
+    std::vector<double> sensing_radii;
+    /* Add the positioning uncertainty and sensing radius of the current agent to the vector */
+    uncert_disks.push_back( nr::Circle(agent->position, agent->uncertainty_radius) );
+    sensing_radii.push_back( agent->sensing_radius );
+    /* Add the positioning uncertainty and sensing radii of the current agent's neighbors to the vector */
+    for (size_t j=0; j<agent->neighbors.size(); j++) {
+        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].uncertainty_radius) );
+        sensing_radii.push_back( agent->neighbors[j].sensing_radius );
+    }
+
+    /* Compute voronoi cell */
+    int err = nr::awg_voronoi_cell( region, uncert_disks, sensing_radii, 0, &(agent->cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+    return nr::SUCCESS;
+}
+
+
+
+
+/*******************************************************/
+/******************** Control laws *********************/
+/*******************************************************/
+
+void nr_control_centroid( nr::MA* agent ) {
+    /* Vector from the agent to its cell centroid */
+    nr::Point v;
+    v = nr::centroid( agent->cell ) - agent->position;
+    agent->velocity_translational = v;
+}
+
+void nr_control_free_arc( nr::MA* agent ) {
+    /* Initialize the vector resulting from the integral to zero */
+    nr::Point integral_vector;
+    /* Number of sensing region edges */
+    size_t Ne = agent->sensing.contour[0].size();
+    /* Loop over all sensing region edges */
+    for (size_t k=0; k<Ne; k++) {
+        nr::Point v1 = agent->sensing.contour[0][k];
+        nr::Point v2 = agent->sensing.contour[0][(k+1) % Ne];
+
+        /* Check if both edge vertices are inside the agent's cell */
+        bool v1_in_cell = nr::in( v1, agent->cell );
+        bool v2_in_cell = nr::in( v2, agent->cell );
+        if (v1_in_cell && v2_in_cell) {
+            /* Add the edge to the integral */
+            /* Since external contours are CW, the vector v2-v1 rotated by 90
+               degrees points outwards */
+            integral_vector += nr::rotate( v2-v1, M_PI/2 );
+        }
+    }
+
+    agent->velocity_translational = integral_vector;
+}
+
+
+
+
 /****** MA ******/
 void nr::create_sensing_disk( nr::MA* agent ) {
 	nr::Circle C (agent->position, agent->sensing_radius);
@@ -175,6 +283,44 @@ void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
 				agent->neighbors.back().communication_radius = agents[j].communication_radius;
 			}
 		}
+	}
+}
+
+int nr::compute_cell( nr::MA* agent, const nr::Polygon& region ) {
+	int err;
+	/* Select the partitioning scheme based on the relevant data member */
+	switch (agent->partitioning) {
+		case nr::PARTITIONING_VORONOI:
+		err = nr_cell_voronoi( agent, region );
+		break;
+
+		case nr::PARTITIONING_GVORONOI:
+		err = nr_cell_gvoronoi( agent, region );
+		break;
+
+		case nr::PARTITIONING_AWGVORONOI:
+		err = nr_cell_awgvoronoi( agent, region );
+		break;
+
+		default:
+		err = nr::ERROR_INVALID_PARTITIONING;
+		break;
+	}
+	return err;
+}
+
+void nr::compute_control( nr::MA* agent ) {
+	/* Select the control law based on the relevant data member */
+	switch (agent->control) {
+		case nr::CONTROL_CENTROID:
+		nr_control_centroid( agent );
+		break;
+
+		case nr::CONTROL_FREE_ARC:
+		nr_control_free_arc( agent );
+		break;
+
+		default: break;
 	}
 }
 

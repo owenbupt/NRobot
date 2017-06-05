@@ -25,6 +25,23 @@
 namespace nr {
 
 /*******************************************************/
+/***************** Space partitioning ******************/
+/*******************************************************/
+enum partitioning_type{
+    PARTITIONING_VORONOI,
+    PARTITIONING_GVORONOI,
+    PARTITIONING_AWGVORONOI
+};
+
+/*******************************************************/
+/******************** Control laws *********************/
+/*******************************************************/
+enum control_type{
+    CONTROL_CENTROID,
+    CONTROL_FREE_ARC
+};
+
+/*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
 /*!
@@ -106,6 +123,8 @@ void info();
 /****** MA ******/
 void create_sensing_disk( MA* agent );
 void find_neighbors( MA* agent, const MAs& agents );
+int compute_cell( MA* agent, const Polygon& region );
+void compute_control( MA* agent );
 void print( const MA& agent, const bool verbose = false );
 void plot_position( const MA& agent );
 void plot_cell( const MA& agent );
