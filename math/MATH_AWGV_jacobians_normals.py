@@ -81,18 +81,24 @@ Jj[0,1] = diff(Hji[0], yi) # dx/dyi
 Jj[1,0] = diff(Hji[1], xi) # dy/dxi
 Jj[1,1] = diff(Hji[1], yi) # dy/dyi
 
-# Normal vectors
+# Hyperbola boundary derivatives
 dHij = diff(Hij, t)
 ddHij = diff(dHij, t)
 dHji = diff(Hji, t)
 ddHji = diff(dHji, t)
-ni = ddHij - ddHij.dot( dHij/dHij.norm() ) * dHij/dHij.norm();
-nj = ddHji - ddHji.dot( dHji/dHji.norm() ) * dHji/dHji.norm();
+# Normal vectors (direction towards the center of curvature)
+ni = ddHij - ddHij.dot( dHij/dHij.norm() ) * dHij/dHij.norm()
+nj = ddHji - ddHji.dot( dHji/dHji.norm() ) * dHji/dHji.norm()
+# Create unit normal vectors
+ni = ni / ni.norm()
+nj = nj / nj.norm()
+# Make normal vectors outwards pointing
 # Whether the cell is convex or not depends on the sign of a
-ni = - sign(ai) * ni / ni.norm();
-nj = - sign(aj) * nj / nj.norm();
+# If the cell is convex, the normal vector direction must be reversed
+ni = - sign(ai) * ni
+nj = - sign(aj) * nj
 
-# Jacobian-normal Products
+# Jacobian-normal products
 Jni = Ji*ni
 Jnj = Jj*nj
 
