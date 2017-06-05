@@ -20,10 +20,13 @@
 
 # TODO
 # find how not to print xi as greek ksi in unicode pprint
+# use jacobian matrix method
 
 from sympy import *
 from sympy.printing import print_ccode
+from time import time
 init_printing(use_unicode=True)
+begin = time()
 
 x, y, xi, yi, xj, yj, ri, rj, Ri, Rj, t = \
 symbols("x, y, x_i, yi, xj, yj, ri, rj, Ri, Rj, t", real=True)
@@ -50,7 +53,7 @@ class cos_atan(Function):
 class sin_atan(Function):
     @classmethod
     def eval(cls, y, x):
-        return x/sqrt(x**2+y**2)
+        return y/sqrt(x**2+y**2)
 
 # Rotation matrices
 Rij = Matrix([[cos_atan( yi-yj, xi-xj ), -sin_atan( yi-yj, xi-xj )], \
@@ -93,8 +96,11 @@ nj = - sign(aj) * nj / nj.norm();
 Jni = Ji*ni
 Jnj = Jj*nj
 
-Jin = Hij.jacobian(Matrix([xi, yi]))
 # print("Hij=")
 # pprint(Hij)
 # print("Jni=")
 # pprint(Jni)
+
+end = time()
+print("a")
+print("Elapsed time "+str(end-begin))
