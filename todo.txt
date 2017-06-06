@@ -1,5 +1,7 @@
 TODO
     Jn functions are wrong
+        differences in jacobians
+        normals seem wrong for ai > 0
     fix header file logic
     MA
         add dynamics member?
