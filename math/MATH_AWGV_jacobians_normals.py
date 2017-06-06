@@ -25,7 +25,9 @@
 from sympy import *
 from sympy.printing import print_ccode
 from time import time
-init_printing(use_unicode=False,wrap_line=False)
+from shutil import copyfile
+import datetime
+init_printing(use_unicode=False)
 begin = time()
 
 x, y, xi, yi, xj, yj, ri, rj, Ri, Rj, t = \
@@ -34,7 +36,7 @@ symbols("x, y, xi, yi, xj, yj, ri, rj, Ri, Rj, t", real=True)
 # Hyperbola parameters
 qi = Matrix([xi, yi])
 qj = Matrix([xj, yj])
-c = sqrt( (xi-xj)**2 + (yi-yj)**2 )
+c = sqrt( (xi-xj)**2 + (yi-yj)**2 ) / 2
 ai = (ri + rj + Rj - Ri) / 2;
 bi = sqrt(c**2 - ai**2);
 aj = (ri + rj + Ri - Rj) / 2;
@@ -90,22 +92,28 @@ ddHji = diff(dHji, t)
 ni = ddHij - ddHij.dot( dHij/dHij.norm() ) * dHij/dHij.norm()
 nj = ddHji - ddHji.dot( dHji/dHji.norm() ) * dHji/dHji.norm()
 # Create unit normal vectors
-ni = ni / ni.norm()
-nj = nj / nj.norm()
+# ni = ni / ni.norm()
+# nj = nj / nj.norm()
 # Make normal vectors outwards pointing
 # Whether the cell is convex or not depends on the sign of a
 # If the cell is convex, the normal vector direction must be reversed
-ni = - sign(ai) * ni
-nj = - sign(aj) * nj
+# ni = - sign(ai) * ni
+# nj = - sign(aj) * nj
+ni = - sign(ai) * ni / ni.norm()
+nj = - sign(aj) * nj / nj.norm()
 
 # Jacobian-normal products
 Jni = Ji*ni
 Jnj = Jj*nj
 
 # Create c functions ###########################################################
-# Jni
-f = open('Jn.c','w')
-f.write( "/* This file was created by SymPy 1.0 */\n" )
+now = datetime.datetime.now()
+# Create source file
+f = open('Jn.cpp','w')
+f.write( "/* This file was created by SymPy 1.0 on "+str(now)+" */\n\n" )
+f.write( "#include <cmath>\n\n" )
+f.write( "#include \"Jn.hpp\"\n\n" )
+f.write( "using namespace std;\n\n" )
 
 f.write( "double nr_FJni_x( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj ) {\n\treturn " )
 f.write( ccode(Jni[0]) )
@@ -125,18 +133,34 @@ f.write( ";\n}\n" )
 
 f.close()
 
+# Create header file
+f = open('Jn.hpp','w')
+f.write( "/* This file was created by SymPy 1.0 on "+str(now)+" */\n\n" )
+f.write( "#ifndef __Jn_hpp\n" )
+f.write( "#define __Jn_hpp\n\n" )
+f.write( "double nr_FJni_x( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj );\n" )
+f.write( "double nr_FJni_y( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj );\n" )
+f.write( "double nr_FJnj_x( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj );\n" )
+f.write( "double nr_FJnj_y( double t, double xi, double yi, double ri, double Ri, double xj, double yj, double rj, double Rj );\n" )
+f.write( "\n#endif\n" )
+f.close()
+
+# Copy files to source code directory
+copyfile( './Jn.cpp', '../src/NRobot/Jn.cpp' )
+copyfile( './Jn.hpp', '../src/NRobot/Jn.hpp' )
+
 # Export expressions in txt ####################################################
 # Jni
 f = open('Jni.txt','w')
-f.write( pretty(Jni[0]) )
+f.write( pretty(Jni[0],wrap_line=False) )
 f.write( "\n\n" )
-f.write( pretty(Jni[1]) )
+f.write( pretty(Jni[1],wrap_line=False) )
 f.close()
 # Jnj
 f = open('Jnj.txt','w')
-f.write( pretty(Jnj[0]) )
+f.write( pretty(Jnj[0],wrap_line=False) )
 f.write( "\n\n" )
-f.write( pretty(Jnj[1]) )
+f.write( pretty(Jnj[1],wrap_line=False) )
 f.close()
 
 end = time()

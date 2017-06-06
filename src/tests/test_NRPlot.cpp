@@ -61,4 +61,6 @@ int main() {
     #else
         std::printf("SDL 2 is required for NRPlot\n");
     #endif
+
+    return 0;
 }

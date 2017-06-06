@@ -1,4 +1,5 @@
 TODO
+    Jn functions are wrong
     fix header file logic
     MA
         add dynamics member?
@@ -12,6 +13,7 @@ TODO
     Change code style in function declarations-definitions (one argument per line)
     make plotting more user friendly (mouse control?)
 	add testing executables (and automated tests?)
+    in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
 
 Testing
 	test EVERYTHING

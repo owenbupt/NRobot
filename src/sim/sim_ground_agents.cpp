@@ -137,4 +137,6 @@ int main() {
 		}
 		nr::plot_quit();
 	#endif
+
+	return 0;
 }
