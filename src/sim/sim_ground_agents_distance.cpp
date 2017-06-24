@@ -30,13 +30,12 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 10;
+	double Tfinal = 100;
 	double Tstep = 0.01;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
 	nr::read( &region, "resources/region_sq.txt", true);
-	double rdiameter = diameter( region );
 
 	/****** Setup agents ******/
 	/* Node initial positions */
@@ -48,14 +47,13 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
-	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
-	std::vector<double> cradii (N, rdiameter);
+	std::vector<double> sradii { 4.0, 4.0, 4.0, 4.0 };
+	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
+	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
 	/* Initialize agents */
 	nr::MAs agents (P, sradii, uradii, cradii);
-	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
-	nr::set_control( &agents, nr::CONTROL_CENTROID );
+	/* Set control law */
+	nr::set_control( &agents, nr::CONTROL_DISTANCE );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE

@@ -254,6 +254,22 @@ void nr_control_free_arc( nr::MA* agent ) {
     agent->velocity_translational = integral_vector;
 }
 
+void nr_control_distance( nr::MA* agent ) {
+	/* Initialize the control law vector */
+	nr::Point control_input;
+
+	/* Loop over all neighbors */
+	for (size_t j=0; j<agent->neighbors.size(); j++) {
+        /* Examine only neighbors within communication distance */
+		if (nr::dist(agent->position, agent->neighbors[j].position) <= agent->communication_radius) {
+			nr::Point v = agent->position - agent->neighbors[j].position;
+			control_input += 1/(nr::norm(v) + 1) * v / nr::norm(v);
+		}
+    }
+
+	agent->velocity_translational = control_input;
+}
+
 
 
 
@@ -318,6 +334,10 @@ void nr::compute_control( nr::MA* agent ) {
 
 		case nr::CONTROL_FREE_ARC:
 		nr_control_free_arc( agent );
+		break;
+
+		case nr::CONTROL_DISTANCE:
+		nr_control_distance( agent );
 		break;
 
 		default: break;

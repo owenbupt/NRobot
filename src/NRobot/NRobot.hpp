@@ -38,7 +38,8 @@ enum partitioning_type{
 /*******************************************************/
 enum control_type{
     CONTROL_CENTROID,
-    CONTROL_FREE_ARC
+    CONTROL_FREE_ARC,
+    CONTROL_DISTANCE
 };
 
 /*******************************************************/
