@@ -2,6 +2,8 @@ TODO
     Jn functions are wrong
         differences in jacobians
         normals seem wrong for ai > 0
+        normals
+            when plotting make sure to use the same vertices used to calculate the normals
     fix header file logic
     MA
         add dynamics member?

@@ -28,12 +28,14 @@
 #include "J.hpp"
 
 int main() {
+    nr::info();
+
     /* Setup agents */
-    double c = 1;
+    double c = 2;
     double xi = -c;
     double yi = 0;
-    double ri = 0.05;
-    double Ri = 0.9;
+    double ri = 0.1;
+    double Ri = 0.8;
     double xj = c;
     double yj = 0;
     double rj = 0.1;
@@ -41,7 +43,7 @@ int main() {
     double ai = ri + rj + Rj - Ri;
 
     /* Create parameter t vector */
-    size_t Nt = 100;
+    size_t Nt = 101;
     std::vector<double> t (Nt, 0);
     double tmax = std::ceil( std::acosh(15/std::abs(ai)) );
     double dt = 2*tmax/(Nt-1);
@@ -111,6 +113,71 @@ int main() {
         }
     }
     std::fclose(fp);
+
+    std::printf("Results written to files\n");
+
+    /* Calculate AWGV cells */
+    nr::Polygon region;
+	nr::read( &region, "resources/region_sq.txt", true);
+    size_t N = 2;
+    nr::Points P;
+	P.push_back( nr::Point(xi,yi) );
+	P.push_back( nr::Point(xj,yj) );
+    std::vector<double> uradii { ri, rj };
+	std::vector<double> sradii { Ri, Rj };
+    nr::Circles udisks;
+	for (size_t i=0; i<N; i++) {
+		udisks.push_back( nr::Circle(P[i], uradii[i]) );
+	}
+    nr::Polygons AWGV;
+	AWGV.resize(udisks.size());
+	for (size_t i=0; i<udisks.size(); i++) {
+		nr::awg_voronoi_cell( region, udisks, sradii, i, &(AWGV[i]) );
+	}
+
+    /* Plot */
+	#if NR_PLOT_AVAILABLE
+		if (nr::plot_init()) exit(1);
+        PLOT_BACKGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+		PLOT_SCALE = 50;
+		bool uquit = false;
+
+		while (!uquit) {
+			nr::plot_clear_render();
+			nr::plot_show_axes();
+
+            /* Black for region */
+			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0x00, 0xFF};
+			nr::plot_polygon( region );
+
+            /* Blue for agent i */
+			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
+            nr::plot_point( nr::Point(xi,yi), PLOT_FOREGROUND_COLOR, 2 );
+            nr::plot_circle( nr::Circle( nr::Point(xi,yi), ri ) );
+            nr::plot_circle( nr::Circle( nr::Point(xi,yi), Ri ) );
+            nr::plot_polygon( AWGV[0] );
+            /* Plot normal vectors */
+            for (size_t i=0; i<AWGV[0].contour[0].size(); i++) {
+                nr::plot_segment( AWGV[0].contour[0][i], AWGV[0].contour[0][i] + nr::Point(ni_x[i], ni_y[i]) );
+            }
+
+            /* Red for agent j */
+			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
+            nr::plot_point( nr::Point(xj,yj), PLOT_FOREGROUND_COLOR, 2 );
+            nr::plot_circle( nr::Circle( nr::Point(xj,yj), rj ) );
+            nr::plot_circle( nr::Circle( nr::Point(xj,yj), Rj ) );
+            nr::plot_polygon( AWGV[1] );
+            /* Plot normal vectors */
+            for (size_t i=0; i<AWGV[1].contour[0].size(); i++) {
+                nr::plot_segment( AWGV[1].contour[0][i], AWGV[1].contour[0][i] + nr::Point(nj_x[i], nj_y[i]) );
+            }
+
+
+			nr::plot_render();
+			uquit = nr::plot_handle_input();
+		}
+		nr::plot_quit();
+	#endif
 
     return 0;
 }

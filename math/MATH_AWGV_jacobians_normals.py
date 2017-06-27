@@ -20,6 +20,7 @@
 
 # TODO
 # find how not to print xi as greek ksi in unicode pprint
+# add std:: before math functions
 
 from sympy import *
 from sympy.printing import print_ccode
@@ -55,7 +56,7 @@ bj = sqrt(c**2 - aj**2);
 
 # Hyperbolic branches
 Hij = Matrix([ai*cosh(t), bi*sinh(t)])
-Hji = Matrix([aj*cosh(t), bj*sinh(t)])
+Hji = Matrix([-aj*cosh(t), bj*sinh(t)])
 
 # Functions for cos(atan(y,x)) and sin(atan(y,x))
 class cos_atan(Function):

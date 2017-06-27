@@ -106,5 +106,12 @@ namespace nr {
 		const SDL_Color& color = PLOT_FOREGROUND_COLOR
 	);
 	/* Plot a list of circles. Optionally set their color */
+
+	void plot_segment(
+		const Point&,
+		const Point&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a line segment defined by two points. Optionally set its color */
 }
 #endif

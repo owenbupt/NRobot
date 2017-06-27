@@ -410,3 +410,23 @@ void nr::plot_circles(
 	/* Plot the polygon */
 	nr::plot_polygons( circle_polys, color );
 }
+
+void nr::plot_segment(
+	const nr::Point& P1,
+	const nr::Point& P2,
+	const SDL_Color& color
+) {
+	SDL_SetRenderDrawColor( PLOT_RENDERER,
+		color.r,
+		color.g,
+		color.b,
+		color.a );
+
+	/* Draw the line between the vertices */
+	/* Note that the y axis is inverted */
+	SDL_RenderDrawLine( PLOT_RENDERER,
+		PLOT_WIDTH/2.0 + PLOT_SCALE * (P1.x + PLOT_X_OFFSET),
+		PLOT_HEIGHT/2.0 - PLOT_SCALE * (P1.y + PLOT_Y_OFFSET),
+		PLOT_WIDTH/2.0 + PLOT_SCALE * (P2.x + PLOT_X_OFFSET),
+		PLOT_HEIGHT/2.0 - PLOT_SCALE * (P2.y + PLOT_Y_OFFSET) );
+}
