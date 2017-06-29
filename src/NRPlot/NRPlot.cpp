@@ -78,22 +78,22 @@ bool nr_handle_keyboard_down(SDL_Event& e) {
 
 		/* UP pressed - Move up */
 		case SDLK_UP:
-		PLOT_Y_OFFSET -= OFFSET_INCREMENT;
+		PLOT_Y_OFFSET -= PLOT_SCALE * OFFSET_INCREMENT;
 		break;
 
 		/* DOWN pressed - Move down */
 		case SDLK_DOWN:
-		PLOT_Y_OFFSET += OFFSET_INCREMENT;
+		PLOT_Y_OFFSET += PLOT_SCALE * OFFSET_INCREMENT;
 		break;
 
 		/* LEFT pressed - Move left */
 		case SDLK_LEFT:
-		PLOT_X_OFFSET += OFFSET_INCREMENT;
+		PLOT_X_OFFSET += PLOT_SCALE * OFFSET_INCREMENT;
 		break;
 
 		/* RIGHT pressed - Move right */
 		case SDLK_RIGHT:
-		PLOT_X_OFFSET -= OFFSET_INCREMENT;
+		PLOT_X_OFFSET -= PLOT_SCALE * OFFSET_INCREMENT;
 		break;
 	}
 

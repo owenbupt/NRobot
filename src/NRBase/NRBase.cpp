@@ -794,6 +794,17 @@ void nr::rotate( nr::Polygon* P, double theta, bool around_origin ) {
 	}
 }
 
+void nr::scale( nr::Polygon* P, double scale_factor ) {
+	/* Loop over all contours */
+	for (size_t i=0; i<P->contour.size(); i++) {
+		/* Loop over all vertices */
+		for (size_t j=0; j<P->contour[i].size(); j++) {
+			/* Rotate the vertex */
+			P->contour[i][j] = scale_factor * P->contour[i][j];
+		}
+	}
+}
+
 nr::Contour nr::convex_hull( const nr::Polygon& P ) {
 	/* https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain */
 	return nr::Contour();

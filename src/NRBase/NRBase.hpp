@@ -258,6 +258,7 @@ void make_empty( Polygon* P );
 void fix_orientation( Polygon* P, bool follow_hole_flags = true );
 void translate( Polygon* P, const Point& p );
 void rotate( Polygon* P, double theta, bool around_origin = false );
+void scale( Polygon* P, double scale_factor );
 Contour convex_hull( const Polygon& P ); 							/* TODO */
 
 /****** Polygons ******/
