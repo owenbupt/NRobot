@@ -56,7 +56,7 @@ bj = sqrt(c**2 - aj**2);
 
 # Hyperbolic branches
 Hij = Matrix([ai*cosh(t), bi*sinh(t)])
-Hji = Matrix([-aj*cosh(t), bj*sinh(t)])
+Hji = Matrix([aj*cosh(t), bj*sinh(t)]) # From the hyperbolic branch definition, this doesn't seem to need a minus
 
 # Functions for cos(atan(y,x)) and sin(atan(y,x))
 class cos_atan(Function):

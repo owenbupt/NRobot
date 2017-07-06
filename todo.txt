@@ -1,8 +1,10 @@
 TODO
     Jn functions are wrong
-        differences in jacobians
-        normals seem ok in NR plots
+        jacobians
+            they are zero for some reason
         normals
+            normals of j need a minus in x coordinate
+            removed the minus in from of aj in Hji creation
             when plotting make sure to use the same vertices used to calculate the normals
     fix header file logic
     MA

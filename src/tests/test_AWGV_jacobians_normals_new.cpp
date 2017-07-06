@@ -40,8 +40,8 @@ int main() {
     q.push_back( nr::Point(-c,0) );
     q.push_back( nr::Point(c,0) );
     size_t N = q.size();
-    std::vector<double> r { 0.1, 0.1 };
-	std::vector<double> R { 0.8, 0.8 };
+    std::vector<double> r { 0.5, 0.5 };
+	std::vector<double> R { 1.5, 1.5 };
     std::vector<double> Rg;
     for (size_t k=0; k<N; k++) {
         Rg.push_back( R[k]-r[k] );
@@ -98,16 +98,49 @@ int main() {
         Jni_y[i] = nr_FJni_y( ti[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
     }
 
+
+    /* Agent j */
+    Nv = AWGV[j].contour[0].size();
+    std::vector<double> tj (Nv, 0);
+    std::vector<double> nj_x (Nv, 0), nj_y (Nv, 0);
+    std::vector<double> Jj_x_xi (Nv, 0), Jj_x_yi (Nv, 0), Jj_y_xi (Nv, 0), Jj_y_yi (Nv, 0);
+    std::vector<double> Jnj_x (Nv, 0), Jnj_y (Nv, 0);
+    for (size_t k=0; k<AWGV[j].contour[0].size(); k++) {
+        /* Get the current cell vertex */
+        nr::Point v = AWGV[j].contour[0][k];
+        /* Translate */
+        v = v - nr::midpoint( q[j], q[i] );
+        /* Rotate */
+        double theta = std::atan2(q[i].y-q[j].y, q[i].x-q[j].x);;
+        v = nr::rotate( v, -theta );
+        /* Find the t parameter value */
+        double aj = (r[j] + r[i] + R[i] - R[j])/2;
+        double c = nr::norm( q[j]-q[i] )/2;
+        double bj = std::sqrt( c*c - aj*aj );
+        tj[k] = -std::asinh(v.y/bj); /* WHY IS MINUS NEEDED HERE? */
+
+        /* Normal */
+        nj_x[k] = nr_Fnj_x( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        nj_y[k] = nr_Fnj_y( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        /* Jacobian */
+        Jj_x_xi[i] = nr_FJj_x_xi( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        Jj_x_yi[i] = nr_FJj_x_yi( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        Jj_y_xi[i] = nr_FJj_y_xi( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        Jj_y_yi[i] = nr_FJj_y_yi( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        /* Jacobian-Normal product */
+        Jnj_x[i] = nr_FJnj_x( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+        Jnj_y[i] = nr_FJnj_y( tj[k], q[i].x, q[i].y, r[i], R[i], q[j].x, q[j].y, r[j], R[j] );
+    }
+
+
     /************************* Export to files ********************************/
     FILE* fp;
     fp = std::fopen("bin/J_values.txt", "w");
     if (fp != NULL) {
         for (size_t k=0; k<Nv; k++) {
-            std::fprintf(fp, "% lf % lf % lf % lf % lf\n", ti[k],
-                Ji_x_xi[k], Ji_x_yi[k], Ji_y_xi[k], Ji_y_yi[k]);
-            // std::fprintf(fp, "% lf % lf % lf % lf % lf % lf % lf % lf % lf\n", t[k],
-            //     Ji_x_xi[k], Ji_x_yi[k], Ji_y_xi[k], Ji_y_yi[k],
-            //     Jj_x_xi[k], Jj_x_yi[k], Jj_y_xi[k], Jj_y_yi[k]);
+            std::fprintf(fp, "% lf % lf % lf % lf % lf % lf % lf % lf % lf\n", ti[k],
+                Ji_x_xi[k], Ji_x_yi[k], Ji_y_xi[k], Ji_y_yi[k],
+                Jj_x_xi[k], Jj_x_yi[k], Jj_y_xi[k], Jj_y_yi[k]);
         }
     }
     std::fclose(fp);
@@ -115,10 +148,8 @@ int main() {
     fp = std::fopen("bin/n_values.txt", "w");
     if (fp != NULL) {
         for (size_t k=0; k<Nv; k++) {
-            std::fprintf(fp, "% lf % lf % lf\n", ti[k],
-                ni_x[k], ni_y[k]);
-            // std::fprintf(fp, "% lf % lf % lf % lf % lf\n", t[k],
-            //     ni_x[k], ni_y[k], nj_x[k], nj_y[k]);
+            std::fprintf(fp, "% lf % lf % lf % lf % lf\n", ti[k],
+                ni_x[k], ni_y[k], nj_x[k], nj_y[k]);
         }
     }
     std::fclose(fp);
@@ -126,10 +157,8 @@ int main() {
     fp = std::fopen("bin/Jn_values.txt", "w");
     if (fp != NULL) {
         for (size_t k=0; k<Nv; k++) {
-            std::fprintf(fp, "% lf % lf % lf\n", ti[k],
-                Jni_x[k], Jni_y[k]);
-            // std::fprintf(fp, "% lf % lf % lf % lf % lf\n", t[k],
-            //     Jni_x[k], Jni_y[k], Jnj_x[k], Jnj_y[k]);
+            std::fprintf(fp, "% lf % lf % lf % lf % lf\n", ti[k],
+                Jni_x[k], Jni_y[k], Jnj_x[k], Jnj_y[k]);
         }
     }
     std::fclose(fp);
@@ -186,7 +215,7 @@ int main() {
             /* Plot normal vectors */
             if (PLOT_NORMALS) {
                 for (size_t k=0; k<AWGV[j].contour[0].size(); k++) {
-                    // nr::plot_segment( AWGV[j].contour[0][k], AWGV[j].contour[0][k] + nr::Point(nj_x[k], nj_y[k]) );
+                    nr::plot_segment( AWGV[j].contour[0][k], AWGV[j].contour[0][k] + nr::Point(nj_x[k], nj_y[k]) );
                 }
             }
 
