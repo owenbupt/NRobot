@@ -35,7 +35,7 @@ double PLOT_Y_OFFSET = 0.0;
 /*****************************************************************/
 
 #define SCALE_INCREMENT 1.0
-#define OFFSET_INCREMENT 0.05
+#define OFFSET_INCREMENT 5
 
 
 SDL_Window *PLOT_WINDOW = NULL;
@@ -78,22 +78,22 @@ bool nr_handle_keyboard_down(SDL_Event& e) {
 
 		/* UP pressed - Move up */
 		case SDLK_UP:
-		PLOT_Y_OFFSET -= PLOT_SCALE * OFFSET_INCREMENT;
+		PLOT_Y_OFFSET += OFFSET_INCREMENT;
 		break;
 
 		/* DOWN pressed - Move down */
 		case SDLK_DOWN:
-		PLOT_Y_OFFSET += PLOT_SCALE * OFFSET_INCREMENT;
+		PLOT_Y_OFFSET -= OFFSET_INCREMENT;
 		break;
 
 		/* LEFT pressed - Move left */
 		case SDLK_LEFT:
-		PLOT_X_OFFSET += PLOT_SCALE * OFFSET_INCREMENT;
+		PLOT_X_OFFSET += OFFSET_INCREMENT;
 		break;
 
 		/* RIGHT pressed - Move right */
 		case SDLK_RIGHT:
-		PLOT_X_OFFSET -= PLOT_SCALE * OFFSET_INCREMENT;
+		PLOT_X_OFFSET -= OFFSET_INCREMENT;
 		break;
 	}
 
@@ -123,9 +123,11 @@ void nr_handle_mouse_move(SDL_Event& e) {
 }
 
 void nr_handle_mouse_button(SDL_Event& e) {
+	std::printf("%d %d\n", e.button.x, e.button.y);
+	std::printf("%f %f\n", PLOT_X_OFFSET, PLOT_Y_OFFSET);
 	/* Get values relative to the window center */
-	PLOT_X_OFFSET = -(e.button.x - PLOT_WIDTH/2.0) / PLOT_SCALE;
-	PLOT_Y_OFFSET = (e.button.y - PLOT_HEIGHT/2.0) / PLOT_SCALE;
+	PLOT_X_OFFSET -= e.button.x - PLOT_WIDTH/2.0;
+	PLOT_Y_OFFSET -= e.button.y - PLOT_HEIGHT/2.0;
 }
 
 
@@ -231,15 +233,15 @@ void nr::plot_show_axes() {
 		PLOT_AXES_COLOR.b,
 		PLOT_AXES_COLOR.a );
 		SDL_RenderDrawLine( PLOT_RENDERER,
-			PLOT_WIDTH/2.0 + PLOT_SCALE * PLOT_X_OFFSET,
+			PLOT_WIDTH/2.0 + PLOT_X_OFFSET,
 			0,
-			PLOT_WIDTH/2.0 + PLOT_SCALE * PLOT_X_OFFSET,
+			PLOT_WIDTH/2.0 + PLOT_X_OFFSET,
 			PLOT_HEIGHT );
 		SDL_RenderDrawLine( PLOT_RENDERER,
 			0,
-			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET,
+			PLOT_HEIGHT/2.0 + PLOT_Y_OFFSET,
 			PLOT_WIDTH,
-			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
+			PLOT_HEIGHT/2.0 + PLOT_Y_OFFSET );
 }
 
 void nr::plot_hide_axes() {
@@ -249,15 +251,15 @@ void nr::plot_hide_axes() {
 		PLOT_BACKGROUND_COLOR.b,
 		PLOT_BACKGROUND_COLOR.a );
 		SDL_RenderDrawLine( PLOT_RENDERER,
-			PLOT_WIDTH/2.0 + PLOT_SCALE * PLOT_X_OFFSET,
+			PLOT_WIDTH/2.0 + PLOT_X_OFFSET,
 			0,
-			PLOT_WIDTH/2.0 + PLOT_SCALE * PLOT_X_OFFSET,
+			PLOT_WIDTH/2.0 + PLOT_X_OFFSET,
 			PLOT_HEIGHT );
 		SDL_RenderDrawLine( PLOT_RENDERER,
 			0,
-			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET,
+			PLOT_HEIGHT/2.0 + PLOT_Y_OFFSET,
 			PLOT_WIDTH,
-			PLOT_HEIGHT/2.0 - PLOT_SCALE * PLOT_Y_OFFSET );
+			PLOT_HEIGHT/2.0 + PLOT_Y_OFFSET );
 }
 
 void nr::plot_point(
@@ -273,8 +275,8 @@ void nr::plot_point(
 	for (int k=-point_size; k<=point_size; k++) {
 		for (int l=-point_size; l<=point_size; l++) {
 			SDL_RenderDrawPoint( PLOT_RENDERER,
-				PLOT_WIDTH/2.0 + PLOT_SCALE * (A.x + PLOT_X_OFFSET) + k,
-				PLOT_HEIGHT/2.0 - PLOT_SCALE * (A.y + PLOT_Y_OFFSET) + l );
+				PLOT_WIDTH/2.0 + PLOT_SCALE * A.x + PLOT_X_OFFSET + k,
+				PLOT_HEIGHT/2.0 - PLOT_SCALE * A.y + PLOT_Y_OFFSET + l );
 		}
 	}
 }
@@ -295,8 +297,8 @@ void nr::plot_points(
 		for (int k=-point_size; k<=point_size; k++) {
 			for (int l=-point_size; l<=point_size; l++) {
 				SDL_RenderDrawPoint( PLOT_RENDERER,
-					PLOT_WIDTH/2.0 + PLOT_SCALE * (A[i].x + PLOT_X_OFFSET) + k,
-					PLOT_HEIGHT/2.0 - PLOT_SCALE * (A[i].y + PLOT_Y_OFFSET) + l );
+					PLOT_WIDTH/2.0 + PLOT_SCALE * A[i].x + PLOT_X_OFFSET + k,
+					PLOT_HEIGHT/2.0 - PLOT_SCALE * A[i].y + PLOT_Y_OFFSET + l );
 			}
 		}
 	}
@@ -322,10 +324,10 @@ void nr::plot_polygon(
 			/* Draw the line between the vertices */
 			/* Note that the y axis is inverted */
 			SDL_RenderDrawLine( PLOT_RENDERER,
-				PLOT_WIDTH/2.0 + PLOT_SCALE * (P.contour[i].at(j).x + PLOT_X_OFFSET),
-				PLOT_HEIGHT/2.0 - PLOT_SCALE * (P.contour[i].at(j).y + PLOT_Y_OFFSET),
-				PLOT_WIDTH/2.0 + PLOT_SCALE * (P.contour[i].at(jj).x + PLOT_X_OFFSET),
-				PLOT_HEIGHT/2.0 - PLOT_SCALE * (P.contour[i].at(jj).y + PLOT_Y_OFFSET) );
+				PLOT_WIDTH/2.0 + PLOT_SCALE * P.contour[i].at(j).x + PLOT_X_OFFSET,
+				PLOT_HEIGHT/2.0 - PLOT_SCALE * P.contour[i].at(j).y + PLOT_Y_OFFSET,
+				PLOT_WIDTH/2.0 + PLOT_SCALE * P.contour[i].at(jj).x + PLOT_X_OFFSET,
+				PLOT_HEIGHT/2.0 - PLOT_SCALE * P.contour[i].at(jj).y + PLOT_Y_OFFSET );
 		}
 	}
 }
@@ -348,8 +350,8 @@ void nr::plot_polygon_vertices(
 			for (int k=-point_size; k<=point_size; k++) {
 				for (int l=-point_size; l<=point_size; l++) {
 					SDL_RenderDrawPoint( PLOT_RENDERER,
-						PLOT_WIDTH/2.0 + PLOT_SCALE * (P.contour[i][j].x + PLOT_X_OFFSET) + k,
-						PLOT_HEIGHT/2.0 - PLOT_SCALE * (P.contour[i][j].y + PLOT_Y_OFFSET) + l );
+						PLOT_WIDTH/2.0 + PLOT_SCALE * P.contour[i][j].x + PLOT_X_OFFSET + k,
+						PLOT_HEIGHT/2.0 - PLOT_SCALE * P.contour[i][j].y + PLOT_Y_OFFSET + l );
 				}
 			}
 		}
@@ -378,10 +380,10 @@ void nr::plot_polygons(
 				/* Draw the line between the vertices */
 				/* Note that the y axis is inverted */
 				SDL_RenderDrawLine( PLOT_RENDERER,
-					PLOT_WIDTH/2.0 + PLOT_SCALE * (P[k].contour[i].at(j).x + PLOT_X_OFFSET),
-					PLOT_HEIGHT/2.0 - PLOT_SCALE * (P[k].contour[i].at(j).y + PLOT_Y_OFFSET),
-					PLOT_WIDTH/2.0 + PLOT_SCALE * (P[k].contour[i].at(jj).x + PLOT_X_OFFSET),
-					PLOT_HEIGHT/2.0 - PLOT_SCALE * (P[k].contour[i].at(jj).y + PLOT_Y_OFFSET) );
+					PLOT_WIDTH/2.0 + PLOT_SCALE * P[k].contour[i].at(j).x + PLOT_X_OFFSET,
+					PLOT_HEIGHT/2.0 - PLOT_SCALE * P[k].contour[i].at(j).y + PLOT_Y_OFFSET,
+					PLOT_WIDTH/2.0 + PLOT_SCALE * P[k].contour[i].at(jj).x + PLOT_X_OFFSET,
+					PLOT_HEIGHT/2.0 - PLOT_SCALE * P[k].contour[i].at(jj).y + PLOT_Y_OFFSET );
 			}
 		}
 	}
@@ -425,8 +427,8 @@ void nr::plot_segment(
 	/* Draw the line between the vertices */
 	/* Note that the y axis is inverted */
 	SDL_RenderDrawLine( PLOT_RENDERER,
-		PLOT_WIDTH/2.0 + PLOT_SCALE * (P1.x + PLOT_X_OFFSET),
-		PLOT_HEIGHT/2.0 - PLOT_SCALE * (P1.y + PLOT_Y_OFFSET),
-		PLOT_WIDTH/2.0 + PLOT_SCALE * (P2.x + PLOT_X_OFFSET),
-		PLOT_HEIGHT/2.0 - PLOT_SCALE * (P2.y + PLOT_Y_OFFSET) );
+		PLOT_WIDTH/2.0 + PLOT_SCALE * P1.x + PLOT_X_OFFSET,
+		PLOT_HEIGHT/2.0 - PLOT_SCALE * P1.y + PLOT_Y_OFFSET,
+		PLOT_WIDTH/2.0 + PLOT_SCALE * P2.x + PLOT_X_OFFSET,
+		PLOT_HEIGHT/2.0 - PLOT_SCALE * P2.y + PLOT_Y_OFFSET );
 }

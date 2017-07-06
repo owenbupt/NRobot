@@ -31,8 +31,8 @@ int main() {
     nr::info();
 
     /* Options */
-    bool PLOT_NORMALS = false;
-    bool PLOT_NEW_CELL = true;
+    bool PLOT_NORMALS = true;
+    bool PLOT_NEW_CELL = false;
 
     /* Setup agents */
     double c = 2;
@@ -137,7 +137,7 @@ int main() {
     std::printf("Results written to files\n");
 
     /************************* Change in cell of i ****************************/
-    nr::Point dq (1.5, 0);
+    nr::Point dq (0.5, 0);
     udisks[i].center += dq;
     nr::Polygon AWGVi_new;
     nr::awg_voronoi_cell( region, udisks, R, i, &AWGVi_new );
@@ -154,7 +154,7 @@ int main() {
 
 		while (!uquit) {
 			nr::plot_clear_render();
-			// nr::plot_show_axes();
+			nr::plot_show_axes();
 
             /* Black for region */
 			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0x00, 0xFF};
