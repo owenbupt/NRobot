@@ -15,7 +15,6 @@ TODO
     Finish in/on functions in NBase
     Consistently comment every function
     Change code style in function declarations-definitions (one argument per line)
-    make plotting more user friendly (mouse control?)
 	add testing executables (and automated tests?)
     in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
 

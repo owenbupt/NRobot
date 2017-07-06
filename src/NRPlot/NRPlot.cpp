@@ -118,13 +118,11 @@ void nr_handle_mouse_wheel(SDL_Event& e) {
 }
 
 void nr_handle_mouse_move(SDL_Event& e) {
-	PLOT_X_OFFSET += e.motion.xrel * OFFSET_INCREMENT;
-	PLOT_Y_OFFSET += e.motion.yrel * OFFSET_INCREMENT;
+	PLOT_X_OFFSET -= e.motion.xrel * OFFSET_INCREMENT;
+	PLOT_Y_OFFSET -= e.motion.yrel * OFFSET_INCREMENT;
 }
 
 void nr_handle_mouse_button(SDL_Event& e) {
-	std::printf("%d %d\n", e.button.x, e.button.y);
-	std::printf("%f %f\n", PLOT_X_OFFSET, PLOT_Y_OFFSET);
 	/* Get values relative to the window center */
 	PLOT_X_OFFSET -= e.button.x - PLOT_WIDTH/2.0;
 	PLOT_Y_OFFSET -= e.button.y - PLOT_HEIGHT/2.0;
