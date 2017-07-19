@@ -27,7 +27,7 @@ make release
 [5] S. Papatheodorou and A. Tzes, *Cooperative Visual Convex Area Coverage using a Tessellation-free strategy*, In Proceedings of the 56th IEEE Conference on Decision and Control (CDC) 2017, December 12-15, 2017, Melbourne, Australia [Accepted]
 
 ## References
-[1] J. J. Jimenez, F. R. Feito, and R. J. Segura, *Robust and Optimized Algorithms for the Point‐in‐Polygon Inclusion Test without Pre‐processing*, Computer Graphics Forum, ISSN 1467-8659, Volume 28, Issue 8, December 2009, Pages 2264–2274, Blackwell.
+[1] J. J. Jimenez, F. R. Feito, and R. J. Segura, [*Robust and Optimized Algorithms for the Point‐in‐Polygon Inclusion Test without Pre‐processing*](https://doi.org/10.1111/j.1467-8659.2009.01481.x), Computer Graphics Forum, ISSN 1467-8659, Volume 28, Issue 8, December 2009, Pages 2264–2274, Blackwell.
 
 ## License
 Distributed under the [GNU General Public License version 3](LICENSE.txt).
