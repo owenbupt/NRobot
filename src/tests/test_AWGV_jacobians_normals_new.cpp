@@ -41,7 +41,7 @@ int main() {
     q.push_back( nr::Point(c,0) );
     size_t N = q.size();
     std::vector<double> r { 0.5, 0.5 };
-	std::vector<double> R { 1.5, 1.5 };
+	std::vector<double> R { 1.5, 0.1 };
     std::vector<double> Rg;
     for (size_t k=0; k<N; k++) {
         Rg.push_back( R[k]-r[k] );
