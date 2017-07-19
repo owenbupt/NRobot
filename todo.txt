@@ -1,4 +1,5 @@
 TODO
+    check AWGV partitioning
     Jn functions are wrong
         jacobians
             they are zero for some reason
@@ -19,9 +20,6 @@ TODO
     Change code style in function declarations-definitions (one argument per line)
 	add testing executables (and automated tests?)
     in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
-
-Testing
-	test EVERYTHING
 
 Improve functions
 	double n::area( const Polygon& P )
