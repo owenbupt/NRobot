@@ -34,7 +34,7 @@ double PLOT_X_OFFSET = 0.0;
 double PLOT_Y_OFFSET = 0.0;
 /*****************************************************************/
 
-#define SCALE_INCREMENT 1.0
+#define SCALE_INCREMENT 0.3
 #define OFFSET_INCREMENT 5
 
 
