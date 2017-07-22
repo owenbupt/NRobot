@@ -119,7 +119,6 @@ class Polygon {
 class Polygons: public std::vector<Polygon> {
 	public:
 		/****** Constructor ******/
-		/* Uses the default constructor for the vector and its elements */
 		Polygons();
 		Polygons( const Circles& C, size_t points_per_circle = NR_PPC );
 };
@@ -151,9 +150,8 @@ class Circle {
 class Circles: public std::vector<Circle> {
 	public:
 		/****** Constructor ******/
-		/* Uses the default constructor for the vector and its elements */
 		Circles();
-		Circles( const Points& centers, const std::vector<double>& radii ); /* TODO */
+		Circles( const Points& centers, const std::vector<double>& radii );
 };
 
 
@@ -225,12 +223,10 @@ Point midpoint( const Point& A, const Point& B );
 // Point closest_to_line( const Point& A, const Point&, const Point& );
 bool in( const Point& A, const Contour& C );
 // bool on( const Point& A, const Contour& C );
-bool in( const Point& A, const Polygon& P );						/* TODO */
+bool in( const Point& A, const Polygon& P );
 // bool on( const Point& A, const Polygon& P );
 // bool in( const Point& A, const Circle& C );
 // bool on( const Point& A, const Circle& C );
-// bool on_dist( const Point& A, const Contour& C );
-// bool on_dist( const Point& A, const Polygon& P );
 
 /****** Contour ******/
 int read( Contour* C, const char* fname );

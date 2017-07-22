@@ -133,6 +133,16 @@ nr::Circles::Circles() {
 	this->resize(0);
 }
 
+nr::Circles::Circles( const nr::Points& centers, const std::vector<double>& radii ) {
+	/* Resize the Circles vector */
+	this->resize(centers.size());
+	/* Set the center and radius of each circle */
+	for (size_t i=0; i<centers.size(); i++) {
+		this->at(i).center = centers[i];
+		this->at(i).radius = radii[i];
+	}
+}
+
 
 
 
