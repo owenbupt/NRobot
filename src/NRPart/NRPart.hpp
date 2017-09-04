@@ -109,6 +109,19 @@ namespace nr {
 	);
 	/* Yannis Stergiopoulos uniform quality partitioning (RAS 2017) */
 
+	int au_partitioning_cell(
+		const Polygon& region,
+		const Polygons& guaranteed_sensing,
+		const Polygons& possible_sensing,
+		const Polygons& total_sensing,
+		const double possible_sensing_quality,
+		const size_t subject,
+		Polygon* cell
+	);
+	/*
+		Partitioning when using anisotropic sensors with positioning and
+		orientation uncertainty. (ICRA 2018)
+	*/
 }
 
 #endif

@@ -1,12 +1,11 @@
 TODO
-    check AWGV partitioning
-    Jn functions are wrong
-        jacobians
-            they are zero for some reason
-        normals
-            normals of j need a minus in x coordinate
-            removed the minus in from of aj in Hji creation
-            when plotting make sure to use the same vertices used to calculate the normals
+    remove lines with //DELETE
+    plot orientation and orientation uncertainty depending on dynamics (add dynamics member)
+    create function to generate guaranteed-possible-total sensing (add respective members to MA)
+    create test (same as matlab) for au_partitioning_cell()
+    finish au_partitioning_cell()
+        return list of neighbors?
+        return common sensing?
     fix header file logic
     MA
         add dynamics member?
@@ -19,7 +18,6 @@ TODO
     Consistently comment every function
     Change code style in function declarations-definitions (one argument per line)
 	add testing executables (and automated tests?)
-    in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
 
 Improve functions
 	double n::area( const Polygon& P )
@@ -44,6 +42,16 @@ Optimizations
     double n::diameter( const Polygon& P )
 		use convex hull to reduce complexity in non-convex polygons
 
+AWGV - low priority
+    check AWGV partitioning
+    Jn functions are wrong
+        jacobians
+            they are zero for some reason
+        normals
+            normals of j need a minus in x coordinate
+            removed the minus in from of aj in Hji creation
+            when plotting make sure to use the same vertices used to calculate the normals
+    in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
 --------------------------------------------------------------------------------
 
 Structure

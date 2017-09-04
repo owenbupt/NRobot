@@ -31,11 +31,18 @@
 /*******************************************************/
 nr::MA::MA() {
 	this->ID = 0;
+	/* Agent parameters */
 	this->sensing_radius = 0;
-	this->uncertainty_radius = 0;
 	this->communication_radius = 0;
+	this->position_uncertainty = 0;
+	this->attitude_uncertainty = 0;
+	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->control_input = std::vector<double> (6,0);
+	/* Dynamics and simulation */
+	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->time_step = 0.01;
 	/* The other data members use their default constructors */
 }
 
@@ -43,15 +50,24 @@ nr::MA::MA(
 	Point& pos,
 	double sradius,
 	double uradius,
-	double cradius
+	double cradius,
+	double time_step
 ) {
 	this->ID = 0;
+	/* State */
 	this->position = pos;
+	/* Agent parameters */
 	this->sensing_radius = sradius;
-	this->uncertainty_radius = uradius;
 	this->communication_radius = cradius;
+	this->position_uncertainty = uradius;
+	this->attitude_uncertainty = 0;
+	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->control_input = std::vector<double> (6,0);
+	/* Dynamics and simulation */
+	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->time_step = time_step;
 	/* The other data members use their default constructors */
 }
 
@@ -60,16 +76,25 @@ nr::MA::MA(
 	Orientation& att,
 	double sradius,
 	double uradius,
-	double cradius
+	double cradius,
+	double time_step
 ) {
 	this->ID = 0;
+	/* State */
 	this->position = pos;
 	this->attitude = att;
+	/* Agent parameters */
 	this->sensing_radius = sradius;
-	this->uncertainty_radius = uradius;
 	this->communication_radius = cradius;
+	this->position_uncertainty = uradius;
+	this->attitude_uncertainty = 0;
+	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->control_input = std::vector<double> (6,0);
+	/* Dynamics and simulation */
+	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->time_step = time_step;
 	/* The other data members use their default constructors */
 }
 
@@ -87,14 +112,15 @@ nr::MAs::MAs(
 	Points& pos,
 	std::vector<double>& sradii,
 	std::vector<double>& uradii,
-	std::vector<double>& cradii
+	std::vector<double>& cradii,
+	double time_step
 ) {
 	/* Number of elements */
 	size_t N = pos.size();
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], sradii[i], uradii[i], cradii[i] );
+		this->at(i) = nr::MA( pos[i], sradii[i], uradii[i], cradii[i], time_step );
 		/* Set the ID for each element */
 		this->at(i).ID = i+1;
 	}
@@ -105,14 +131,15 @@ nr::MAs::MAs(
 	Orientations& att,
 	std::vector<double>& sradii,
 	std::vector<double>& uradii,
-	std::vector<double>& cradii
+	std::vector<double>& cradii,
+	double time_step
 ) {
 	/* Number of elements */
 	size_t N = pos.size();
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], sradii[i], uradii[i], cradii[i] );
+		this->at(i) = nr::MA( pos[i], att[i], sradii[i], uradii[i], cradii[i], time_step );
 		/* Set the ID for each element */
 		this->at(i).ID = i+1;
 	}
@@ -177,10 +204,10 @@ int nr_cell_gvoronoi( nr::MA* agent, const nr::Polygon& region ) {
     /* Create a vector containing all agent positioning uncertainty disks */
     nr::Circles uncert_disks;
     /* Add the positioning uncertainty of the current agent to the vector */
-    uncert_disks.push_back( nr::Circle(agent->position, agent->uncertainty_radius) );
+    uncert_disks.push_back( nr::Circle(agent->position, agent->position_uncertainty) );
     /* Add the positioning uncertainty of the current agent's neighbors to the vector */
     for (size_t j=0; j<agent->neighbors.size(); j++) {
-        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].uncertainty_radius) );
+        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].position_uncertainty) );
     }
 
     /* Compute voronoi cell */
@@ -198,11 +225,11 @@ int nr_cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
     nr::Circles uncert_disks;
     std::vector<double> sensing_radii;
     /* Add the positioning uncertainty and sensing radius of the current agent to the vector */
-    uncert_disks.push_back( nr::Circle(agent->position, agent->uncertainty_radius) );
+    uncert_disks.push_back( nr::Circle(agent->position, agent->position_uncertainty) );
     sensing_radii.push_back( agent->sensing_radius );
     /* Add the positioning uncertainty and sensing radii of the current agent's neighbors to the vector */
     for (size_t j=0; j<agent->neighbors.size(); j++) {
-        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].uncertainty_radius) );
+        uncert_disks.push_back( nr::Circle(agent->neighbors[j].position, agent->neighbors[j].position_uncertainty) );
         sensing_radii.push_back( agent->neighbors[j].sensing_radius );
     }
 
@@ -227,7 +254,9 @@ void nr_control_centroid( nr::MA* agent ) {
     /* Vector from the agent to its cell centroid */
     nr::Point v;
     v = nr::centroid( agent->cell ) - agent->position;
-    agent->velocity_translational = v;
+    agent->velocity_translational = v;//DELETE
+	agent->control_input[0] = v.x;
+	agent->control_input[1] = v.y;
 }
 
 void nr_control_free_arc( nr::MA* agent ) {
@@ -251,7 +280,9 @@ void nr_control_free_arc( nr::MA* agent ) {
         }
     }
 
-    agent->velocity_translational = integral_vector;
+    agent->velocity_translational = integral_vector;//DELETE
+	agent->control_input[0] = integral_vector.x;
+	agent->control_input[1] = integral_vector.y;
 }
 
 void nr_control_distance( nr::MA* agent ) {
@@ -267,7 +298,9 @@ void nr_control_distance( nr::MA* agent ) {
 		}
     }
 
-	agent->velocity_translational = control_input;
+	agent->velocity_translational = control_input;//DELETE
+	agent->control_input[0] = control_input.x;
+	agent->control_input[1] = control_input.y;
 }
 
 
@@ -295,10 +328,40 @@ void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
 				agent->neighbors.back().position = agents[j].position;
 				agent->neighbors.back().attitude = agents[j].attitude;
 				agent->neighbors.back().sensing_radius = agents[j].sensing_radius;
-				agent->neighbors.back().uncertainty_radius = agents[j].uncertainty_radius;
 				agent->neighbors.back().communication_radius = agents[j].communication_radius;
+				agent->neighbors.back().position_uncertainty = agents[j].position_uncertainty;
+				agent->neighbors.back().attitude_uncertainty = agents[j].attitude_uncertainty;
 			}
 		}
+	}
+}
+
+void nr::simulate_dynamics( nr::MA* agent ) {
+	switch (agent->dynamics) {
+		default:
+		case DYNAMICS_SI_GROUND_S2:
+		agent->position.x += agent->time_step * agent->control_input[0];
+		agent->position.y += agent->time_step * agent->control_input[1];
+		break;
+
+		case DYNAMICS_SI_GROUND_S3:
+		agent->position.x += agent->time_step * agent->control_input[0];
+		agent->position.y += agent->time_step * agent->control_input[1];
+		agent->attitude.yaw += agent->time_step * agent->control_input[2];
+		break;
+
+		case DYNAMICS_SI_AIR_S3:
+		agent->position.x += agent->time_step * agent->control_input[0];
+		agent->position.y += agent->time_step * agent->control_input[1];
+		agent->position.z += agent->time_step * agent->control_input[2];
+		break;
+
+		case DYNAMICS_SI_AIR_S4:
+		agent->position.x += agent->time_step * agent->control_input[0];
+		agent->position.y += agent->time_step * agent->control_input[1];
+		agent->position.z += agent->time_step * agent->control_input[2];
+		agent->attitude.yaw += agent->time_step * agent->control_input[3];
+		break;
 	}
 }
 
@@ -355,8 +418,9 @@ void nr::print( const nr::MA& agent, const bool verbose ) {
 	std::printf("  Rotational velocity: %f %f %f\n",
 		agent.velocity_rotational.roll, agent.velocity_rotational.pitch, agent.velocity_rotational.yaw);
 	std::printf("  Sensing radius: %f\n", agent.sensing_radius);
-	std::printf("  Uncertainty radius: %f\n", agent.uncertainty_radius);
 	std::printf("  Communication radius: %f\n", agent.communication_radius);
+	std::printf("  Position Uncertainty: %f\n", agent.position_uncertainty);
+	std::printf("  Attitude Uncertainty: %f\n", agent.attitude_uncertainty);
 	if (verbose) {
 		/* Print all polygon vertices if verbose is set */
 		std::printf("  Sensing: ");
@@ -405,7 +469,7 @@ void nr::plot_sensing( const nr::MA& agent ) {
 
 void nr::plot_uncertainty( const nr::MA& agent ) {
 	#if NR_PLOT_AVAILABLE
-		nr::plot_circle( nr::Circle(agent.position, agent.uncertainty_radius) );
+		nr::plot_circle( nr::Circle(agent.position, agent.position_uncertainty) );
 	#else
 		std::printf("Plotting functionality is not available\n");
 	#endif
@@ -488,7 +552,7 @@ void nr::plot_uncertainty( const nr::MAs& agents ) {
 	#if NR_PLOT_AVAILABLE
 		/* Plot the sensing disk of each agent */
 		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_circle( nr::Circle(agents[i].position, agents[i].uncertainty_radius) );
+			nr::plot_circle( nr::Circle(agents[i].position, agents[i].position_uncertainty) );
 		}
 	#else
 		std::printf("Plotting functionality is not available\n");

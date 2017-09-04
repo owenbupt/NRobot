@@ -52,7 +52,7 @@ int main() {
 	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii);
+	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
 	nr::set_control( &agents, nr::CONTROL_CENTROID );
@@ -116,7 +116,8 @@ int main() {
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {
-			agents[i].position += Tstep * agents[i].velocity_translational;
+			// agents[i].position += Tstep * agents[i].velocity_translational;//DELETE
+			nr::simulate_dynamics( &(agents[i]) );
 		}
 	}
 

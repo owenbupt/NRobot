@@ -373,7 +373,7 @@ int nr::ys_partitioning(
 
 	/* Loop over all seed pairs */
 	for (size_t i=0; i<N; i++) {
-		/* Initialize the cell of i to the region */
+		/* Initialize the cell of i to its sensing pattern */
 		(*cells)[i] = seeds[i];
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
@@ -492,5 +492,54 @@ int nr::ysuq_partitioning(
 			return nr::ERROR_PARTITIONING_FAILED;
 		}
 	}
+	return nr::SUCCESS;
+}
+
+int nr::au_partitioning_cell(
+	const nr::Polygon& region,
+	const nr::Polygons& guaranteed_sensing,
+	const nr::Polygons& possible_sensing,
+	const nr::Polygons& total_sensing,
+	const double possible_sensing_quality,
+	const size_t subject,
+	nr::Polygon* cell
+) {
+	/* return value of clipping operations */
+	int err;
+	/* Number of seeds */
+	size_t N = guaranteed_sensing.size();
+	/* Change partitioning procedure depending on the quality at the possible
+		sensing region (beta on the paper) */
+	if (possible_sensing_quality == 0.0) {
+		/* Quality is zero, use only guaranteed sensing */
+		/* Initialize the cell of subject to its guaranteed sensing pattern */
+		*cell = guaranteed_sensing[subject];
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the guaranteed sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, *cell, guaranteed_sensing[j], cell );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+			}
+		}
+
+	} else if (possible_sensing_quality == 1.0) {
+		/* Quality is one, use total sensing */
+
+	} else {
+		/* Quality is between zero and one, use more complex partitioning */
+
+	}
+
+	/* Constrain the cell inside the region */
+	err = nr::polygon_clip( nr::AND, *cell, region, cell );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_PARTITIONING_FAILED;
+	}
+
 	return nr::SUCCESS;
 }

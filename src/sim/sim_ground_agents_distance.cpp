@@ -51,7 +51,7 @@ int main() {
 	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
 	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii);
+	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
 	/* Set control law */
 	nr::set_control( &agents, nr::CONTROL_DISTANCE );
 
@@ -114,7 +114,8 @@ int main() {
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {
-			agents[i].position += Tstep * agents[i].velocity_translational;
+			// agents[i].position += Tstep * agents[i].velocity_translational;//DELETE
+			nr::simulate_dynamics( &(agents[i]) );
 		}
 	}
 
