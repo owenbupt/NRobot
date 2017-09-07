@@ -92,8 +92,8 @@ int main() {
 		#if NR_PLOT_AVAILABLE
 			nr::plot_clear_render();
 			nr::plot_show_axes();
-			/* White for region, nodes and udisks */
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+			/* Region, nodes and udisks */
+			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_positions( agents );
 			nr::plot_uncertainty( agents );

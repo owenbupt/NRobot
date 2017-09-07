@@ -107,6 +107,12 @@ namespace nr {
 	);
 	/* Plot a list of circles. Optionally set their color */
 
+	void plot_ellipse(
+		const Ellipse&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a single ellipse. Optionally set its color */
+
 	void plot_segment(
 		const Point&,
 		const Point&,

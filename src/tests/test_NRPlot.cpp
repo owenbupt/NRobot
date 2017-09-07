@@ -47,7 +47,7 @@ int main() {
 			nr::plot_clear_render();
 			nr::plot_show_axes();
 
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 			nr::plot_points( P );
             PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			nr::plot_polygon( pC );

@@ -41,6 +41,7 @@ class Polygon;
 class Polygons;
 class Circle;
 class Circles;
+class Ellipse;
 class Orientation;
 /* Typedef for ease of use */
 typedef Contour Points;
@@ -105,6 +106,7 @@ class Polygon {
 		Polygon( const Point& P );
 		Polygon( const Contour& C );
 		Polygon( const Circle& C, size_t points_per_circle = NR_PPC );
+		Polygon( const Ellipse& E, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -137,8 +139,7 @@ class Circle {
 
 		/****** Constructor ******/
 		/* Default behavior is center at origin and zero radius */
-		Circle();
-		Circle( const Point& C, double r = 0 );
+		Circle( const Point& center = Point(0,0), double r = 0 );
 };
 
 
@@ -152,6 +153,33 @@ class Circles: public std::vector<Circle> {
 		/****** Constructor ******/
 		Circles();
 		Circles( const Points& centers, const std::vector<double>& radii );
+};
+
+
+
+
+/*********************************************************/
+/********************* Ellipse class *********************/
+/*********************************************************/
+class Ellipse {
+	public:
+		/****** Data members ******/
+		Point center;
+		Point focus1;
+		Point focus2;
+		double a;
+		double b;
+		double c;
+		double theta;
+		double eccentricity;
+
+		/****** Constructor ******/
+		Ellipse(
+			double a = 2,
+			double b = 1,
+			const Point& center = Point(0,0),
+			double theta = 0
+		);
 };
 
 
@@ -212,6 +240,7 @@ std::ostream& operator << ( std::ostream& output, const Point& P );
 std::ostream& operator << ( std::ostream& output, const Contour& C );
 
 /****** Point ******/
+void print( const Point& A );
 double norm( const Point& A );
 double dist( const Point& A, const Point& B );
 double dist( const Point& A, const Contour& C ); 					/* TODO */
@@ -253,7 +282,12 @@ bool is_empty( const Polygon& P );
 void make_empty( Polygon* P );
 void fix_orientation( Polygon* P, bool follow_hole_flags = true );
 void translate( Polygon* P, const Point& p );
-void rotate( Polygon* P, double theta, bool around_origin = false );
+void rotate(
+	Polygon* P,
+	double theta,
+	bool around_origin = false
+);
+/* Rotate P theta radians around its centroid, unless the around_origin flag is true */
 void scale( Polygon* P, double scale_factor );
 Contour convex_hull( const Polygon& P ); 							/* TODO */
 
@@ -263,6 +297,28 @@ void print( const Polygons& P );
 /****** Circle ******/
 double area( const Circle& C );
 bool is_point( const Circle& C );
+
+/****** Orientation ******/
+void print( const Orientation& A );
+
+/****** Others ******/
+std::vector<double> linspace(
+	double start,
+	double end,
+	size_t num = 100
+);
+/* Creates a linearly spaced vector from start to end inclusive with num elements */
+
+Point cart2pol(
+	const Point& P
+);
+/* Convert a point from cartesian to polar coordinates */
+
+Point pol2cart(
+	const Point& P
+);
+/* Convert a point from polar to cartesian coordinates */
+
 
 /*******************************************************/
 /*********************** enums *************************/

@@ -177,7 +177,7 @@ int main() {
     /******************************* Plot *************************************/
 	#if NR_PLOT_AVAILABLE
 		if (nr::plot_init()) exit(1);
-        PLOT_BACKGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+        PLOT_BACKGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 		PLOT_SCALE = 50;
 		bool uquit = false;
 

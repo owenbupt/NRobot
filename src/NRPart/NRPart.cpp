@@ -498,9 +498,9 @@ int nr::ysuq_partitioning(
 int nr::au_partitioning_cell(
 	const nr::Polygon& region,
 	const nr::Polygons& guaranteed_sensing,
-	const nr::Polygons& possible_sensing,
+	const nr::Polygons& relaxed_sensing,
 	const nr::Polygons& total_sensing,
-	const double possible_sensing_quality,
+	const double relaxed_sensing_quality,
 	const size_t subject,
 	nr::Polygon* cell
 ) {
@@ -510,7 +510,7 @@ int nr::au_partitioning_cell(
 	size_t N = guaranteed_sensing.size();
 	/* Change partitioning procedure depending on the quality at the possible
 		sensing region (beta on the paper) */
-	if (possible_sensing_quality == 0.0) {
+	if (relaxed_sensing_quality == 0.0) {
 		/* Quality is zero, use only guaranteed sensing */
 		/* Initialize the cell of subject to its guaranteed sensing pattern */
 		*cell = guaranteed_sensing[subject];
@@ -526,12 +526,50 @@ int nr::au_partitioning_cell(
 			}
 		}
 
-	} else if (possible_sensing_quality == 1.0) {
+	} else if (relaxed_sensing_quality == 1.0) {
 		/* Quality is one, use total sensing */
-
+		/* Initialize the cell of subject to its total sensing pattern */
+		*cell = total_sensing[subject];
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the total sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, *cell, total_sensing[j], cell );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+			}
+		}
 	} else {
 		/* Quality is between zero and one, use more complex partitioning */
-
+		nr::Polygon nc_gs = guaranteed_sensing[subject];
+		/* Non-common part of guaranteed sensing */
+		nr::Polygon nc_rs = relaxed_sensing[subject];
+		/* Non-common part of rellaxed sensing */
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the guaranteed sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, nc_gs, guaranteed_sensing[j], &nc_gs );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+				/* Remove the total sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, nc_rs, total_sensing[j], &nc_rs );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+			}
+		}
+		/* The cell is the union of the two sub-cells (nc_gs and nc_rs) */
+		err = nr::polygon_clip( nr::OR, nc_gs, nc_rs, cell );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
 	}
 
 	/* Constrain the cell inside the region */

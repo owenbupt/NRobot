@@ -89,6 +89,31 @@ nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle ) {
 	nr::reverse_order( &(this->contour[0]) );
 }
 
+nr::Polygon::Polygon( const nr::Ellipse& E, size_t points_per_circle ) {
+	this->contour.resize(1);
+	this->is_hole.resize(1);
+	this->is_open.resize(1);
+	this->contour[0].resize(points_per_circle);
+	this->is_hole[0] = false;
+	this->is_open[0] = false;
+
+	double dt = 2*M_PI / (points_per_circle);
+
+	for (size_t i=0; i<points_per_circle; i++) {
+		this->contour[0][i].x = E.a * std::cos( i*dt );
+		this->contour[0][i].y = E.b * std::sin( i*dt );
+
+		/* Rotate around the origin */
+		this->contour[0][i] = nr::rotate( this->contour[0][i], E.theta );
+
+		/* Translate */
+		this->contour[0][i] += E.center;
+	}
+
+	/* Make CW */
+	nr::reverse_order( &(this->contour[0]) );
+}
+
 
 
 
@@ -112,14 +137,8 @@ nr::Polygons::Polygons( const nr::Circles& C, size_t points_per_circle ) {
 /********************************************************/
 /********************* Circle class *********************/
 /********************************************************/
-nr::Circle::Circle() {
-	this->center = nr::Point();
-	this->radius = 0;
-}
-
-nr::Circle::Circle( const nr::Point& P, double r ) {
-	this->center.x = P.x;
-	this->center.y = P.y;
+nr::Circle::Circle( const nr::Point& center, double r ) {
+	this->center = center;
 	this->radius = r;
 }
 
@@ -141,6 +160,36 @@ nr::Circles::Circles( const nr::Points& centers, const std::vector<double>& radi
 		this->at(i).center = centers[i];
 		this->at(i).radius = radii[i];
 	}
+}
+
+
+
+
+/*********************************************************/
+/********************* Ellipse class *********************/
+/*********************************************************/
+nr::Ellipse::Ellipse(
+	double a,
+	double b,
+	const Point& center,
+	double theta
+) {
+	this->a = a;
+	this->b = b;
+	this->c = std::sqrt( this->a*this->a - this->b*this->b );
+	this->eccentricity = this->c/this->a;
+
+	this->theta = theta;
+	this->center = center;
+	/* Initial foci */
+	this->focus1 = nr::Point(this->c,0);
+	this->focus2 = nr::Point(this->c,0);
+	/* Rotate around the origin */
+	this->focus1 = nr::rotate( this->focus1, theta );
+	this->focus2 = nr::rotate( this->focus2, theta );
+	/* Translate */
+	this->focus1 += center;
+	this->focus2 += center;
 }
 
 
@@ -234,6 +283,10 @@ std::ostream& nr::operator << ( std::ostream& output, const nr::Contour& C ) {
 }
 
 /****** Point ******/
+void nr::print( const nr::Point& A ) {
+	std::printf("% .5lf % .5lf % .5lf\n", (double) A.x, (double) A.y, (double) A.z);
+}
+
 double nr::norm( const nr::Point& A ) {
 	return sqrt( pow(A.x, 2) + pow(A.y, 2) + pow(A.z, 2) );
 }
@@ -848,4 +901,46 @@ bool nr::is_point( const nr::Circle& C ) {
 	} else {
 		return false;
 	}
+}
+
+/****** Orientation ******/
+void nr::print( const nr::Orientation& A ) {
+	std::printf("% .5lf % .5lf % .5lf\n", (double) A.roll, (double) A.pitch, (double) A.yaw);
+}
+
+/****** Others ******/
+std::vector<double> nr::linspace(
+	double start,
+	double end,
+	size_t num
+) {
+	/* Initialize vector to zeros */
+	std::vector<double> v (num, 0);
+
+	/* Calculate the step size */
+	double step = (end-start) / (num-1);
+
+	for (size_t i=0; i<num-1; i++) {
+		v[i] = start + i*step;
+	}
+	/* Ensure the last element has exactly the value of end */
+	v[num-1] = end;
+
+	return v;
+}
+
+nr::Point nr::cart2pol(
+	const Point& P
+) {
+	double r = std::sqrt( P.x*P.x + P.y*P.y );
+	double theta = std::atan2( P.y, P.x );
+	return nr::Point( r, theta );
+}
+
+nr::Point nr::pol2cart(
+	const Point& P
+) {
+	double x = P.x * std::cos(P.y);
+	double y = P.x * std::sin(P.y);
+	return nr::Point( x, y );
 }

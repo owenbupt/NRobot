@@ -128,7 +128,7 @@ int main() {
 			nr::plot_show_axes();
 
 			/* White for region and udisks */
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_points( P );
 			nr::plot_circles( udisks );

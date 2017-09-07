@@ -18,9 +18,11 @@
 */
 
 #include <cstdio>
+#include <string>
 
 #include "NRobot.hpp"
 #include "NRPart.hpp"
+#include "NRClip.hpp"
 #if NR_PLOT_AVAILABLE
 #include "NRPlot.hpp"
 #endif
@@ -36,12 +38,13 @@ nr::MA::MA() {
 	this->communication_radius = 0;
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
+	this->relaxed_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
 	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = 0.01;
 	/* The other data members use their default constructors */
 }
@@ -61,12 +64,13 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
+	this->relaxed_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
 	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = time_step;
 	/* The other data members use their default constructors */
 }
@@ -88,12 +92,13 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
+	this->relaxed_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
 	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_S2;
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = time_step;
 	/* The other data members use their default constructors */
 }
@@ -243,6 +248,34 @@ int nr_cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
     return nr::SUCCESS;
 }
 
+int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
+	/* Create vectors containing all guaranteed, relaxed and total sensing
+	   regions. */
+	nr::Polygons guaranteed_sensing, relaxed_sensing, total_sensing;
+	/* Add the sensing patterns fo the current agent. */
+	guaranteed_sensing.push_back( agent->guaranteed_sensing );
+	relaxed_sensing.push_back( agent->relaxed_sensing );
+	total_sensing.push_back( agent->total_sensing );
+
+	/* Add the sensing patterns of its neighbors. */
+	for (size_t j=0; j<agent->neighbors.size(); j++) {
+		guaranteed_sensing.push_back( agent->neighbors[j].guaranteed_sensing );
+		relaxed_sensing.push_back( agent->neighbors[j].relaxed_sensing );
+		total_sensing.push_back( agent->neighbors[j].total_sensing );
+	}
+
+	int err = nr::au_partitioning_cell( region, guaranteed_sensing,
+	    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+	    &(agent->cell) );
+
+	if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+    return nr::SUCCESS;
+}
+
 
 
 
@@ -254,7 +287,6 @@ void nr_control_centroid( nr::MA* agent ) {
     /* Vector from the agent to its cell centroid */
     nr::Point v;
     v = nr::centroid( agent->cell ) - agent->position;
-    agent->velocity_translational = v;//DELETE
 	agent->control_input[0] = v.x;
 	agent->control_input[1] = v.y;
 }
@@ -280,7 +312,6 @@ void nr_control_free_arc( nr::MA* agent ) {
         }
     }
 
-    agent->velocity_translational = integral_vector;//DELETE
 	agent->control_input[0] = integral_vector.x;
 	agent->control_input[1] = integral_vector.y;
 }
@@ -298,7 +329,6 @@ void nr_control_distance( nr::MA* agent ) {
 		}
     }
 
-	agent->velocity_translational = control_input;//DELETE
 	agent->control_input[0] = control_input.x;
 	agent->control_input[1] = control_input.y;
 }
@@ -307,12 +337,17 @@ void nr_control_distance( nr::MA* agent ) {
 
 
 /****** MA ******/
-void nr::create_sensing_disk( nr::MA* agent ) {
+void nr::create_sensing_disk(
+	nr::MA* agent
+) {
 	nr::Circle C (agent->position, agent->sensing_radius);
 	agent->sensing = nr::Polygon( C );
 }
 
-void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
+void nr::find_neighbors(
+	nr::MA* agent,
+	const nr::MAs& agents
+) {
 	/* Clear the current neighbor vector */
 	agent->neighbors.resize(0);
 	/* Loop over all other agents */
@@ -331,32 +366,41 @@ void nr::find_neighbors( nr::MA* agent, const nr::MAs& agents ) {
 				agent->neighbors.back().communication_radius = agents[j].communication_radius;
 				agent->neighbors.back().position_uncertainty = agents[j].position_uncertainty;
 				agent->neighbors.back().attitude_uncertainty = agents[j].attitude_uncertainty;
+				agent->neighbors.back().sensing = agents[j].sensing;
+				agent->neighbors.back().guaranteed_sensing = agents[j].guaranteed_sensing;
+				agent->neighbors.back().relaxed_sensing = agents[j].relaxed_sensing;
+				agent->neighbors.back().total_sensing = agents[j].total_sensing;
+				agent->neighbors.back().dynamics = agents[j].dynamics;
+				agent->neighbors.back().partitioning = agents[j].partitioning;
+				agent->neighbors.back().control = agents[j].control;
 			}
 		}
 	}
 }
 
-void nr::simulate_dynamics( nr::MA* agent ) {
+void nr::simulate_dynamics(
+	nr::MA* agent
+) {
 	switch (agent->dynamics) {
 		default:
-		case DYNAMICS_SI_GROUND_S2:
+		case DYNAMICS_SI_GROUND_XY:
 		agent->position.x += agent->time_step * agent->control_input[0];
 		agent->position.y += agent->time_step * agent->control_input[1];
 		break;
 
-		case DYNAMICS_SI_GROUND_S3:
+		case DYNAMICS_SI_GROUND_XYy:
 		agent->position.x += agent->time_step * agent->control_input[0];
 		agent->position.y += agent->time_step * agent->control_input[1];
 		agent->attitude.yaw += agent->time_step * agent->control_input[2];
 		break;
 
-		case DYNAMICS_SI_AIR_S3:
+		case DYNAMICS_SI_AIR_XYZ:
 		agent->position.x += agent->time_step * agent->control_input[0];
 		agent->position.y += agent->time_step * agent->control_input[1];
 		agent->position.z += agent->time_step * agent->control_input[2];
 		break;
 
-		case DYNAMICS_SI_AIR_S4:
+		case DYNAMICS_SI_AIR_XYZy:
 		agent->position.x += agent->time_step * agent->control_input[0];
 		agent->position.y += agent->time_step * agent->control_input[1];
 		agent->position.z += agent->time_step * agent->control_input[2];
@@ -365,7 +409,169 @@ void nr::simulate_dynamics( nr::MA* agent ) {
 	}
 }
 
-int nr::compute_cell( nr::MA* agent, const nr::Polygon& region ) {
+int nr::compute_base_sensing_patterns(
+    nr::MA* agent
+) {
+	int err;
+	int ATT_POINTS = 50;
+	int RAD_POINTS = 5;
+	int ANGLE_POINTS = 60;
+
+	nr::Polygon gs_rot, gs_tr, ts_rot, ts_tr;
+
+	/* Create uncertainty vectors */
+	/* Attitude vector, create equaly spaced vector of ATT_POINTS values */
+	std::vector<double> attitude_uncert_vector =
+		nr::linspace( -agent->attitude_uncertainty, agent->attitude_uncertainty, ATT_POINTS );
+
+	/* Radius vector, create equaly spaced vector of RAD_POINTS values */
+	std::vector<double> radius_uncert_vector =
+		nr::linspace( 0, agent->position_uncertainty, RAD_POINTS+1 );
+	/* Delete the zero radius */
+	radius_uncert_vector.erase(radius_uncert_vector.begin());
+
+	/* Angle vector, create equaly spaced vector of ANGLE_POINTS values */
+	std::vector<double> angle_vector =
+		nr::linspace( 0, 2*M_PI, ANGLE_POINTS+1 );
+	/* Delete the 2pi angle */
+	angle_vector.pop_back();
+
+
+	/* Guaranteed sensing computation */
+	/* Intersect the base sensing for all uncertainty values */
+	/* Rotation */
+	/* Initialize the guaranteed rotatation base sensing to the base sensing */
+	gs_rot = agent->base_sensing;
+	/* Loop over all possible orientations */
+	for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
+		if (!nr::is_empty( gs_rot )) {
+			/* Create a temporary rotated copy of the base sensing */
+			nr::Polygon tmp_poly = agent->base_sensing;
+			nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
+			/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
+			int err = nr::polygon_clip( nr::AND, gs_rot, tmp_poly, &gs_rot );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_CLIPPING_FAILED;
+			}
+		} else {
+			/* If the guaranteed rotatation base sensing is empty, stop */
+			break;
+		}
+	}
+	/* Translation */
+	/* Initialize the guaranteed translation base sensing to the base sensing */
+	gs_tr = agent->base_sensing;
+	for (size_t l=0; l<radius_uncert_vector.size(); l++) {
+		for (size_t k=0; k<angle_vector.size(); k++) {
+			if (!nr::is_empty( gs_tr )) {
+				/* Create a temporary translation vector */
+				nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
+				/* Create a temporary translated copy of the guaranteed rotatation base sensing */
+				nr::Polygon tmp_poly = gs_rot;
+				nr::translate( &tmp_poly, tmp_vector );
+				/* Intersect the temporary polygon with the guaranteed translation base sensing */
+				int err = nr::polygon_clip( nr::AND, gs_tr, tmp_poly, &gs_tr );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_CLIPPING_FAILED;
+				}
+			} else {
+				std::printf("empty\n");
+				break;
+			}
+		}
+	}
+	/* Set the base guaranteed sensing pattern on the agent */
+	agent->base_guaranteed_sensing = gs_tr;
+
+	/* Total sensing computation */
+	/* Union of the base sensing for all uncertainty values */
+	/* Rotation */
+	/* Initialize the guaranteed rotatation base sensing to the base sensing */
+	ts_rot = agent->base_sensing;
+	/* Loop over all possible orientations */
+	for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
+		if (!nr::is_empty( ts_rot )) {
+			/* Create a temporary rotated copy of the base sensing */
+			nr::Polygon tmp_poly = agent->base_sensing;
+			nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
+			/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
+			int err = nr::polygon_clip( nr::OR, ts_rot, tmp_poly, &ts_rot );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_CLIPPING_FAILED;
+			}
+		} else {
+			/* If the guaranteed rotatation base sensing is empty, stop */
+			break;
+		}
+	}
+	/* Translation */
+	/* Initialize the guaranteed translation base sensing to the base sensing */
+	ts_tr = agent->base_sensing;
+	for (size_t l=0; l<radius_uncert_vector.size(); l++) {
+		for (size_t k=0; k<angle_vector.size(); k++) {
+			if (!nr::is_empty( ts_tr )) {
+				/* Create a temporary translation vector */
+				nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
+				/* Create a temporary translated copy of the guaranteed rotatation base sensing */
+				nr::Polygon tmp_poly = ts_rot;
+				nr::translate( &tmp_poly, tmp_vector );
+				/* Intersect the temporary polygon with the guaranteed translation base sensing */
+				int err = nr::polygon_clip( nr::OR, ts_tr, tmp_poly, &ts_tr );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_CLIPPING_FAILED;
+				}
+			} else {
+				std::printf("empty\n");
+				break;
+			}
+		}
+	}
+	/* Set the base guaranteed sensing pattern on the agent */
+	agent->base_total_sensing = ts_tr;
+
+	/* Relaxed sensing computation */
+	/* Subtract the guaranteed sensing from the total sensing */
+	err = nr::polygon_clip( nr::DIFF,
+		agent->base_total_sensing,
+		agent->base_guaranteed_sensing,
+		&(agent->base_relaxed_sensing) );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_CLIPPING_FAILED;
+	}
+
+	return nr::SUCCESS;
+}
+
+void nr::update_sensing_patterns(
+    nr::MA* agent
+) {
+	/* Sensing */
+	agent->sensing = agent->base_sensing;
+	nr::rotate( &(agent->sensing), agent->attitude.yaw, true );
+	nr::translate( &(agent->sensing), agent->position );
+	/* Guaranteed Sensing */
+	agent->guaranteed_sensing = agent->base_guaranteed_sensing;
+	nr::rotate( &(agent->guaranteed_sensing), agent->attitude.yaw, true );
+	nr::translate( &(agent->guaranteed_sensing), agent->position );
+	agent->relaxed_sensing = agent->base_relaxed_sensing;
+	/* Relaxed Sensing */
+	nr::rotate( &(agent->relaxed_sensing), agent->attitude.yaw, true );
+	nr::translate( &(agent->relaxed_sensing), agent->position );
+	/* Total Sensing */
+	agent->total_sensing = agent->base_total_sensing;
+	nr::rotate( &(agent->total_sensing), agent->attitude.yaw, true );
+	nr::translate( &(agent->total_sensing), agent->position );
+}
+
+int nr::compute_cell(
+	nr::MA* agent,
+	const nr::Polygon& region
+) {
 	int err;
 	/* Select the partitioning scheme based on the relevant data member */
 	switch (agent->partitioning) {
@@ -381,14 +587,21 @@ int nr::compute_cell( nr::MA* agent, const nr::Polygon& region ) {
 		err = nr_cell_awgvoronoi( agent, region );
 		break;
 
+		case nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY:
+		err = nr_cell_au_partitioning( agent, region );
+		break;
+
 		default:
 		err = nr::ERROR_INVALID_PARTITIONING;
+		std::printf("Invalid partitioning selected.\n");
 		break;
 	}
 	return err;
 }
 
-void nr::compute_control( nr::MA* agent ) {
+void nr::compute_control(
+	nr::MA* agent
+) {
 	/* Select the control law based on the relevant data member */
 	switch (agent->control) {
 		case nr::CONTROL_CENTROID:
@@ -407,51 +620,112 @@ void nr::compute_control( nr::MA* agent ) {
 	}
 }
 
-void nr::print( const nr::MA& agent, const bool verbose ) {
-	std::printf("MA %lu\n", agent.ID);
-	std::printf("  Position: %f %f %f\n",
-		agent.position.x, agent.position.y, agent.position.z);
-	std::printf("  Attitude: %f %f %f\n",
-		agent.attitude.roll, agent.attitude.pitch, agent.attitude.yaw);
-	std::printf("  Translational velocity: %f %f %f\n",
-		agent.velocity_translational.x, agent.velocity_translational.y, agent.velocity_translational.z);
-	std::printf("  Rotational velocity: %f %f %f\n",
-		agent.velocity_rotational.roll, agent.velocity_rotational.pitch, agent.velocity_rotational.yaw);
-	std::printf("  Sensing radius: %f\n", agent.sensing_radius);
-	std::printf("  Communication radius: %f\n", agent.communication_radius);
-	std::printf("  Position Uncertainty: %f\n", agent.position_uncertainty);
-	std::printf("  Attitude Uncertainty: %f\n", agent.attitude_uncertainty);
-	if (verbose) {
-		/* Print all polygon vertices if verbose is set */
-		std::printf("  Sensing: ");
+void nr::print(
+	const nr::MA& agent,
+	const int verbose,
+	const int initial_spaces
+) {
+	/* Construct initial space string */
+	std::string is;
+	for (int i=0; i<initial_spaces; i++) {
+		is.append(" ");
+	}
+
+	std::printf("%sMA %lu\n", is.c_str(), agent.ID);
+	std::printf("%s  Position: %f %f %f\n", is.c_str(),
+	    agent.position.x, agent.position.y, agent.position.z);
+	/* Only print orientation if the dynamics require it. */
+	if ((agent.dynamics == DYNAMICS_SI_GROUND_XYy) ||
+	    (agent.dynamics == DYNAMICS_SI_AIR_XYZy) || verbose >= 3 ) {
+		std::printf("%s  Attitude: %f %f %f\n", is.c_str(),
+		    agent.attitude.roll, agent.attitude.pitch, agent.attitude.yaw);
+	}
+	/* Currently there are no dynamics that require velocities. Print only in
+	   most verbose mode. */
+	if (verbose >= 3) {
+		std::printf("%s  Translational velocity: %f %f %f\n", is.c_str(),
+		    agent.velocity_translational.x, agent.velocity_translational.y,
+		    agent.velocity_translational.z);
+		std::printf("%s  Rotational velocity: %f %f %f\n", is.c_str(),
+		    agent.velocity_rotational.roll, agent.velocity_rotational.pitch,
+		    agent.velocity_rotational.yaw);
+	}
+	std::printf("%s  Sensing radius: %f\n", is.c_str(), agent.sensing_radius);
+	std::printf("%s  Communication radius: %f\n", is.c_str(),
+	    agent.communication_radius);
+	std::printf("%s  Position Uncertainty: %f\n", is.c_str(),
+	    agent.position_uncertainty);
+	std::printf("%s  Attitude Uncertainty: %f\n", is.c_str(),
+	    agent.attitude_uncertainty);
+	std::printf("%s  Relaxed Sensing Quality: %f\n", is.c_str(),
+	    agent.relaxed_sensing_quality);
+	/* Show if the various sensing polygons are empty or not. */
+	std::printf("%s  Base Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_sensing));
+	std::printf("%s  Base Guaranteed Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_guaranteed_sensing));
+	std::printf("%s  Base Relaxed Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_relaxed_sensing));
+	std::printf("%s  Base Total Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_total_sensing));
+	std::printf("%s  Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.sensing));
+	std::printf("%s  Guaranteed Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.guaranteed_sensing));
+	std::printf("%s  Relaxed Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.relaxed_sensing));
+	std::printf("%s  Total Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.total_sensing));
+	/* Show if the agent's cell is empty or not. */
+	std::printf("%s  Cell: %d\n", is.c_str(),
+	    !nr::is_empty(agent.cell));
+	std::printf("%s  r-limited cell: %d\n", is.c_str(),
+	    !nr::is_empty(agent.rlimited_cell));
+
+	/* Print all polygon vertices if verbose is greater than 1. */
+	if ((verbose == 2) || (verbose == 4)) {
+		std::printf("%s  Sensing: ", is.c_str());
 		nr::print( agent.sensing );
-		std::printf("  Cell: ");
+		std::printf("%s  Cell: ", is.c_str());
 		nr::print( agent.cell );
-		std::printf("  R-limited cell: ");
+		std::printf("%s  R-limited cell: ", is.c_str());
 		nr::print( agent.rlimited_cell );
 	}
-	std::printf("  Neighbors:");
+
+	/* Print Neighbors. */
+	std::printf("%s  Neighbor IDs:", is.c_str());
 	for (size_t j=0; j<agent.neighbors.size(); j++) {
 		std::printf(" %lu", agent.neighbors[j].ID);
 	}
 	std::printf("\n");
-	if (verbose) {
-		/* Print neighbor members if verbose is set */
+	/* Print neighbor members if verbose is set. */
+	if ((verbose == 1) || (verbose == 4)) {
 		for (size_t j=0; j<agent.neighbors.size(); j++) {
-			nr::print(agent.neighbors[j], verbose);
+			/* Indent neighbor information more than own information */
+			nr::print(agent.neighbors[j], verbose, initial_spaces+4);
 		}
 	}
 }
 
-void nr::plot_position( const nr::MA& agent ) {
+void nr::plot_position(
+	const nr::MA& agent
+) {
 	#if NR_PLOT_AVAILABLE
+		/* Plot position */
 		nr::plot_point( agent.position );
+		/* Plot orientation if needed */
+		if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) || (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
+			nr::Point v = nr::pol2cart( nr::Point( 1, agent.attitude.yaw ) );
+			nr::plot_segment( agent.position, agent.position+v );
+		}
 	#else
 		std::printf("Plotting functionality is not available\n");
 	#endif
 }
 
-void nr::plot_cell( const nr::MA& agent ) {
+void nr::plot_cell(
+	const nr::MA& agent
+) {
 	#if NR_PLOT_AVAILABLE
 		nr::plot_polygon( agent.cell );
 	#else
@@ -459,7 +733,9 @@ void nr::plot_cell( const nr::MA& agent ) {
 	#endif
 }
 
-void nr::plot_sensing( const nr::MA& agent ) {
+void nr::plot_sensing(
+	const nr::MA& agent
+) {
 	#if NR_PLOT_AVAILABLE
 		nr::plot_polygon( agent.sensing );
 	#else
@@ -467,15 +743,33 @@ void nr::plot_sensing( const nr::MA& agent ) {
 	#endif
 }
 
-void nr::plot_uncertainty( const nr::MA& agent ) {
+void nr::plot_uncertainty(
+	const nr::MA& agent
+) {
 	#if NR_PLOT_AVAILABLE
+		/* Positioning uncertainty */
 		nr::plot_circle( nr::Circle(agent.position, agent.position_uncertainty) );
+		/* Orientation uncertainty */
+		if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) || (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
+			double vector_mangitude;
+			if (agent.position_uncertainty > 0) {
+				vector_mangitude = agent.position_uncertainty;
+			} else {
+				vector_mangitude = 1;
+			}
+			nr::Point v1 = nr::pol2cart( nr::Point( vector_mangitude, agent.attitude.yaw-agent.attitude_uncertainty ) );
+			nr::Point v2 = nr::pol2cart( nr::Point( vector_mangitude, agent.attitude.yaw+agent.attitude_uncertainty ) );
+			nr::plot_segment( agent.position, agent.position+v1 );
+			nr::plot_segment( agent.position, agent.position+v2 );
+		}
 	#else
 		std::printf("Plotting functionality is not available\n");
 	#endif
 }
 
-void nr::plot_communication( const nr::MA& agent ) {
+void nr::plot_communication(
+	const nr::MA& agent
+) {
 	#if NR_PLOT_AVAILABLE
 		nr::plot_circle( nr::Circle(agent.position, agent.communication_radius) );
 	#else
@@ -519,7 +813,7 @@ void nr::plot_positions( const nr::MAs& agents ) {
 	#if NR_PLOT_AVAILABLE
 		/* Plot the sensing disk of each agent */
 		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_point( agents[i].position );
+			nr::plot_position( agents[i] );
 		}
 	#else
 		std::printf("Plotting functionality is not available\n");
@@ -549,14 +843,9 @@ void nr::plot_sensing( const nr::MAs& agents ) {
 }
 
 void nr::plot_uncertainty( const nr::MAs& agents ) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot the sensing disk of each agent */
-		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_circle( nr::Circle(agents[i].position, agents[i].position_uncertainty) );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_uncertainty( agents[i] );
+	}
 }
 
 void nr::plot_communication( const nr::MAs& agents ) {

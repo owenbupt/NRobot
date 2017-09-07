@@ -26,9 +26,9 @@
 /********************* Plot initial settings *********************/
 int PLOT_WIDTH = 700;
 int PLOT_HEIGHT = 700;
-SDL_Color PLOT_BACKGROUND_COLOR = {0x44, 0x44, 0x44, 0xFF};
-SDL_Color PLOT_AXES_COLOR = {0x30, 0x30, 0x30, 0xFF};
-SDL_Color PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+SDL_Color PLOT_BACKGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+SDL_Color PLOT_AXES_COLOR = {0x77, 0x77, 0x77, 0xFF};
+SDL_Color PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 double PLOT_SCALE = 5.0;
 double PLOT_X_OFFSET = 0.0;
 double PLOT_Y_OFFSET = 0.0;
@@ -409,6 +409,18 @@ void nr::plot_circles(
 
 	/* Plot the polygon */
 	nr::plot_polygons( circle_polys, color );
+}
+
+void nr::plot_ellipse(
+	const nr::Ellipse& E,
+	const SDL_Color& color
+) {
+	/* Create a polygon from the ellipse */
+	nr::Polygon ellipse_poly;
+	ellipse_poly = nr::Polygon( E );
+
+	/* Plot the polygon */
+	nr::plot_polygon( ellipse_poly, color );
 }
 
 void nr::plot_segment(

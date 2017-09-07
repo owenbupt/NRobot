@@ -90,8 +90,27 @@ int main() {
 	}
 	std::printf("  dot( Point, Point )\n");
 
+	/* Testing other functions */
+	std::printf("\nTesting other functions\n");
+	P = nr::Point(1, 1);
+	Q = nr::Point(std::sqrt(2), M_PI/4);
+	R = nr::cart2pol(P);
+	if ( R == Q ) {
+		std::printf("  [PASS]");
+	} else {
+		std::printf("  [FAIL]");
+		failed_tests++;
+	}
+	std::printf("  cart2pol( Point )\n");
+	if ( nr::pol2cart(R) == P ) {
+		std::printf("  [PASS]");
+	} else {
+		std::printf("  [FAIL]");
+		failed_tests++;
+	}
+	std::printf("  pol2cart( Point )\n");
 
-
+	/* Finished testing */
 	if (failed_tests) {
 		std::printf("\n%d tests failed\n", failed_tests);
 	} else {

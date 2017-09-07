@@ -1,23 +1,35 @@
 TODO
-    remove lines with //DELETE
-    plot orientation and orientation uncertainty depending on dynamics (add dynamics member)
-    create function to generate guaranteed-possible-total sensing (add respective members to MA)
+    find a way to fill polygons with SDL2
+    simple switch to run simulation without plotting?
+    create function to copy MA class without neighbors vector (use in find neighbors)
+    check ellipse creation with orientation and center
+    add more functions for MAs class (ease of use wrappers for MA functions)
+    better MA/MAs constructors (using the new members added)
+    Finish MAs constructors (add default vector values)
     create test (same as matlab) for au_partitioning_cell()
+    create functions for enum->string for the dynamics/partitioning/control enums (use in print MA)
     finish au_partitioning_cell()
         return list of neighbors?
         return common sensing?
     fix header file logic
-    MA
-        add dynamics member?
     add error handling function to make code cleaner (return appropriate error message)
     can NRPlot functions fail? (and plot functions in general)
-    Finish MAs constructors (add default vector values)
     fix partitioning for coincident seeds?
-    test NRCLip scaling
+    test NRCLip scaling (look for library to do proper scaling)
     Finish in/on functions in NBase
-    Consistently comment every function
+    Consistently comment/format every function
     Change code style in function declarations-definitions (one argument per line)
 	add testing executables (and automated tests?)
+
+SIM FLOW
+    Initialize region, agent positions, uncertainty and base sensing
+    loop
+        set agent sensing according to agent position (translate and rotate base sensing)
+        find neighbors
+        partition sensed space
+        compute control law
+        simulate dynamics
+    end_loop
 
 Improve functions
 	double n::area( const Polygon& P )
@@ -35,6 +47,10 @@ Improve functions
     nr::Polygon nr_hyperbola_branch()
         add cases for ray and plane minus ray cells
         why is BA = -BA; needed when a < 0?
+    nr::print( const nr::MA )
+        fix indentation of polygon vertices and polygon vertex printing location
+        show all information
+        show information depending on dynamics/partitioning/control
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
@@ -52,9 +68,14 @@ AWGV - low priority
             removed the minus in from of aj in Hji creation
             when plotting make sure to use the same vertices used to calculate the normals
     in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
+
+
+
+--------------------------------------------------------------------------------
+GUIDELINES
 --------------------------------------------------------------------------------
 
-Structure
+Structure (update dependencies)
     NRobot (various robot classes and control laws) [NBase, NPart]
     NPart (Partitioning algorithms) [NBase, Clipper]
     NPlot (Visualization and plotting) [NBase, SDL]
@@ -77,6 +98,14 @@ Code Style
         ) {
             code
         }
+
+    Spaces and tabs
+        tabs for indentation (function arguments are indented by one tab)
+        spaces for alignment (in comments or multiline commands)
+
+Adding new dynamics/partitioning/control
+    Add a new value to the respective enum
+    change the respective function (simulate_dynamics/compute_cell/compute_control)
 
 Other
     The last vertex of a polygon contour must NOT be the same as the first. This is what

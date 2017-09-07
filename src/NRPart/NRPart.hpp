@@ -112,9 +112,9 @@ namespace nr {
 	int au_partitioning_cell(
 		const Polygon& region,
 		const Polygons& guaranteed_sensing,
-		const Polygons& possible_sensing,
+		const Polygons& relaxed_sensing,
 		const Polygons& total_sensing,
-		const double possible_sensing_quality,
+		const double relaxed_sensing_quality,
 		const size_t subject,
 		Polygon* cell
 	);
