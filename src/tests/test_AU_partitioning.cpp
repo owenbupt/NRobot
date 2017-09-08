@@ -18,6 +18,7 @@
 */
 
 #include <cstdio>
+#include <cstdint>
 #include <iostream>
 
 #include "NR.hpp"
@@ -28,6 +29,9 @@ int main() {
 	/****** Region of interest ******/
 	nr::Polygon region;
 	nr::read( &region, "resources/region_sq.txt", true);
+
+	/****** Common Sensing ******/
+	nr::Polygon unassigned_region;
 
 	/****** Setup agents ******/
 	/* Agent initial positions */
@@ -54,7 +58,7 @@ int main() {
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0.5;
+		agents[i].relaxed_sensing_quality = 0;
 	}
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
@@ -80,6 +84,19 @@ int main() {
 		// nr::print( agents[i], 0 );
 	}
 
+	/* Find common sensing region */
+	nr::make_empty( &unassigned_region );
+	for (size_t i=0; i<N; i++) {
+		/* Base sensing patterns */
+		int err = nr::polygon_clip( nr::OR, unassigned_region,
+			agents[i].unassigned_sensing, &unassigned_region );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
+	}
+
+
 
     /* Plot */
 	#if NR_PLOT_AVAILABLE
@@ -103,7 +120,7 @@ int main() {
 			/* Plot sensing */
 			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
 			for (size_t i=0; i<N; i++) {
-				nr::plot_sensing( agents[i] );
+				// nr::plot_sensing( agents[i] );
 			}
 
 			/* Plot grt-sensing */
@@ -111,14 +128,19 @@ int main() {
 			for (size_t i=0; i<N; i++) {
 				// nr::plot_polygon( agents[i].guaranteed_sensing );
 				// nr::plot_polygon( agents[i].relaxed_sensing );
-				nr::plot_polygon( agents[i].total_sensing );
+				// nr::plot_polygon( agents[i].total_sensing );
 			}
 
 			/* Plot cells */
 			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
 			for (size_t i=0; i<N; i++) {
+				PLOT_FOREGROUND_COLOR = PLOT_COLORS[i];
 				nr::plot_cell( agents[i] );
 			}
+
+			/* Plot common sensing */
+			PLOT_FOREGROUND_COLOR = {0x10, 0x10, 0x10, 0xFF};
+			nr::plot_polygon( unassigned_region );
 
 			nr::plot_render();
 			uquit = nr::plot_handle_input();

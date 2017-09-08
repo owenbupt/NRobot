@@ -22,6 +22,7 @@
 #define __NRPlot_hpp
 
 #include <SDL2/SDL.h>
+#include <vector>
 
 #include "NRBase.hpp"
 
@@ -37,6 +38,8 @@ extern double PLOT_Y_OFFSET;
 /* Create global variables for the plot window and renderer */
 extern SDL_Window *PLOT_WINDOW;
 extern SDL_Renderer *PLOT_RENDERER;
+/* Color palettes */
+extern std::vector<SDL_Color> PLOT_COLORS;
 
 
 namespace nr {

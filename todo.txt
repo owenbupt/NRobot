@@ -1,16 +1,19 @@
 TODO
+    export simulation results
     find a way to fill polygons with SDL2
+        http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
+        http://alienryderflex.com/polygon_fill/
+    finish au_partitioning_cell()
+        return list of neighbors?
+        IMPORTANT: return common sensing for all cases (case for beta in (0,1) missing)
+    define color name constants
     simple switch to run simulation without plotting?
     create function to copy MA class without neighbors vector (use in find neighbors)
     check ellipse creation with orientation and center
     add more functions for MAs class (ease of use wrappers for MA functions)
     better MA/MAs constructors (using the new members added)
     Finish MAs constructors (add default vector values)
-    create test (same as matlab) for au_partitioning_cell()
     create functions for enum->string for the dynamics/partitioning/control enums (use in print MA)
-    finish au_partitioning_cell()
-        return list of neighbors?
-        return common sensing?
     fix header file logic
     add error handling function to make code cleaner (return appropriate error message)
     can NRPlot functions fail? (and plot functions in general)

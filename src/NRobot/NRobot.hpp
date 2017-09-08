@@ -89,6 +89,9 @@ class MA {
         double attitude_uncertainty;
         double relaxed_sensing_quality;
         /* The coverage quality at the relaxed sensing region. */
+        bool save_unassigned_sensing;
+        /* Whether to save the part of the MA's sensing region left unassigned.
+           Applies to certain partitioning schemes only.  */
 
         /****** Sensing and cell ******/
         Polygon base_sensing;
@@ -113,6 +116,9 @@ class MA {
            is guaranteed not to sense. */
         Polygon total_sensing;
         /* The union of the guaranteed and relaxed sensing regions. */
+        Polygon unassigned_sensing;
+        /* The part of the MA's sensing region left unassigned during the
+        partitioning. Applies to certain partitioning schemes only. */
 		Polygon cell;
         /* The region assigned to the MA. */
 		Polygon rlimited_cell;

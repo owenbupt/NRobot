@@ -34,6 +34,10 @@ double PLOT_X_OFFSET = 0.0;
 double PLOT_Y_OFFSET = 0.0;
 /*****************************************************************/
 
+std::vector<SDL_Color> PLOT_COLORS = { {0xAA, 0x00, 0x00, 0xFF},
+                                       {0x00, 0xAA, 0x00, 0xFF},
+                                       {0x00, 0x00, 0xAA, 0xFF} };
+
 #define SCALE_INCREMENT 0.3
 #define OFFSET_INCREMENT 5
 

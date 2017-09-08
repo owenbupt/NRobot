@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 SET( CMAKE_VERBOSE_MAKEFILE off )
 
 # Project name, version and language
-PROJECT(NRobot VERSION 0.6.0 LANGUAGES CXX)
+PROJECT(NRobot VERSION 0.6.1 LANGUAGES CXX)
 
 ##### Compile time parameters #####
 # Compile with plot functionality using SDL 2

@@ -116,7 +116,8 @@ namespace nr {
 		const Polygons& total_sensing,
 		const double relaxed_sensing_quality,
 		const size_t subject,
-		Polygon* cell
+		Polygon* cell,
+		Polygon* unassigned_region = NULL
 	);
 	/*
 		Partitioning when using anisotropic sensors with positioning and

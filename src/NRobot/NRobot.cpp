@@ -39,6 +39,7 @@ nr::MA::MA() {
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
+	this->save_unassigned_sensing = true;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -65,6 +66,7 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
+	this->save_unassigned_sensing = true;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -93,6 +95,7 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
+	this->save_unassigned_sensing = true;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -264,9 +267,16 @@ int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
 		total_sensing.push_back( agent->neighbors[j].total_sensing );
 	}
 
-	int err = nr::au_partitioning_cell( region, guaranteed_sensing,
-	    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
-	    &(agent->cell) );
+	int err;
+	if (agent->save_unassigned_sensing) {
+		err = nr::au_partitioning_cell( region, guaranteed_sensing,
+		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+		    &(agent->cell), &(agent->unassigned_sensing) );
+	} else {
+		err = nr::au_partitioning_cell( region, guaranteed_sensing,
+		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+		    &(agent->cell) );
+	}
 
 	if (err) {
         std::printf("Clipping operation returned error %d\n", err);
@@ -659,6 +669,8 @@ void nr::print(
 	    agent.attitude_uncertainty);
 	std::printf("%s  Relaxed Sensing Quality: %f\n", is.c_str(),
 	    agent.relaxed_sensing_quality);
+	std::printf("%s  Save Unassinged Sensing: %d\n", is.c_str(),
+	    (int) agent.save_unassigned_sensing);
 	/* Show if the various sensing polygons are empty or not. */
 	std::printf("%s  Base Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_sensing));
@@ -676,6 +688,8 @@ void nr::print(
 	    !nr::is_empty(agent.relaxed_sensing));
 	std::printf("%s  Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.total_sensing));
+	std::printf("%s  Unassigned Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.unassigned_sensing));
 	/* Show if the agent's cell is empty or not. */
 	std::printf("%s  Cell: %d\n", is.c_str(),
 	    !nr::is_empty(agent.cell));

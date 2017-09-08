@@ -502,14 +502,19 @@ int nr::au_partitioning_cell(
 	const nr::Polygons& total_sensing,
 	const double relaxed_sensing_quality,
 	const size_t subject,
-	nr::Polygon* cell
+	nr::Polygon* cell,
+	nr::Polygon* unassigned_region
 ) {
-	/* return value of clipping operations */
+	/* Return value of clipping operations. */
 	int err;
+	/* Initialize common sensing region if needed */
+	if (unassigned_region) {
+		nr::make_empty(unassigned_region);
+	}
 	/* Number of seeds */
 	size_t N = guaranteed_sensing.size();
 	/* Change partitioning procedure depending on the quality at the possible
-		sensing region (beta on the paper) */
+		sensing region (beta on the paper). */
 	if (relaxed_sensing_quality == 0.0) {
 		/* Quality is zero, use only guaranteed sensing */
 		/* Initialize the cell of subject to its guaranteed sensing pattern */
@@ -562,6 +567,10 @@ int nr::au_partitioning_cell(
 					std::printf("Clipping operation returned error %d\n", err);
 					return nr::ERROR_PARTITIONING_FAILED;
 				}
+				/* Calculate the unassigned region */
+				if (unassigned_region) {
+
+				}
 			}
 		}
 		/* The cell is the union of the two sub-cells (nc_gs and nc_rs) */
@@ -577,6 +586,34 @@ int nr::au_partitioning_cell(
 	if (err) {
 		std::printf("Clipping operation returned error %d\n", err);
 		return nr::ERROR_PARTITIONING_FAILED;
+	}
+	/* Calculate the unassigned sensing region. */
+	if (unassigned_region) {
+		/* Remove the cell from the guaranteed cell. */
+		if (relaxed_sensing_quality == 0) {
+			err = nr::polygon_clip( nr::DIFF, guaranteed_sensing[subject],
+				*cell, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		} else if (relaxed_sensing_quality == 1) {
+			/* Remove the cell from the total cell. */
+			err = nr::polygon_clip( nr::DIFF, total_sensing[subject],
+				*cell, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		} else {
+			/* Intersect the unassigned region with the region of interest. The
+			   unassigned region has been already calculated. */
+			err = nr::polygon_clip( nr::AND, *unassigned_region,
+			   region, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+		}
 	}
 
 	return nr::SUCCESS;
