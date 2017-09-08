@@ -17,14 +17,18 @@ SET(NR_TIME_EXECUTION 0)
 
 
 
+
 ############################# DO NOT EDIT THESE ################################
 # Compiler flags
 SET(CMAKE_CXX_STANDARD 11)
 IF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -Wfatal-errors")
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -w -O2")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -Wfatal-errors")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -w")
 ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+
+MESSAGE("${CMAKE_CXX_FLAGS}")
+MESSAGE("${CMAKE_CXX_FLAGS_DEBUG}")
+MESSAGE("${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Debug postfix
 if (CMAKE_BUILD_TYPE STREQUAL Debug)

@@ -1,4 +1,5 @@
 TODO
+    release settings not taking effect
     export simulation results
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html

@@ -613,6 +613,7 @@ int nr::au_partitioning_cell(
 			if (err) {
 				std::printf("Clipping operation returned error %d\n", err);
 				return nr::ERROR_PARTITIONING_FAILED;
+			}
 		}
 	}
 

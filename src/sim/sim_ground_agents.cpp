@@ -116,7 +116,6 @@ int main() {
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {
-			// agents[i].position += Tstep * agents[i].velocity_translational;//DELETE
 			nr::simulate_dynamics( &(agents[i]) );
 		}
 	}

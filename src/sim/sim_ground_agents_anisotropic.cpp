@@ -30,7 +30,7 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 100;
+	double Tfinal = 10;
 	double Tstep = 0.01;
 
 	/****** Region of interest ******/
@@ -38,22 +38,41 @@ int main() {
 	nr::read( &region, "resources/region_sq.txt", true);
 
 	/****** Setup agents ******/
-	/* Node initial positions */
+    /* Agent initial positions */
 	nr::Points P;
-	P.push_back( nr::Point(-5,5) );
-	P.push_back( nr::Point(-5,2) );
-	P.push_back( nr::Point(-3,5) );
-	P.push_back( nr::Point(-3,-7) );
+	P.push_back( nr::Point(0,0) );
+	P.push_back( nr::Point(1.5,0.5) );
+	/* Agent initial attitudes */
+	nr::Orientations A;
+	A.push_back( nr::Orientation(0,0,M_PI/2) );
+	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
 	/* Number of agents */
 	size_t N = P.size();
-	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 4.0, 4.0, 4.0, 4.0 };
-	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
-	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
+    /* Sensing, uncertainty and communication radii */
+	std::vector<double> sradii { 1.2, 2.1 };
+	std::vector<double> uradii { 0.2, 0.2 };
+	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
-	/* Set control law */
-	nr::set_control( &agents, nr::CONTROL_DISTANCE );
+	nr::MAs agents (P, A, sradii, uradii, cradii);
+	for (size_t i=0; i<N; i++) {
+		/* Attitude uncertainty */
+		agents[i].attitude_uncertainty = M_PI/10;
+		/* Dynamics */
+		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
+		/* Base sensing patterns */
+		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
+		/* Sensing quality at relaxed sensing */
+		agents[i].relaxed_sensing_quality = 0;
+        /* Compute base sensing patterns */
+		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_CLIPPING_FAILED;
+		}
+	}
+	/* Set partitioning and control law */
+	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
+	nr::set_control( &agents, nr::CONTROL_CENTROID );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -74,8 +93,8 @@ int main() {
 
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
-			/* Create sensing region */
-			nr::create_sensing_disk( &(agents[i]) );
+            /* Translate and rotate for real sensing */
+    		nr::update_sensing_patterns( &(agents[i]) );
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 			/* Compute own cell using neighbors vector */
@@ -90,7 +109,7 @@ int main() {
 		#if NR_PLOT_AVAILABLE
 			nr::plot_clear_render();
 			nr::plot_show_axes();
-			/* White for region, nodes and udisks */
+			/* Region, nodes and udisks */
 			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 			nr::plot_polygon( region );
 			nr::plot_positions( agents );
