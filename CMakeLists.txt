@@ -9,7 +9,7 @@ PROJECT(NRobot VERSION 0.6.1 LANGUAGES CXX)
 # Compile with plot functionality using SDL 2
 SET(NR_PLOT_ENABLE 1)
 # Time execution
-SET(NR_TIME_EXECUTION 0)
+SET(NR_TIME_EXECUTION 1)
 
 
 
@@ -25,10 +25,6 @@ IF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     SET(CMAKE_CXX_FLAGS_DEBUG "-g -Og -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -Wfatal-errors")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -w")
 ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-
-MESSAGE("${CMAKE_CXX_FLAGS}")
-MESSAGE("${CMAKE_CXX_FLAGS_DEBUG}")
-MESSAGE("${CMAKE_CXX_FLAGS_RELEASE}")
 
 # Debug postfix
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -47,6 +43,8 @@ IF(NR_PLOT_ENABLE)
         SET(NR_PLOT_AVAILABLE 0)
         MESSAGE(WARNING "SDL2 was not found. Plot functionality will not be available")
     ENDIF(SDL2_FOUND)
+ELSE(NR_PLOT_ENABLE)
+    SET(NR_PLOT_AVAILABLE 0)
 ENDIF(NR_PLOT_ENABLE)
 
 # Write cmake settings to header file

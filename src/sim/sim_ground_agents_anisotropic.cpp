@@ -85,8 +85,10 @@ int main() {
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
 	bool uquit = false;
+	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
+	#endif
 
 	for (size_t s=1; s<=smax; s++) {
 		std::printf("Iteration: %lu\r", s);
@@ -140,11 +142,13 @@ int main() {
 
 
 	/****** Print simulation info ******/
+	#if NR_TIME_EXECUTION
 	end = clock();
 	double elapsed_time = (double)(end - begin) / CLOCKS_PER_SEC;
 	double average_iteration = elapsed_time / smax;
 	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
+	#endif
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
