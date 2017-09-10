@@ -102,7 +102,8 @@ int main() {
     std::vector<std::vector<double>> Hi (N, std::vector<double> (smax, 0));
     double initial_relaxed_sensing_quality = agents[0].relaxed_sensing_quality;
     std::vector<bool> converged (N, false);
-    double H_threshold = 0.1;
+    double H_threshold = 0.01;
+    size_t window_size = 10;
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
@@ -145,8 +146,8 @@ int main() {
             Hi[i][s-1] = nr::calculate_objective( agents[i] );
             /* Compare value with rolling average. If difference smaller than
                threshold, mark the agent as converged. */
-            if (s > 10) {
-                double rolling_average = average( Hi[i], s-2-(10-1), s-2 );
+            if (s > window_size) {
+                double rolling_average = average( Hi[i], s-2-(window_size-1), s-2 );
                 double diff = std::abs(rolling_average-Hi[i][s-1]);
                 if ( diff < H_threshold &&
                     (agents[i].relaxed_sensing_quality ==

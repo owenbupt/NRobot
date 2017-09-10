@@ -1,7 +1,4 @@
 TODO
-    finish switching law
-        agents ID 1 and 2 always have the same Hi
-        rolling average doesnt take into account new values of Hi
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     export simulation results
     find a way to fill polygons with SDL2
