@@ -26,6 +26,14 @@
 
 #include "NRBase.hpp"
 
+/* Colors */
+extern SDL_Color RED;
+extern SDL_Color GREEN;
+extern SDL_Color BLUE;
+extern SDL_Color BLACK;
+extern SDL_Color WHITE;
+extern SDL_Color GRAY;
+
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;
 extern int PLOT_HEIGHT;
