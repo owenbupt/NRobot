@@ -30,8 +30,8 @@
 
 #include "NRobot/NRobot.hpp"
 
-// #if NR_PLOT_AVAILABLE
+#if NR_PLOT_AVAILABLE
 #include "NRPlot/NRPlot.hpp"
-// #endif
+#endif
 
 #endif

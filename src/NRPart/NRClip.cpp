@@ -32,11 +32,7 @@ int nr::polygon_clip_fast(
 ) {
 
 	/****** Find the appropriate scaling factor ******/
-	#if NR_EXPONENT_SCALING
-		int sc = NR_SCALING_FACTOR;
-	#else
-		double sc = std::pow(10,NR_SCALING_FACTOR);
-	#endif
+	double sc = std::pow(10,NR_SCALING_FACTOR);
 
 	/****** Create subject Polygon paths from S1 ******/
 	ClipperLib::Paths subj( S1.contour.size() );
@@ -158,11 +154,7 @@ int nr::polygon_clip(
 	/* Else continue normally */
 
 	/****** Find the appropriate scaling factor ******/
-	#if NR_EXPONENT_SCALING
-		int sc = NR_SCALING_FACTOR;
-	#else
-		double sc = std::pow(10,NR_SCALING_FACTOR);
-	#endif
+	double sc = std::pow(10,NR_SCALING_FACTOR);
 
 	/****** Create subject Polygon paths from S1 ******/
 	ClipperLib::Paths subj( S1.contour.size() );

@@ -25,7 +25,6 @@
 
 
 #define NR_STRICTLY_SIMPLE false /* Experimental feature of clipper */
-#define NR_EXPONENT_SCALING 0
 #define NR_SCALING_FACTOR 15
 
 namespace nr {
