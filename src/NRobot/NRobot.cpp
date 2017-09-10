@@ -205,6 +205,14 @@ int nr_cell_voronoi( nr::MA* agent, const nr::Polygon& region ) {
         return nr::ERROR_PARTITIONING_FAILED;
     }
 
+	/* Compute r-limited cell */
+    err = nr::polygon_clip( nr::AND, agent->cell, agent->sensing,
+	    &(agent->rlimited_cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
     return nr::SUCCESS;
 }
 
@@ -220,6 +228,14 @@ int nr_cell_gvoronoi( nr::MA* agent, const nr::Polygon& region ) {
 
     /* Compute voronoi cell */
     int err = nr::g_voronoi_cell( region, uncert_disks, 0, &(agent->cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+	/* Compute r-limited cell */
+    err = nr::polygon_clip( nr::AND, agent->cell, agent->sensing,
+	    &(agent->rlimited_cell) );
     if (err) {
         std::printf("Clipping operation returned error %d\n", err);
         return nr::ERROR_PARTITIONING_FAILED;
@@ -243,6 +259,14 @@ int nr_cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
 
     /* Compute voronoi cell */
     int err = nr::awg_voronoi_cell( region, uncert_disks, sensing_radii, 0, &(agent->cell) );
+    if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+	/* Compute r-limited cell */
+    err = nr::polygon_clip( nr::AND, agent->cell, agent->sensing,
+	    &(agent->rlimited_cell) );
     if (err) {
         std::printf("Clipping operation returned error %d\n", err);
         return nr::ERROR_PARTITIONING_FAILED;
@@ -940,6 +964,22 @@ double nr::calculate_objective(
 	}
 
 	/* Add the objective of the common region if it exists. */
+	if ((agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) ||
+	    (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY)) {
+
+		nr::Polygon common;
+		int err;
+		for (size_t i=0; i<agents.size(); i++) {
+			err = nr::polygon_clip( nr::OR, common,
+			    agents[i].unassigned_sensing, &common );
+			if (err) {
+		        std::printf("Clipping operation returned error %d\n", err);
+		        return nr::ERROR_PARTITIONING_FAILED;
+		    }
+		}
+
+		H += nr::area( common );
+	}
 
 
 	return H;

@@ -100,6 +100,8 @@ int main() {
 		for (size_t i=0; i<N; i++) {
             /* Translate and rotate for real sensing */
     		nr::update_sensing_patterns( &(agents[i]) );
+		}
+		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 			/* Compute own cell using neighbors vector */

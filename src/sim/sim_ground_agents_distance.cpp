@@ -76,8 +76,10 @@ int main() {
 
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
-			/* Create sensing region */
-			nr::create_sensing_disk( &(agents[i]) );
+            /* Translate and rotate for real sensing */
+    		nr::update_sensing_patterns( &(agents[i]) );
+		}
+		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 			/* Compute own cell using neighbors vector */

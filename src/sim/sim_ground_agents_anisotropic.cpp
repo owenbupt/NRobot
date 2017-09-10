@@ -30,7 +30,7 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 10;
+	double Tfinal = 1;
 	double Tstep = 0.01;
 
 	/****** Region of interest ******/
@@ -100,19 +100,21 @@ int main() {
 		for (size_t i=0; i<N; i++) {
             /* Translate and rotate for real sensing */
     		nr::update_sensing_patterns( &(agents[i]) );
+		}
+		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 			/* Compute own cell using neighbors vector */
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
-			nr::compute_control( &(agents[i]) ); //
+			nr::compute_control( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
-		// nr::print( agents, false );
+		// nr::print( agents, 0 );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE

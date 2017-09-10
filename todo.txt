@@ -1,6 +1,4 @@
 TODO
-    add H calculation
-        for multiagent take into account common region
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     export simulation results
     find a way to fill polygons with SDL2
