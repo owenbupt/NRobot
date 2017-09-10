@@ -263,6 +263,12 @@ void compute_control(
 /* Compute the value of the control input for the MA based on the value of the
    control variable. */
 
+double calculate_objective(
+   MA& agent
+);
+/* Computes the value of the objective function for the current agent. The
+   computation depends on the control law and partitioning selected. */
+
 void print(
     const MA& agent,
     const int verbose = 0,
@@ -292,7 +298,8 @@ void create_sensing_disks(
 
 void print(
     const MAs& agents,
-    const bool verbose = false
+    const int verbose = 0,
+    const int initial_spaces = 0
 );
 
 void set_partitioning(
@@ -304,6 +311,12 @@ void set_control(
     MAs* agents,
     const control_type control
 );
+
+double calculate_objective(
+    MAs& agents
+);
+/* Computes the value of the objective function for the current configuration.
+   The computation depends on the control law and partitioning selected. */
 
 
 

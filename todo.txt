@@ -1,5 +1,6 @@
 TODO
-    check if preprocessor can process header files (want to remove sdl stuff is sdl is not available)
+    add H calculation
+        for multiagent take into account common region
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     export simulation results
     find a way to fill polygons with SDL2
@@ -8,6 +9,7 @@ TODO
     finish au_partitioning_cell()
         return list of neighbors?
         IMPORTANT: return common sensing for all cases (case for beta in (0,1) missing)
+        also change the objective calculation accordingly
     simple switch to run simulation without plotting?
     create function to copy MA class without neighbors vector (use in find neighbors)
     check ellipse creation with orientation and center
@@ -24,6 +26,7 @@ TODO
     Consistently comment/format every function
     Change code style in function declarations-definitions (one argument per line)
 	add testing executables (and automated tests?)
+    check if preprocessor can process header files (want to remove sdl stuff is sdl is not available)
 
 Improve functions
 	double n::area( const Polygon& P )

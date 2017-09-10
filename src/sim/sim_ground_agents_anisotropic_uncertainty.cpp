@@ -64,7 +64,7 @@ int main() {
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		agents[i].relaxed_sensing_quality = 1;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
@@ -78,15 +78,16 @@ int main() {
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
-		if (nr::plot_init()) exit(1);
-		PLOT_SCALE = 20;
-		bool uquit = false;
+	if (nr::plot_init()) exit(1);
+	PLOT_SCALE = 20;
+	bool uquit = false;
 	#endif
 
 
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
+	std::vector<double> H (smax, 0);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
@@ -106,6 +107,10 @@ int main() {
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
 		}
+
+		/* Calculate objective function and print progress. */
+		H[s-1] = nr::calculate_objective( agents );
+		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
 		// nr::print( agents, false );
 

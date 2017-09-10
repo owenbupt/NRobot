@@ -772,6 +772,37 @@ void nr::compute_control(
 	}
 }
 
+double nr::calculate_objective(
+   nr::MA& agent
+) {
+	double H = 0;
+
+	switch (agent.partitioning) {
+
+		case nr::PARTITIONING_VORONOI:
+		case nr::PARTITIONING_GVORONOI:
+		case nr::PARTITIONING_AWGVORONOI:
+		if ((agent.control != nr::CONTROL_CENTROID) ||
+		    (agent.control != nr::CONTROL_DISTANCE)) {
+				/* The objective is the area of the r-limited cell. */
+				H = nr::area( agent.rlimited_cell );
+			}
+		break;
+
+		case nr::PARTITIONING_ANISOTROPIC:
+		case nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY:
+		/* The objective is the area of the cell. */
+		H = nr::area( agent.cell );
+		break;
+
+		default:
+		std::printf("Invalid partitioning selected.\n");
+		break;
+	}
+
+	return H;
+}
+
 void nr::print(
 	const nr::MA& agent,
 	const int verbose,
@@ -874,10 +905,14 @@ void nr::create_sensing_disks( nr::MAs* agents ) {
 	}
 }
 
-void nr::print( const nr::MAs& agents, const bool verbose ) {
+void nr::print(
+	const nr::MAs& agents,
+	const int verbose,
+	const int initial_spaces
+) {
 	/* Print each agent */
 	for (size_t i=0; i<agents.size(); i++) {
-		nr::print( agents[i], verbose );
+		nr::print( agents[i], verbose, initial_spaces );
 	}
 }
 
@@ -893,6 +928,21 @@ void nr::set_control( nr::MAs* agents, const nr::control_type control ) {
 	for (size_t i=0; i<agents->size(); i++) {
 		agents->at(i).control = control;
 	}
+}
+
+double nr::calculate_objective(
+    nr::MAs& agents
+) {
+	double H = 0;
+	/* Add the objective of each agent. */
+	for (size_t i=0; i<agents.size(); i++) {
+		H += nr::calculate_objective( agents[i] );
+	}
+
+	/* Add the objective of the common region if it exists. */
+
+
+	return H;
 }
 
 
