@@ -42,29 +42,29 @@ int main() {
 	nr::Points P;
 	P.push_back( nr::Point(0,0) );
 	P.push_back( nr::Point(1.5,0.5) );
-    P.push_back( nr::Point(-2,3) );
+	P.push_back( nr::Point(-2,3) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
-	A.push_back( nr::Orientation(0,0, 0.5*M_PI ) );
-	A.push_back( nr::Orientation(0,0, 0.8*M_PI ) );
-    A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
+	A.push_back( nr::Orientation(0,0,M_PI/2) );
+	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
+	A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
 	/* Number of agents */
 	size_t N = P.size();
     /* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0);
-	std::vector<double> uradii (N, 0);
+	std::vector<double> sradii (N, 1);
+	std::vector<double> uradii (N, 0.2);
 	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
 	nr::MAs agents (P, A, sradii, uradii, cradii);
 	for (size_t i=0; i<N; i++) {
 		/* Attitude uncertainty */
-		agents[i].attitude_uncertainty = 0;
+		agents[i].attitude_uncertainty = M_PI/10;
 		/* Dynamics */
 		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		agents[i].relaxed_sensing_quality = 1;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
@@ -73,8 +73,8 @@ int main() {
 		}
 	}
 	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC );
-	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC );
+	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
+	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -94,7 +94,6 @@ int main() {
 	#endif
 
 	for (size_t s=1; s<=smax; s++) {
-		std::printf("Iteration: %lu\r", s);
 
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
@@ -114,7 +113,7 @@ int main() {
 		H[s-1] = nr::calculate_objective( agents );
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
-		// nr::print( agents, 0 );
+		// nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE

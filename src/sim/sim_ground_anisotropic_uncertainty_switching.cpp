@@ -22,9 +22,20 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <numeric>
 
 #include "NR.hpp"
 
+double average( std::vector<double>& v, size_t begin, size_t end ) {
+    size_t N = end - begin + 1;
+    double sum = 0;
+
+    for (size_t i=begin; i<begin+N; i++) {
+        sum += v[i];
+    }
+
+    return sum/N;
+}
 
 int main() {
 	nr::info();
@@ -64,7 +75,7 @@ int main() {
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 1;
+		agents[i].relaxed_sensing_quality = 0;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
@@ -88,13 +99,16 @@ int main() {
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
 	std::vector<double> H (smax, 0);
+    std::vector<std::vector<double>> Hi (N, std::vector<double> (smax, 0));
+    double initial_relaxed_sensing_quality = agents[0].relaxed_sensing_quality;
+    std::vector<bool> converged (N, false);
+    double H_threshold = 0.1;
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
 	#endif
 
 	for (size_t s=1; s<=smax; s++) {
-		std::printf("Iteration: %lu\r", s);
 
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
@@ -104,6 +118,21 @@ int main() {
 		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
+            /* Check if switching of the control law is required. */
+            /* If all neighbors have converged too, change the relaxed sensing
+               quality. */
+            /* Initialize to the agents own convergence status. */
+            bool neighbors_converged = converged[agents[i].ID-1];
+            for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+                if (!converged[agents[i].neighbors[j].ID-1]) {
+                    neighbors_converged = false;
+                    break;
+                }
+            }
+            if (neighbors_converged && agents[i].relaxed_sensing_quality == initial_relaxed_sensing_quality) {
+                agents[i].relaxed_sensing_quality = !agents[i].relaxed_sensing_quality;
+                std::printf("Agent %lu switched at iteration %lu\n", agents[i].ID, s);
+            }
 			/* Compute own cell using neighbors vector */
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
@@ -112,6 +141,21 @@ int main() {
 
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
+        for (size_t i=0; i<N; i++) {
+            Hi[i][s-1] = nr::calculate_objective( agents[i] );
+            /* Compare value with rolling average. If difference smaller than
+               threshold, mark the agent as converged. */
+            if (s > 10) {
+                double rolling_average = average( Hi[i], s-2-(10-1), s-2 );
+                double diff = std::abs(rolling_average-Hi[i][s-1]);
+                if ( diff < H_threshold &&
+                    (agents[i].relaxed_sensing_quality ==
+                    initial_relaxed_sensing_quality) && !converged[agents[i].ID-1]) {
+                    converged[agents[i].ID-1] = true;
+                    std::printf("Agent %lu converged at iteration %lu\n", agents[i].ID, s);
+                }
+            }
+        }
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
 		// nr::print( agents, false );
@@ -144,6 +188,7 @@ int main() {
 			nr::simulate_dynamics( &(agents[i]) );
 		}
 	}
+
 
 
 
