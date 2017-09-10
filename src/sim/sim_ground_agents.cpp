@@ -55,7 +55,7 @@ int main() {
 	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
-	nr::set_control( &agents, nr::CONTROL_CENTROID );
+	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE

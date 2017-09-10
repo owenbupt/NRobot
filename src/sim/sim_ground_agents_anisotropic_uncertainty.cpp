@@ -30,7 +30,7 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 10;
+	double Tfinal = 1;
 	double Tstep = 0.01;
 
 	/****** Region of interest ******/
@@ -42,23 +42,21 @@ int main() {
 	nr::Points P;
 	P.push_back( nr::Point(0,0) );
 	P.push_back( nr::Point(1.5,0.5) );
-    P.push_back( nr::Point(-2,3) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
-	A.push_back( nr::Orientation(0,0, 0.5*M_PI ) );
-	A.push_back( nr::Orientation(0,0, 0.8*M_PI ) );
-    A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
+	A.push_back( nr::Orientation(0,0,M_PI/2) );
+	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
 	/* Number of agents */
 	size_t N = P.size();
     /* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0);
-	std::vector<double> uradii (N, 0);
+	std::vector<double> sradii { 1.2, 2.1 };
+	std::vector<double> uradii { 0.2, 0.2 };
 	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
 	nr::MAs agents (P, A, sradii, uradii, cradii);
 	for (size_t i=0; i<N; i++) {
 		/* Attitude uncertainty */
-		agents[i].attitude_uncertainty = 0;
+		agents[i].attitude_uncertainty = M_PI/10;
 		/* Dynamics */
 		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
 		/* Base sensing patterns */
@@ -73,8 +71,8 @@ int main() {
 		}
 	}
 	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC );
-	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC );
+	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
+	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -104,10 +102,10 @@ int main() {
 			/* Compute own cell using neighbors vector */
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
-			nr::compute_control( &(agents[i]) ); //
+			nr::compute_control( &(agents[i]) );
 		}
 
-		// nr::print( agents, false );
+		nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
@@ -127,7 +125,6 @@ int main() {
 			/* Green for communication */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			nr::plot_communication( agents );
-
 			nr::plot_render();
 
 			uquit = nr::plot_handle_input();

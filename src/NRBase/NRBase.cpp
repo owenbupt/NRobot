@@ -111,7 +111,7 @@ nr::Polygon::Polygon( const nr::Ellipse& E, size_t points_per_circle ) {
 	}
 
 	/* Make CW */
-	nr::reverse_order( &(this->contour[0]) );
+	nr::make_CW( &(this->contour[0]) );
 }
 
 
@@ -325,6 +325,8 @@ bool nr::in( const nr::Point& A, const nr::Contour& C ) {
 	   "Robust and Optimized Algorithms for the Point‐in‐Polygon Inclusion
 	   Test without Pre‐processing."
 	   Computer Graphics Forum. Vol. 28. No. 8. Blackwell Publishing Ltd, 2009.
+
+	   https://scholar.google.com/citations?view_op=view_citation&hl=en&user=sMwAdhEAAAAJ&cstart=20&sortby=pubdate&citation_for_view=sMwAdhEAAAAJ:ULOm3_A8WrAC
 	*/
 
 	int inc = 0;
@@ -346,17 +348,21 @@ bool nr::in( const nr::Point& A, const nr::Contour& C ) {
 		double yj = Vj.y;
 
 		if (xi*xj <= 0) {
+			/* reject triangles under x-axis */
 			if ((yi >= 0) || (yj >= 0)) {
 				if (xi > xj) {
 					double a = xi*yj;
 					double b = xj*yi;
 					if (a > b) {
 						if ((xi == 0) || (xj == 0)) {
+							/* OVi or OVj */
 							inc += 1;
 						} else {
+							/* OViVj */
 							inc += 2;
 						}
 					} else if (a == b) {
+						/* ViVj or Vi or Vj */
 						return true;
 					}
 				} else if (xi < xj) {
@@ -364,29 +370,137 @@ bool nr::in( const nr::Point& A, const nr::Contour& C ) {
 					double b = xj*yi;
 					if (a < b) {
 						if ((xi == 0) || (xj == 0)) {
+							/* OVi or OVj */
 							inc -= 1;
 						} else {
+							/* OViVj */
 							inc -= 2;
 						}
 					} else if (a == b) {
+						/* ViVj or Vi or Vj */
 						return true;
 					}
 				} else if ((yi <= 0) || (yj <= 0)) {
+					/* ViVj (xi=xj) */
 					return true;
 				}
 			}
 		}
 	}
 
-	if (inc == 2) {
+	/* Changed the below test from inc == 2 to abs(inc) == 2 */
+	if (std::abs(inc) == 2) {
 		return true;
 	} else {
 		return false;
 	}
 }
 
+bool nr::on( const nr::Point& A, const nr::Contour& C ) {
+	/*
+	   Jimenez, Juan Jose, Francisco R. Feito, and Rafael Jesus Segura.
+	   "Robust and Optimized Algorithms for the Point‐in‐Polygon Inclusion
+	   Test without Pre‐processing."
+	   Computer Graphics Forum. Vol. 28. No. 8. Blackwell Publishing Ltd, 2009.
+	*/
+
+	int inc = 0;
+
+	/* Number of contour vertices */
+	size_t Ne = C.size();
+	/* Translate all contour vertices by minus the point */
+	nr::Contour tmpC = C;
+	for (size_t k=0; k<Ne; k++) {
+		tmpC[k] -= A;
+	}
+	/* Loop over all edges of contour */
+	for (size_t k=0; k<Ne; k++) {
+		nr::Point Vi = tmpC[k];
+		double xi = Vi.x;
+		double yi = Vi.y;
+		nr::Point Vj = tmpC[(k+1) % Ne];
+		double xj = Vj.x;
+		double yj = Vj.y;
+
+		if (xi*xj <= 0) {
+			/* reject triangles under x-axis */
+			if ((yi >= 0) || (yj >= 0)) {
+				if (xi > xj) {
+					double a = xi*yj;
+					double b = xj*yi;
+					if (a > b) {
+						if ((xi == 0) || (xj == 0)) {
+							/* OVi or OVj */
+							inc += 1;
+						} else {
+							/* OViVj */
+							inc += 2;
+						}
+					} else if (a == b) {
+						/* ViVj or Vi or Vj */
+						return true;
+					}
+				} else if (xi < xj) {
+					double a = xi*yj;
+					double b = xj*yi;
+					if (a < b) {
+						if ((xi == 0) || (xj == 0)) {
+							/* OVi or OVj */
+							inc -= 1;
+						} else {
+							/* OViVj */
+							inc -= 2;
+						}
+					} else if (a == b) {
+						/* ViVj or Vi or Vj */
+						return true;
+					}
+				} else if ((yi <= 0) || (yj <= 0)) {
+					/* ViVj (xi=xj) */
+					return true;
+				}
+			}
+		}
+	}
+
+	// if (inc == 2) {
+	// 	return true;
+	// } else {
+	// 	return false;
+	// }
+	return false;
+}
+
 bool nr::in( const nr::Point& A, const nr::Polygon& P ) {
-	return nr::in( A, P.contour[0] );
+	if ( !nr::is_empty(P) ) {
+		return nr::in( A, P.contour[0] );
+	} else {
+		return false;
+	}
+}
+
+bool nr::on( const nr::Point& A, const nr::Polygon& P ) {
+	if ( !nr::is_empty(P) ) {
+		return nr::on( A, P.contour[0] );
+	} else {
+		return false;
+	}
+}
+
+bool nr::is_vertex_of( const nr::Point& A, const nr::Polygon& P ) {
+	/* Loop over all contours of P. */
+	size_t Nc = P.contour.size();
+	for (size_t c=0; c<Nc; c++) {
+		/* Loop over all vertices of the contour. */
+		size_t Nv = P.contour[c].size();
+		for (size_t v=0; v<Nv; v++) {
+			if (A == P.contour[c][v]) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 /****** Contour ******/

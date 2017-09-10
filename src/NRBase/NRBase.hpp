@@ -251,11 +251,12 @@ Point midpoint( const Point& A, const Point& B );
 // double dist_from_line( const Point& A, const Point&, const Point& );
 // Point closest_to_line( const Point& A, const Point&, const Point& );
 bool in( const Point& A, const Contour& C );
-// bool on( const Point& A, const Contour& C );
+bool on( const Point& A, const Contour& C );
 bool in( const Point& A, const Polygon& P );
-// bool on( const Point& A, const Polygon& P );
+bool on( const Point& A, const Polygon& P );
 // bool in( const Point& A, const Circle& C );
 // bool on( const Point& A, const Circle& C );
+bool is_vertex_of( const Point& A, const Polygon& P );
 
 /****** Contour ******/
 int read( Contour* C, const char* fname );

@@ -100,6 +100,17 @@ namespace nr {
 	);
 	/* Yannis Stergiopoulos partitioning (ICRA 2014) */
 
+	int anisotropic_partitioning_cell(
+		const Polygon& region,
+		const Polygons& sensing,
+		const size_t subject,
+		Polygon* cell,
+		Polygon* unassigned_region = NULL
+	);
+	/*
+		Yannis Stergiopoulos partitioning (ICRA 2014)
+	*/
+
 	int ysuq_partitioning(
 		const Polygon& region,
 		const Circles& seeds,

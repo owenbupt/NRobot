@@ -251,6 +251,34 @@ int nr_cell_awgvoronoi( nr::MA* agent, const nr::Polygon& region ) {
     return nr::SUCCESS;
 }
 
+int nr_cell_anisotropic_partitioning( nr::MA* agent, const nr::Polygon& region ) {
+	/* Create vectors containing all sensing regions. */
+	nr::Polygons sensing;
+	/* Add the sensing patterns fo the current agent. */
+	sensing.push_back( agent->sensing );
+
+	/* Add the sensing patterns of its neighbors. */
+	for (size_t j=0; j<agent->neighbors.size(); j++) {
+		sensing.push_back( agent->neighbors[j].sensing );
+	}
+
+	int err;
+	if (agent->save_unassigned_sensing) {
+		err = nr::anisotropic_partitioning_cell( region, sensing, 0,
+		    &(agent->cell), &(agent->unassigned_sensing) );
+	} else {
+		err = nr::anisotropic_partitioning_cell( region, sensing, 0,
+		    &(agent->cell) );
+	}
+
+	if (err) {
+        std::printf("Clipping operation returned error %d\n", err);
+        return nr::ERROR_PARTITIONING_FAILED;
+    }
+
+    return nr::SUCCESS;
+}
+
 int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
 	/* Create vectors containing all guaranteed, relaxed and total sensing
 	   regions. */
@@ -343,6 +371,43 @@ void nr_control_distance( nr::MA* agent ) {
 	agent->control_input[1] = control_input.y;
 }
 
+void nr_control_anisotropic( nr::MA* agent ) {
+	/* Loop over all vertices of sensing. If it is also a vertex of the cell,
+	   then add it to the integral. */
+
+	/* Initialize the vector resulting from the integral to zero. */
+	nr::Point planar_integral;
+	double angle_integral = 0;
+
+	/* Loop over all sensing contours. */
+	size_t Nc = agent->sensing.contour.size();
+	for (size_t c=0; c<Nc; c++) {
+		/* Loop over all edges of the contour. */
+		size_t Ne = agent->sensing.contour[c].size();
+		for (size_t v=0; v<Ne; v++) {
+			/* Get the edge vertices. */
+			nr::Point v1 = agent->sensing.contour[c][v];
+			nr::Point v2 = agent->sensing.contour[c][(v+1) % Ne];
+			/* Check if they are both on the boundary of the cell. */
+			bool on_v1 = nr::is_vertex_of(v1, agent->cell);
+			bool on_v2 = nr::is_vertex_of(v2, agent->cell);
+			if (on_v1 && on_v2) {
+				/* Calculate the normal vector. External contours are CW so
+				   rotate the vertex by 90 degrees. */
+				nr::Point n = nr::rotate( v2-v1, M_PI/2 );
+				/* Add it to the integrals */
+				planar_integral += n;
+				angle_integral += nr::dot( nr::rotate( nr::midpoint(v1,v2)
+				    - agent->position, 0.5*M_PI ), n);
+			}
+		}
+	}
+
+	agent->control_input[0] = planar_integral.x;
+	agent->control_input[1] = planar_integral.y;
+	agent->control_input[2] = angle_integral;
+}
+
 
 
 
@@ -422,136 +487,139 @@ void nr::simulate_dynamics(
 int nr::compute_base_sensing_patterns(
     nr::MA* agent
 ) {
-	int err;
-	int ATT_POINTS = 50;
-	int RAD_POINTS = 5;
-	int ANGLE_POINTS = 60;
+	/* Only if the agent has position or orientation uncertainty. */
+	if (agent->position_uncertainty + agent->attitude_uncertainty > 0) {
+		int err;
+		int ATT_POINTS = 50;
+		int RAD_POINTS = 5;
+		int ANGLE_POINTS = 60;
 
-	nr::Polygon gs_rot, gs_tr, ts_rot, ts_tr;
+		nr::Polygon gs_rot, gs_tr, ts_rot, ts_tr;
 
-	/* Create uncertainty vectors */
-	/* Attitude vector, create equaly spaced vector of ATT_POINTS values */
-	std::vector<double> attitude_uncert_vector =
-		nr::linspace( -agent->attitude_uncertainty, agent->attitude_uncertainty, ATT_POINTS );
+		/* Create uncertainty vectors */
+		/* Attitude vector, create equaly spaced vector of ATT_POINTS values */
+		std::vector<double> attitude_uncert_vector =
+			nr::linspace( -agent->attitude_uncertainty, agent->attitude_uncertainty, ATT_POINTS );
 
-	/* Radius vector, create equaly spaced vector of RAD_POINTS values */
-	std::vector<double> radius_uncert_vector =
-		nr::linspace( 0, agent->position_uncertainty, RAD_POINTS+1 );
-	/* Delete the zero radius */
-	radius_uncert_vector.erase(radius_uncert_vector.begin());
+		/* Radius vector, create equaly spaced vector of RAD_POINTS values */
+		std::vector<double> radius_uncert_vector =
+			nr::linspace( 0, agent->position_uncertainty, RAD_POINTS+1 );
+		/* Delete the zero radius */
+		radius_uncert_vector.erase(radius_uncert_vector.begin());
 
-	/* Angle vector, create equaly spaced vector of ANGLE_POINTS values */
-	std::vector<double> angle_vector =
-		nr::linspace( 0, 2*M_PI, ANGLE_POINTS+1 );
-	/* Delete the 2pi angle */
-	angle_vector.pop_back();
+		/* Angle vector, create equaly spaced vector of ANGLE_POINTS values */
+		std::vector<double> angle_vector =
+			nr::linspace( 0, 2*M_PI, ANGLE_POINTS+1 );
+		/* Delete the 2pi angle */
+		angle_vector.pop_back();
 
 
-	/* Guaranteed sensing computation */
-	/* Intersect the base sensing for all uncertainty values */
-	/* Rotation */
-	/* Initialize the guaranteed rotatation base sensing to the base sensing */
-	gs_rot = agent->base_sensing;
-	/* Loop over all possible orientations */
-	for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
-		if (!nr::is_empty( gs_rot )) {
-			/* Create a temporary rotated copy of the base sensing */
-			nr::Polygon tmp_poly = agent->base_sensing;
-			nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
-			/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
-			int err = nr::polygon_clip( nr::AND, gs_rot, tmp_poly, &gs_rot );
-			if (err) {
-				std::printf("Clipping operation returned error %d\n", err);
-				return nr::ERROR_CLIPPING_FAILED;
-			}
-		} else {
-			/* If the guaranteed rotatation base sensing is empty, stop */
-			break;
-		}
-	}
-	/* Translation */
-	/* Initialize the guaranteed translation base sensing to the base sensing */
-	gs_tr = agent->base_sensing;
-	for (size_t l=0; l<radius_uncert_vector.size(); l++) {
-		for (size_t k=0; k<angle_vector.size(); k++) {
-			if (!nr::is_empty( gs_tr )) {
-				/* Create a temporary translation vector */
-				nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
-				/* Create a temporary translated copy of the guaranteed rotatation base sensing */
-				nr::Polygon tmp_poly = gs_rot;
-				nr::translate( &tmp_poly, tmp_vector );
-				/* Intersect the temporary polygon with the guaranteed translation base sensing */
-				int err = nr::polygon_clip( nr::AND, gs_tr, tmp_poly, &gs_tr );
+		/* Guaranteed sensing computation */
+		/* Intersect the base sensing for all uncertainty values */
+		/* Rotation */
+		/* Initialize the guaranteed rotatation base sensing to the base sensing */
+		gs_rot = agent->base_sensing;
+		/* Loop over all possible orientations */
+		for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
+			if (!nr::is_empty( gs_rot )) {
+				/* Create a temporary rotated copy of the base sensing */
+				nr::Polygon tmp_poly = agent->base_sensing;
+				nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
+				/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
+				int err = nr::polygon_clip( nr::AND, gs_rot, tmp_poly, &gs_rot );
 				if (err) {
 					std::printf("Clipping operation returned error %d\n", err);
 					return nr::ERROR_CLIPPING_FAILED;
 				}
 			} else {
-				std::printf("empty\n");
+				/* If the guaranteed rotatation base sensing is empty, stop */
 				break;
 			}
 		}
-	}
-	/* Set the base guaranteed sensing pattern on the agent */
-	agent->base_guaranteed_sensing = gs_tr;
-
-	/* Total sensing computation */
-	/* Union of the base sensing for all uncertainty values */
-	/* Rotation */
-	/* Initialize the guaranteed rotatation base sensing to the base sensing */
-	ts_rot = agent->base_sensing;
-	/* Loop over all possible orientations */
-	for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
-		if (!nr::is_empty( ts_rot )) {
-			/* Create a temporary rotated copy of the base sensing */
-			nr::Polygon tmp_poly = agent->base_sensing;
-			nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
-			/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
-			int err = nr::polygon_clip( nr::OR, ts_rot, tmp_poly, &ts_rot );
-			if (err) {
-				std::printf("Clipping operation returned error %d\n", err);
-				return nr::ERROR_CLIPPING_FAILED;
+		/* Translation */
+		/* Initialize the guaranteed translation base sensing to the base sensing */
+		gs_tr = agent->base_sensing;
+		for (size_t l=0; l<radius_uncert_vector.size(); l++) {
+			for (size_t k=0; k<angle_vector.size(); k++) {
+				if (!nr::is_empty( gs_tr )) {
+					/* Create a temporary translation vector */
+					nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
+					/* Create a temporary translated copy of the guaranteed rotatation base sensing */
+					nr::Polygon tmp_poly = gs_rot;
+					nr::translate( &tmp_poly, tmp_vector );
+					/* Intersect the temporary polygon with the guaranteed translation base sensing */
+					int err = nr::polygon_clip( nr::AND, gs_tr, tmp_poly, &gs_tr );
+					if (err) {
+						std::printf("Clipping operation returned error %d\n", err);
+						return nr::ERROR_CLIPPING_FAILED;
+					}
+				} else {
+					std::printf("empty\n");
+					break;
+				}
 			}
-		} else {
-			/* If the guaranteed rotatation base sensing is empty, stop */
-			break;
 		}
-	}
-	/* Translation */
-	/* Initialize the guaranteed translation base sensing to the base sensing */
-	ts_tr = agent->base_sensing;
-	for (size_t l=0; l<radius_uncert_vector.size(); l++) {
-		for (size_t k=0; k<angle_vector.size(); k++) {
-			if (!nr::is_empty( ts_tr )) {
-				/* Create a temporary translation vector */
-				nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
-				/* Create a temporary translated copy of the guaranteed rotatation base sensing */
-				nr::Polygon tmp_poly = ts_rot;
-				nr::translate( &tmp_poly, tmp_vector );
-				/* Intersect the temporary polygon with the guaranteed translation base sensing */
-				int err = nr::polygon_clip( nr::OR, ts_tr, tmp_poly, &ts_tr );
+		/* Set the base guaranteed sensing pattern on the agent */
+		agent->base_guaranteed_sensing = gs_tr;
+
+		/* Total sensing computation */
+		/* Union of the base sensing for all uncertainty values */
+		/* Rotation */
+		/* Initialize the guaranteed rotatation base sensing to the base sensing */
+		ts_rot = agent->base_sensing;
+		/* Loop over all possible orientations */
+		for (size_t l=0; l<attitude_uncert_vector.size(); l++) {
+			if (!nr::is_empty( ts_rot )) {
+				/* Create a temporary rotated copy of the base sensing */
+				nr::Polygon tmp_poly = agent->base_sensing;
+				nr::rotate( &tmp_poly, attitude_uncert_vector[l], true );
+				/* Intersect the temporary polygon with the guaranteed rotatation base sensing */
+				int err = nr::polygon_clip( nr::OR, ts_rot, tmp_poly, &ts_rot );
 				if (err) {
 					std::printf("Clipping operation returned error %d\n", err);
 					return nr::ERROR_CLIPPING_FAILED;
 				}
 			} else {
-				std::printf("empty\n");
+				/* If the guaranteed rotatation base sensing is empty, stop */
 				break;
 			}
 		}
-	}
-	/* Set the base guaranteed sensing pattern on the agent */
-	agent->base_total_sensing = ts_tr;
+		/* Translation */
+		/* Initialize the guaranteed translation base sensing to the base sensing */
+		ts_tr = agent->base_sensing;
+		for (size_t l=0; l<radius_uncert_vector.size(); l++) {
+			for (size_t k=0; k<angle_vector.size(); k++) {
+				if (!nr::is_empty( ts_tr )) {
+					/* Create a temporary translation vector */
+					nr::Point tmp_vector = nr::pol2cart( nr::Point(radius_uncert_vector[l], angle_vector[k]) );
+					/* Create a temporary translated copy of the guaranteed rotatation base sensing */
+					nr::Polygon tmp_poly = ts_rot;
+					nr::translate( &tmp_poly, tmp_vector );
+					/* Intersect the temporary polygon with the guaranteed translation base sensing */
+					int err = nr::polygon_clip( nr::OR, ts_tr, tmp_poly, &ts_tr );
+					if (err) {
+						std::printf("Clipping operation returned error %d\n", err);
+						return nr::ERROR_CLIPPING_FAILED;
+					}
+				} else {
+					std::printf("empty\n");
+					break;
+				}
+			}
+		}
+		/* Set the base guaranteed sensing pattern on the agent */
+		agent->base_total_sensing = ts_tr;
 
-	/* Relaxed sensing computation */
-	/* Subtract the guaranteed sensing from the total sensing */
-	err = nr::polygon_clip( nr::DIFF,
-		agent->base_total_sensing,
-		agent->base_guaranteed_sensing,
-		&(agent->base_relaxed_sensing) );
-	if (err) {
-		std::printf("Clipping operation returned error %d\n", err);
-		return nr::ERROR_CLIPPING_FAILED;
+		/* Relaxed sensing computation */
+		/* Subtract the guaranteed sensing from the total sensing */
+		err = nr::polygon_clip( nr::DIFF,
+			agent->base_total_sensing,
+			agent->base_guaranteed_sensing,
+			&(agent->base_relaxed_sensing) );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_CLIPPING_FAILED;
+		}
 	}
 
 	return nr::SUCCESS;
@@ -565,17 +633,23 @@ void nr::update_sensing_patterns(
 	nr::rotate( &(agent->sensing), agent->attitude.yaw, true );
 	nr::translate( &(agent->sensing), agent->position );
 	/* Guaranteed Sensing */
-	agent->guaranteed_sensing = agent->base_guaranteed_sensing;
-	nr::rotate( &(agent->guaranteed_sensing), agent->attitude.yaw, true );
-	nr::translate( &(agent->guaranteed_sensing), agent->position );
-	agent->relaxed_sensing = agent->base_relaxed_sensing;
+	if ( !nr::is_empty(agent->base_guaranteed_sensing) ) {
+		agent->guaranteed_sensing = agent->base_guaranteed_sensing;
+		nr::rotate( &(agent->guaranteed_sensing), agent->attitude.yaw, true );
+		nr::translate( &(agent->guaranteed_sensing), agent->position );
+	}
 	/* Relaxed Sensing */
-	nr::rotate( &(agent->relaxed_sensing), agent->attitude.yaw, true );
-	nr::translate( &(agent->relaxed_sensing), agent->position );
+	if ( !nr::is_empty(agent->base_relaxed_sensing) ) {
+		agent->relaxed_sensing = agent->base_relaxed_sensing;
+		nr::rotate( &(agent->relaxed_sensing), agent->attitude.yaw, true );
+		nr::translate( &(agent->relaxed_sensing), agent->position );
+	}
 	/* Total Sensing */
-	agent->total_sensing = agent->base_total_sensing;
-	nr::rotate( &(agent->total_sensing), agent->attitude.yaw, true );
-	nr::translate( &(agent->total_sensing), agent->position );
+	if ( !nr::is_empty(agent->base_total_sensing) ) {
+		agent->total_sensing = agent->base_total_sensing;
+		nr::rotate( &(agent->total_sensing), agent->attitude.yaw, true );
+		nr::translate( &(agent->total_sensing), agent->position );
+	}
 }
 
 int nr::compute_cell(
@@ -595,6 +669,10 @@ int nr::compute_cell(
 
 		case nr::PARTITIONING_AWGVORONOI:
 		err = nr_cell_awgvoronoi( agent, region );
+		break;
+
+		case nr::PARTITIONING_ANISOTROPIC:
+		err = nr_cell_anisotropic_partitioning( agent, region );
 		break;
 
 		case nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY:
@@ -624,6 +702,13 @@ void nr::compute_control(
 
 		case nr::CONTROL_DISTANCE:
 		nr_control_distance( agent );
+		break;
+
+		case nr::CONTROL_ANISOTROPIC:
+		nr_control_anisotropic( agent );
+		break;
+
+		case nr::CONTROL_ANISOTROPIC_UNCERTAINTY:
 		break;
 
 		default: break;

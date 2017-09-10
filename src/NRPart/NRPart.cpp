@@ -415,6 +415,52 @@ int nr::ys_partitioning(
 	return nr::SUCCESS;
 }
 
+int nr::anisotropic_partitioning_cell(
+	const nr::Polygon& region,
+	const nr::Polygons& sensing,
+	const size_t subject,
+	nr::Polygon* cell,
+	nr::Polygon* unassigned_region
+) {
+	/* Return value of clipping operations. */
+	int err;
+	/* Initialize the cell */
+	*cell = sensing[subject];
+	/* Number of seeds */
+	size_t N = sensing.size();
+	/* Loop over all other sensing patterns */
+	for (size_t j=0; j<N; j++) {
+		if (subject != j) {
+			/* Subtract the sensing pattern. */
+			err = nr::polygon_clip( nr::DIFF, *cell, sensing[j], cell );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		}
+	}
+
+	/* Constrain the cell inside the region */
+	err = nr::polygon_clip( nr::AND, *cell, region, cell );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_PARTITIONING_FAILED;
+	}
+
+	/* Calculate the unassigned sensing region. Initialize common sensing
+	   region if needed. */
+	if (unassigned_region != NULL) {
+		nr::make_empty(unassigned_region);
+		err = nr::polygon_clip( nr::DIFF, sensing[subject], *cell, unassigned_region );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
+	}
+
+	return nr::SUCCESS;
+}
+
 int nr::ysuq_partitioning(
 	const nr::Polygon& region,
 	const nr::Circles& seeds,
@@ -508,7 +554,7 @@ int nr::au_partitioning_cell(
 	/* Return value of clipping operations. */
 	int err;
 	/* Initialize common sensing region if needed */
-	if (unassigned_region) {
+	if (unassigned_region != NULL) {
 		nr::make_empty(unassigned_region);
 	}
 	/* Number of seeds */
@@ -568,7 +614,7 @@ int nr::au_partitioning_cell(
 					return nr::ERROR_PARTITIONING_FAILED;
 				}
 				/* Calculate the unassigned region */
-				if (unassigned_region) {
+				if (unassigned_region != NULL) {
 
 				}
 			}
@@ -588,7 +634,7 @@ int nr::au_partitioning_cell(
 		return nr::ERROR_PARTITIONING_FAILED;
 	}
 	/* Calculate the unassigned sensing region. */
-	if (unassigned_region) {
+	if (unassigned_region != NULL) {
 		/* Remove the cell from the guaranteed cell. */
 		if (relaxed_sensing_quality == 0) {
 			err = nr::polygon_clip( nr::DIFF, guaranteed_sensing[subject],

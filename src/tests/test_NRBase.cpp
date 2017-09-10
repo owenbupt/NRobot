@@ -110,6 +110,58 @@ int main() {
 	}
 	std::printf("  pol2cart( Point )\n");
 
+
+	/****** Point in/on functions ******/
+	nr::Polygon polygon;
+	nr::read( &polygon, "resources/region_cb.txt", true);
+
+	P = nr::Point(2.9325, 1.7);
+	if ( nr::in( P, polygon ) ) {
+		std::printf("  [PASS]");
+	} else {
+		std::printf("  [FAIL]");
+		failed_tests++;
+	}
+	std::printf("  in( Point, Polygon )\n");
+	if ( nr::on( P, polygon ) ) {
+		std::printf("  [PASS]");
+	} else {
+		std::printf("  [FAIL]");
+		failed_tests++;
+	}
+	std::printf("  on( Point, Polygon )\n");
+	if ( nr::is_vertex_of( P, polygon ) ) {
+		std::printf("  [PASS]");
+	} else {
+		std::printf("  [FAIL]");
+		failed_tests++;
+	}
+	std::printf("  is_vertex_of( Point, Polygon )\n");
+
+
+	/* Plot */
+	#if NR_PLOT_AVAILABLE
+		if (nr::plot_init()) exit(1);
+		PLOT_SCALE = 20;
+		bool uquit = false;
+		while (!uquit) {
+			nr::plot_clear_render();
+			nr::plot_show_axes();
+			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
+
+			/* Plot polygon */
+			nr::plot_polygon( polygon );
+			/* Plot point */
+			nr::plot_point( P );
+
+			nr::plot_render();
+			uquit = nr::plot_handle_input();
+		}
+		nr::plot_quit();
+	#endif
+
+
+
 	/* Finished testing */
 	if (failed_tests) {
 		std::printf("\n%d tests failed\n", failed_tests);

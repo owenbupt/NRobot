@@ -1,4 +1,7 @@
 TODO
+    anisotropic partitioning creates cells with strange orientation
+    EDITED in FUNCTION, MIGHT BE WRONG
+    choose correct sensing in anisotropic control law
     export simulation results
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
@@ -41,7 +44,7 @@ Improve functions
         make it work for polygons with multiple contours
             (add centroids of external and subtract centroids of internal contours?)
 		How does it handle non-simple polygons?
-    bool nr::in( const nr::Point& A, const nr::Polygon& P )
+    bool nr::in/on( const nr::Point& A, const nr::Polygon& P )
         make it work for polygons with multiple contours
 	void nr::ys_partitioning()
         return neighbor relationships
