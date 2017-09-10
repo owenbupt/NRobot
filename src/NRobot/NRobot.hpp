@@ -21,6 +21,9 @@
 #define __NRobot_hpp
 
 #include "NRBase.hpp"
+#if NR_PLOT_AVAILABLE
+#include "NRPlot.hpp"
+#endif
 
 namespace nr {
 
@@ -276,30 +279,6 @@ void print(
    initial_spaces, the number of spaces added before each line can be set. This
    is also used internally by print when printing neighbors. */
 
-void plot_position(
-    const MA& agent
-);
-/* Plot the position and orientation of the MA. */
-
-void plot_cell(
-    const MA& agent
-);
-/* Plot the cell of the MA. */
-
-void plot_sensing(
-    const MA& agent
-);
-/* Plot the sensing pattern of the MA. */
-
-void plot_uncertainty(
-    const MA& agent
-);
-/* Plot the positioning and orientation uncertainty of the MA. */
-
-void plot_communication(
-    const MA& agent
-);
-/* Plot the communication radius of the MA. */
 
 
 
@@ -326,25 +305,72 @@ void set_control(
     const control_type control
 );
 
+
+
+
+
+/********************/
+/****** NRPlot ******/
+/********************/
+#if NR_PLOT_AVAILABLE
+
+void plot_position(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+
 void plot_positions(
-    const MAs& agents
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/* Plot the position and orientation of a single MA or a vector of MAs. */
+
+void plot_cell(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
 
 void plot_cells(
-    const MAs& agents
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/* Plot the cell of a single MA or a vector of MAs. */
+
+void plot_sensing(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
 
 void plot_sensing(
-    const MAs& agents
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/* Plot the sensing pattern of a single MA or a vector of MAs. */
+
+void plot_uncertainty(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
 
 void plot_uncertainty(
-    const MAs& agents
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/* Plot the positioning and orientation uncertainty of a single MA or a vector
+   of MAs. */
+
+void plot_communication(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
 
 void plot_communication(
-    const MAs& agents
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
+/* Plot the communication radius of a single MA or a vector of MAs. */
+
+#endif
 
 } /* End of namespace */
 

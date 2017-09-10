@@ -863,76 +863,6 @@ void nr::print(
 	}
 }
 
-void nr::plot_position(
-	const nr::MA& agent
-) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot position */
-		nr::plot_point( agent.position );
-		/* Plot orientation if needed */
-		if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) || (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
-			nr::Point v = nr::pol2cart( nr::Point( 1, agent.attitude.yaw ) );
-			nr::plot_segment( agent.position, agent.position+v );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
-
-void nr::plot_cell(
-	const nr::MA& agent
-) {
-	#if NR_PLOT_AVAILABLE
-		nr::plot_polygon( agent.cell );
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
-
-void nr::plot_sensing(
-	const nr::MA& agent
-) {
-	#if NR_PLOT_AVAILABLE
-		nr::plot_polygon( agent.sensing );
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
-
-void nr::plot_uncertainty(
-	const nr::MA& agent
-) {
-	#if NR_PLOT_AVAILABLE
-		/* Positioning uncertainty */
-		nr::plot_circle( nr::Circle(agent.position, agent.position_uncertainty) );
-		/* Orientation uncertainty */
-		if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) || (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
-			double vector_mangitude;
-			if (agent.position_uncertainty > 0) {
-				vector_mangitude = agent.position_uncertainty;
-			} else {
-				vector_mangitude = 1;
-			}
-			nr::Point v1 = nr::pol2cart( nr::Point( vector_mangitude, agent.attitude.yaw-agent.attitude_uncertainty ) );
-			nr::Point v2 = nr::pol2cart( nr::Point( vector_mangitude, agent.attitude.yaw+agent.attitude_uncertainty ) );
-			nr::plot_segment( agent.position, agent.position+v1 );
-			nr::plot_segment( agent.position, agent.position+v2 );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
-
-void nr::plot_communication(
-	const nr::MA& agent
-) {
-	#if NR_PLOT_AVAILABLE
-		nr::plot_circle( nr::Circle(agent.position, agent.communication_radius) );
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
-
 
 
 
@@ -965,52 +895,117 @@ void nr::set_control( nr::MAs* agents, const nr::control_type control ) {
 	}
 }
 
-void nr::plot_positions( const nr::MAs& agents ) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot the sensing disk of each agent */
-		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_position( agents[i] );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
 
-void nr::plot_cells( const nr::MAs& agents ) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot the sensing disk of each agent */
-		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_polygon( agents[i].cell );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
 
-void nr::plot_sensing( const nr::MAs& agents ) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot the sensing disk of each agent */
-		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_polygon( agents[i].sensing );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
-}
 
-void nr::plot_uncertainty( const nr::MAs& agents ) {
-	for (size_t i=0; i<agents.size(); i++) {
-		nr::plot_uncertainty( agents[i] );
+/****** NRPlot ******/
+#if NR_PLOT_AVAILABLE
+
+void nr::plot_position(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	/* Plot position */
+	nr::plot_point( agent.position, color );
+	/* Plot orientation if needed */
+	if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) ||
+	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
+		nr::Point v = nr::pol2cart( nr::Point( 1, agent.attitude.yaw ) );
+		nr::plot_segment( agent.position, agent.position+v, color );
 	}
 }
 
-void nr::plot_communication( const nr::MAs& agents ) {
-	#if NR_PLOT_AVAILABLE
-		/* Plot the sensing disk of each agent */
-		for (size_t i=0; i<agents.size(); i++) {
-			nr::plot_circle( nr::Circle(agents[i].position, agents[i].communication_radius) );
-		}
-	#else
-		std::printf("Plotting functionality is not available\n");
-	#endif
+void nr::plot_positions(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	/* Plot the sensing disk of each agent */
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_position( agents[i], color );
+	}
 }
+
+void nr::plot_cell(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	nr::plot_polygon( agent.cell, color );
+}
+
+void nr::plot_cells(
+	const nr::MAs& agents,
+	const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_polygon( agents[i].cell, color );
+	}
+}
+
+void nr::plot_sensing(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	nr::plot_polygon( agent.sensing, color );
+}
+
+void nr::plot_sensing(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_sensing( agents[i], color );
+	}
+}
+
+void nr::plot_uncertainty(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	/* Positioning uncertainty */
+	nr::plot_circle( nr::Circle(agent.position, agent.position_uncertainty),
+	    color );
+	/* Orientation uncertainty */
+	if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) ||
+	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
+		double vector_mangitude;
+		if (agent.position_uncertainty > 0) {
+			vector_mangitude = agent.position_uncertainty;
+		} else {
+			vector_mangitude = 1;
+		}
+		nr::Point v1 = nr::pol2cart( nr::Point( vector_mangitude,
+		    agent.attitude.yaw-agent.attitude_uncertainty ) );
+		nr::Point v2 = nr::pol2cart( nr::Point( vector_mangitude,
+		    agent.attitude.yaw+agent.attitude_uncertainty ) );
+		nr::plot_segment( agent.position, agent.position+v1, color );
+		nr::plot_segment( agent.position, agent.position+v2, color );
+	}
+}
+
+void nr::plot_uncertainty(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_uncertainty( agents[i], color );
+	}
+}
+
+void nr::plot_communication(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	nr::plot_circle( nr::Circle(agent.position, agent.communication_radius),
+	    color );
+}
+
+void nr::plot_communication(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_communication( agents[i], color );
+	}
+}
+
+#endif

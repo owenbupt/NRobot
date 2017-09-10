@@ -26,9 +26,6 @@
 /********************* Plot initial settings *********************/
 int PLOT_WIDTH = 700;
 int PLOT_HEIGHT = 700;
-SDL_Color PLOT_BACKGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
-SDL_Color PLOT_AXES_COLOR = {0x77, 0x77, 0x77, 0xFF};
-SDL_Color PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 double PLOT_SCALE = 5.0;
 double PLOT_X_OFFSET = 0.0;
 double PLOT_Y_OFFSET = 0.0;
@@ -41,10 +38,12 @@ SDL_Color BLUE = {0x00, 0x00, 0xAA, 0xFF};
 SDL_Color BLACK = {0xAA, 0xAA, 0xAA, 0xFF};
 SDL_Color WHITE = {0x30, 0x30, 0x30, 0xFF};
 SDL_Color GRAY = {0x77, 0x77, 0x77, 0xFF};
+SDL_Color GREY = GRAY;
+SDL_Color PLOT_BACKGROUND_COLOR = WHITE;
+SDL_Color PLOT_AXES_COLOR = GRAY;
+SDL_Color PLOT_FOREGROUND_COLOR = BLACK;
 
-std::vector<SDL_Color> PLOT_COLORS = { {0xAA, 0x00, 0x00, 0xFF},
-                                       {0x00, 0xAA, 0x00, 0xFF},
-                                       {0x00, 0x00, 0xAA, 0xFF} };
+std::vector<SDL_Color> PLOT_COLORS = { RED, GREEN, BLUE };
 
 #define SCALE_INCREMENT 0.3
 #define OFFSET_INCREMENT 5

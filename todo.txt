@@ -1,4 +1,5 @@
 TODO
+    check if preprocessor can process hpp files
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     export simulation results
     find a way to fill polygons with SDL2
@@ -7,7 +8,6 @@ TODO
     finish au_partitioning_cell()
         return list of neighbors?
         IMPORTANT: return common sensing for all cases (case for beta in (0,1) missing)
-    define color name constants
     simple switch to run simulation without plotting?
     create function to copy MA class without neighbors vector (use in find neighbors)
     check ellipse creation with orientation and center

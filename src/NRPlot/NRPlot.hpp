@@ -33,6 +33,7 @@ extern SDL_Color BLUE;
 extern SDL_Color BLACK;
 extern SDL_Color WHITE;
 extern SDL_Color GRAY;
+extern SDL_Color GREY;
 
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;

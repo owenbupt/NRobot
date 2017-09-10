@@ -59,13 +59,13 @@ int main() {
 	#if NR_PLOT_AVAILABLE
 		if (nr::plot_init()) exit(1);
 		PLOT_SCALE = 20;
+		bool uquit = false;
 	#endif
 
 
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
-	bool uquit = false;
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
@@ -92,22 +92,19 @@ int main() {
 		#if NR_PLOT_AVAILABLE
 			nr::plot_clear_render();
 			nr::plot_show_axes();
-			/* White for region, nodes and udisks */
-			PLOT_FOREGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
-			nr::plot_polygon( region );
-			nr::plot_positions( agents );
-			nr::plot_uncertainty( agents );
-			/* Red for sdisks */
-			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
-			nr::plot_sensing( agents );
-			/* Blue for cells */
-			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
-			nr::plot_cells( agents );
-			/* Green for communication */
-			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			nr::plot_communication( agents );
-			nr::plot_render();
 
+			/* Region, nodes and udisks */
+			nr::plot_polygon( region, BLACK );
+			nr::plot_positions( agents, BLACK );
+			nr::plot_uncertainty( agents, BLACK );
+			/* sdisks */
+			nr::plot_sensing( agents, RED );
+			/* cells */
+			nr::plot_cells( agents, BLUE );
+			/* communication */
+			// nr::plot_communication( agents, GREEN );
+
+			nr::plot_render();
 			uquit = nr::plot_handle_input();
 			if (uquit) {
 				break;

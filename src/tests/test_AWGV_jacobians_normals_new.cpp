@@ -31,8 +31,10 @@ int main() {
     nr::info();
 
     /* Options */
-    bool PLOT_NORMALS = true;
-    bool PLOT_NEW_CELL = false;
+    #if NR_PLOT_AVAILABLE
+        bool PLOT_NORMALS = true;
+        bool PLOT_NEW_CELL = false;
+    #endif
 
     /* Setup agents */
     double c = 2;
