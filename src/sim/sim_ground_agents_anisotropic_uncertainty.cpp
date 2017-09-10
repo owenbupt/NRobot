@@ -42,15 +42,17 @@ int main() {
 	nr::Points P;
 	P.push_back( nr::Point(0,0) );
 	P.push_back( nr::Point(1.5,0.5) );
+	P.push_back( nr::Point(-2,3) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
 	A.push_back( nr::Orientation(0,0,M_PI/2) );
 	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
+	A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
 	/* Number of agents */
 	size_t N = P.size();
     /* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 1.2, 2.1 };
-	std::vector<double> uradii { 0.2, 0.2 };
+	std::vector<double> sradii (N, 1);
+	std::vector<double> uradii (N, 0.2);
 	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
 	nr::MAs agents (P, A, sradii, uradii, cradii);
@@ -105,7 +107,7 @@ int main() {
 			nr::compute_control( &(agents[i]) );
 		}
 
-		nr::print( agents, false );
+		// nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
@@ -124,9 +126,9 @@ int main() {
 			nr::plot_cells( agents );
 			/* Green for communication */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			nr::plot_communication( agents );
-			nr::plot_render();
+			// nr::plot_communication( agents );
 
+			nr::plot_render();
 			uquit = nr::plot_handle_input();
 			if (uquit) {
 				break;
@@ -137,15 +139,6 @@ int main() {
 		for (size_t i=0; i<N; i++) {
 			nr::simulate_dynamics( &(agents[i]) );
 		}
-
-		/************ DEBUG ************/
-		// for (size_t i=0; i<N; i++) {
-		// 	for (size_t j=0; j<3; j++) {
-		// 		std::printf(" %f", agents[i].control_input[j] );
-		// 	}
-		// 	std::printf("\n");
-		// }
-		// std::printf("\n");
 	}
 
 

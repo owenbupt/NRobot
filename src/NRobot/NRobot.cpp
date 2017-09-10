@@ -408,6 +408,55 @@ void nr_control_anisotropic( nr::MA* agent ) {
 	agent->control_input[2] = angle_integral;
 }
 
+void nr_control_au( nr::MA* agent ) {
+	/* Loop over all vertices of sensing. If it is also a vertex of the cell,
+	   then add it to the integral. */
+
+	/* Select the sensing region based on the value of the relaxed sensing
+	   quality. */
+	nr::Polygon sensing;
+	if (agent->relaxed_sensing_quality == 0) {
+		sensing = agent->guaranteed_sensing;
+	} else if (agent->relaxed_sensing_quality == 1) {
+		sensing = agent->total_sensing;
+	} else {
+		/* Not implemented yet */
+		return;
+	}
+
+	/* Initialize the vector resulting from the integral to zero. */
+	nr::Point planar_integral;
+	double angle_integral = 0;
+
+	/* Loop over all sensing contours. */
+	size_t Nc = sensing.contour.size();
+	for (size_t c=0; c<Nc; c++) {
+		/* Loop over all edges of the contour. */
+		size_t Ne = sensing.contour[c].size();
+		for (size_t v=0; v<Ne; v++) {
+			/* Get the edge vertices. */
+			nr::Point v1 = sensing.contour[c][v];
+			nr::Point v2 = sensing.contour[c][(v+1) % Ne];
+			/* Check if they are both on the boundary of the cell. */
+			bool on_v1 = nr::is_vertex_of(v1, agent->cell);
+			bool on_v2 = nr::is_vertex_of(v2, agent->cell);
+			if (on_v1 && on_v2) {
+				/* Calculate the normal vector. External contours are CW so
+				   rotate the vertex by 90 degrees. */
+				nr::Point n = nr::rotate( v2-v1, M_PI/2 );
+				/* Add it to the integrals */
+				planar_integral += n;
+				angle_integral += nr::dot( nr::rotate( nr::midpoint(v1,v2)
+				    - agent->position, 0.5*M_PI ), n);
+			}
+		}
+	}
+
+	agent->control_input[0] = planar_integral.x;
+	agent->control_input[1] = planar_integral.y;
+	agent->control_input[2] = angle_integral;
+}
+
 
 
 
@@ -622,6 +671,11 @@ int nr::compute_base_sensing_patterns(
 		}
 	}
 
+	/* Fix contour orientation */
+	nr::fix_orientation( &(agent->base_guaranteed_sensing) );
+	nr::fix_orientation( &(agent->base_relaxed_sensing) );
+	nr::fix_orientation( &(agent->base_total_sensing) );
+
 	return nr::SUCCESS;
 }
 
@@ -709,9 +763,12 @@ void nr::compute_control(
 		break;
 
 		case nr::CONTROL_ANISOTROPIC_UNCERTAINTY:
+		nr_control_au( agent );
 		break;
 
-		default: break;
+		default:
+		std::printf("Invalid control law selected.\n");
+		break;
 	}
 }
 

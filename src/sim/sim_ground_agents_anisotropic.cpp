@@ -126,10 +126,9 @@ int main() {
 			nr::plot_cells( agents );
 			/* Green for communication */
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			nr::plot_communication( agents );
+			// nr::plot_communication( agents );
 
 			nr::plot_render();
-
 			uquit = nr::plot_handle_input();
 			if (uquit) {
 				break;
@@ -140,15 +139,6 @@ int main() {
 		for (size_t i=0; i<N; i++) {
 			nr::simulate_dynamics( &(agents[i]) );
 		}
-
-		/************ DEBUG ************/
-		// for (size_t i=0; i<N; i++) {
-		// 	for (size_t j=0; j<3; j++) {
-		// 		std::printf(" %f", agents[i].control_input[j] );
-		// 	}
-		// 	std::printf("\n");
-		// }
-		// std::printf("\n");
 	}
 
 
