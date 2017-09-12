@@ -1,10 +1,7 @@
 TODO
-    ys partitioning, clipping fails in common region OR
-        for common region, try union of sensing inside omega and removal of cells
-    add pattern radius function
+    MA.unassigned_region and save_unassigned are no longer used
     export simulation results
     m code to plot simulation results
-    run simulations
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html

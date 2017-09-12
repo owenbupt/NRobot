@@ -49,7 +49,7 @@ int main() {
 	std::vector<double> uradii { 0.2, 0.2 };
 	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
-	nr::MAs agents (P, A, sradii, uradii, cradii);
+	nr::MAs agents (P, A, 0.01, sradii, uradii, cradii);
 	for (size_t i=0; i<N; i++) {
 		/* Attitude uncertainty */
 		agents[i].attitude_uncertainty = M_PI/10;

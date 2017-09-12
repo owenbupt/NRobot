@@ -51,7 +51,7 @@ int main() {
 	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
 	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
+	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
 	/* Set control law */
 	nr::set_control( &agents, nr::CONTROL_DISTANCE );
 

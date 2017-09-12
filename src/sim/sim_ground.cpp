@@ -52,7 +52,7 @@ int main() {
 	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii, Tstep);
+	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
 	nr::set_control( &agents, nr::CONTROL_FREE_ARC );

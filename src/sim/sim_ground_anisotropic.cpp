@@ -40,11 +40,13 @@ int main() {
 	/****** Region of interest ******/
 	nr::Polygon region;
 	nr::read( &region, "resources/region_cb.txt", true);
-	double rdiameter = nr::diameter(region);
 
 	/****** Setup agents ******/
     /* Agent initial positions */
 	nr::Points P;
+	// P.push_back( nr::Point(0,0) );
+	// P.push_back( nr::Point(1.5,0.5) );
+	// P.push_back( nr::Point(-2,3) );
 	P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
 	P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
 	P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
@@ -55,6 +57,9 @@ int main() {
 	P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
+	// A.push_back( nr::Orientation(0,0,M_PI/2) );
+	// A.push_back( nr::Orientation(0,0,M_PI*4/5) );
+	// A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
 	A.push_back( nr::Orientation(0,0, 2.4679773854259808 ) );
 	A.push_back( nr::Orientation(0,0, 0.28861356578484565 ) );
 	A.push_back( nr::Orientation(0,0, 4.9641841747027469 ) );
@@ -65,21 +70,20 @@ int main() {
 	A.push_back( nr::Orientation(0,0, 1.2436339452103413 ) );
 	/* Number of agents */
 	size_t N = P.size();
-    /* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0);
-	// std::vector<double> uradii (N, 0);
-	std::vector<double> uradii (N, 0.1);
-	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
-	nr::MAs agents (P, A, sradii, uradii, cradii);
+	nr::MAs agents ( P, A, Tstep );
 	for (size_t i=0; i<N; i++) {
-		/* Attitude uncertainty */
-		// agents[i].attitude_uncertainty = 0;
-		agents[i].attitude_uncertainty = M_PI/10;
 		/* Dynamics */
 		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
+		agents[i].sensing_radius = nr::radius( agents[i].base_sensing );
+		/* Position uncertainty */
+		agents[i].position_uncertainty = 0.1;
+		/* Attitude uncertainty */
+		agents[i].attitude_uncertainty = M_PI/10;
+		/* Communication radius */
+		agents[i].communication_radius = 2 * agents[i].sensing_radius;
 		/* Sensing quality at relaxed sensing */
 		agents[i].relaxed_sensing_quality = 0;
 		/* Increase gain for rotational control law */

@@ -39,7 +39,7 @@ nr::MA::MA() {
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = true;
+	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -52,11 +52,11 @@ nr::MA::MA() {
 }
 
 nr::MA::MA(
-	Point& pos,
+	nr::Point& pos,
+	double time_step,
 	double sradius,
 	double uradius,
-	double cradius,
-	double time_step
+	double cradius
 ) {
 	this->ID = 0;
 	/* State */
@@ -67,7 +67,7 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = true;
+	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -80,12 +80,12 @@ nr::MA::MA(
 }
 
 nr::MA::MA(
-	Point& pos,
-	Orientation& att,
+	nr::Point& pos,
+	nr::Orientation& att,
+	double time_step,
 	double sradius,
 	double uradius,
-	double cradius,
-	double time_step
+	double cradius
 ) {
 	this->ID = 0;
 	/* State */
@@ -97,7 +97,7 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = true;
+	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -120,10 +120,7 @@ nr::MAs::MAs() {
 }
 
 nr::MAs::MAs(
-	Points& pos,
-	std::vector<double>& sradii,
-	std::vector<double>& uradii,
-	std::vector<double>& cradii,
+	nr::Points& pos,
 	double time_step
 ) {
 	/* Number of elements */
@@ -131,18 +128,33 @@ nr::MAs::MAs(
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], sradii[i], uradii[i], cradii[i], time_step );
+		this->at(i) = nr::MA( pos[i], time_step );
 		/* Set the ID for each element */
 		this->at(i).ID = i+1;
 	}
 }
 
 nr::MAs::MAs(
-	Points& pos,
-	Orientations& att,
+	nr::Points& pos,
+	double time_step,
 	std::vector<double>& sradii,
 	std::vector<double>& uradii,
-	std::vector<double>& cradii,
+	std::vector<double>& cradii
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector element */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA( pos[i], time_step, sradii[i], uradii[i], cradii[i] );
+		/* Set the ID for each element */
+		this->at(i).ID = i+1;
+	}
+}
+
+nr::MAs::MAs(
+	nr::Points& pos,
+	nr::Orientations& att,
 	double time_step
 ) {
 	/* Number of elements */
@@ -150,7 +162,26 @@ nr::MAs::MAs(
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], sradii[i], uradii[i], cradii[i], time_step );
+		this->at(i) = nr::MA( pos[i], att[i], time_step );
+		/* Set the ID for each element */
+		this->at(i).ID = i+1;
+	}
+}
+
+nr::MAs::MAs(
+	nr::Points& pos,
+	nr::Orientations& att,
+	double time_step,
+	std::vector<double>& sradii,
+	std::vector<double>& uradii,
+	std::vector<double>& cradii
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector element */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA( pos[i], att[i], time_step, sradii[i], uradii[i], cradii[i] );
 		/* Set the ID for each element */
 		this->at(i).ID = i+1;
 	}
@@ -979,23 +1010,57 @@ double nr::calculate_objective(
 	}
 
 	/* Add the objective of the common region if it exists. */
+	// if ((agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) ||
+	//     (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY)) {
+	//
+	// 	nr::Polygon common;
+	// 	int err;
+	// 	for (size_t i=0; i<agents.size(); i++) {
+	// 		err = nr::polygon_clip( nr::OR, common,
+	// 		    agents[i].unassigned_sensing, &common );
+	// 		if (err) {
+	// 	        std::printf("Clipping operation returned error %d\n", err);
+	// 	        return nr::ERROR_PARTITIONING_FAILED;
+	// 	    }
+	// 	}
+	//
+	// 	H += nr::area( common );
+	// }
+
 	if ((agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) ||
 	    (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY)) {
-
-		nr::Polygon common;
 		int err;
+		/* Add the objective of the common region if it exists. Find the union of
+		   all sensing patterns and subtract the union of all cells. */
+		nr::Polygon union_sensing, union_cells, common, tmp_sensing;
 		for (size_t i=0; i<agents.size(); i++) {
-			err = nr::polygon_clip( nr::OR, common,
-			    agents[i].unassigned_sensing, &common );
+			/* Select correct sensing depending on the partitioning used. */
+			if (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) {
+				tmp_sensing = agents[i].sensing;
+			} else if (agents[i].relaxed_sensing_quality == 0) {
+				tmp_sensing = agents[i].guaranteed_sensing;
+			} else {
+				tmp_sensing = agents[i].relaxed_sensing;
+			}
+			err = nr::polygon_clip( nr::OR, tmp_sensing, union_sensing, &union_sensing );
 			if (err) {
-		        std::printf("Clipping operation returned error %d\n", err);
-		        return nr::ERROR_PARTITIONING_FAILED;
-		    }
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+			err = nr::polygon_clip( nr::OR, agents[i].cell, union_cells, &union_cells );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
 		}
 
+		err = nr::polygon_clip( nr::DIFF, union_sensing, union_cells, &common );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
 		H += nr::area( common );
 	}
-
 
 	return H;
 }
@@ -1015,7 +1080,7 @@ void nr::plot_position(
 	/* Plot orientation if needed */
 	if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) ||
 	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
-		nr::Point v = nr::pol2cart( nr::Point( 1, agent.attitude.yaw ) );
+		nr::Point v = nr::pol2cart( nr::Point( agent.sensing_radius/2, agent.attitude.yaw ) );
 		nr::plot_segment( agent.position, agent.position+v, color );
 	}
 }
@@ -1076,7 +1141,7 @@ void nr::plot_uncertainty(
 		if (agent.position_uncertainty > 0) {
 			vector_mangitude = agent.position_uncertainty;
 		} else {
-			vector_mangitude = 1;
+			vector_mangitude = agent.sensing_radius/2;
 		}
 		nr::Point v1 = nr::pol2cart( nr::Point( vector_mangitude,
 		    agent.attitude.yaw-agent.attitude_uncertainty ) );

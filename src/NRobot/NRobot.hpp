@@ -85,7 +85,9 @@ class MA {
 
         /****** Agent parameters ******/
 		double sensing_radius;
-        /* The radius of a circular sensing pattern centered on the MA. */
+        /* The radius of the sensing pattern if it is circular, or the maximum
+           distance from the agent to the boundary of its sensing patter if it
+           is anisotropic. */
         double communication_radius;
         /* The radius inside which the MA can communicate with other MAs. */
 		double position_uncertainty;
@@ -161,19 +163,19 @@ class MA {
 
 		MA(
 			Point& pos,
+            double time_step = 0.01,
 			double sradius = 0,
 			double uradius = 0,
-			double cradius = 0,
-            double time_step = 0.01
+			double cradius = 0
 		);
 
 		MA(
 			Point& pos,
 			Orientation& att,
+            double time_step = 0.01,
 			double sradius = 0,
 			double uradius = 0,
-			double cradius = 0,
-            double time_step = 0.01
+			double cradius = 0
 		);
 };
 
@@ -193,21 +195,32 @@ class MAs: public std::vector<MA> {
 		/*********** Constructors ***********/
 		MAs();
 
+        MAs(
+			Points& pos,
+            double time_step = 0.01
+		);
+
 		MAs(
 			Points& pos,
+            double time_step,
 			std::vector<double>& sradii,
 			std::vector<double>& uradii,
-			std::vector<double>& cradii,
+			std::vector<double>& cradii
+		);
+
+        MAs(
+			Points& pos,
+			Orientations& att,
             double time_step = 0.01
 		);
 
 		MAs(
 			Points& pos,
 			Orientations& att,
+            double time_step,
 			std::vector<double>& sradii,
 			std::vector<double>& uradii,
-			std::vector<double>& cradii,
-            double time_step = 0.01
+			std::vector<double>& cradii
 		);
 };
 

@@ -258,6 +258,51 @@ void nr::operator -= ( nr::Point& A, const nr::Point& B ) {
 	A.z -= B.z;
 }
 
+bool nr::operator == ( const nr::Orientation& A, const nr::Orientation& B ) {
+	if ( (std::abs(A.roll - B.roll) <= NR_CMP_ERR) &&
+		(std::abs(A.pitch - B.pitch) <= NR_CMP_ERR) &&
+		(std::abs(A.yaw - B.yaw) <= NR_CMP_ERR) ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool nr::operator != ( const nr::Orientation& A, const nr::Orientation& B ) {
+	if ( (std::abs(A.roll - B.roll) <= NR_CMP_ERR) &&
+		(std::abs(A.pitch - B.pitch) <= NR_CMP_ERR) &&
+		(std::abs(A.yaw - B.yaw) <= NR_CMP_ERR) ) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+nr::Orientation nr::operator + ( const nr::Orientation& A, const nr::Orientation& B ) {
+	return nr::Orientation( A.roll+B.roll, A.pitch+B.pitch, A.yaw+B.yaw );
+}
+
+nr::Orientation nr::operator - ( const nr::Orientation& A, const nr::Orientation& B ) {
+	return nr::Orientation( A.roll-B.roll, A.pitch-B.pitch, A.yaw-B.yaw );
+}
+
+nr::Orientation nr::operator - ( const nr::Orientation& A ) {
+	return nr::Orientation( -A.roll, -A.pitch, -A.yaw );
+}
+
+void nr::operator += ( nr::Orientation& A, const nr::Orientation& B ) {
+	A.roll += B.roll;
+	A.pitch += B.pitch;
+	A.yaw += B.yaw;
+}
+
+void nr::operator -= ( nr::Orientation& A, const nr::Orientation& B ) {
+	A.roll -= B.roll;
+	A.pitch -= B.pitch;
+	A.yaw -= B.yaw;
+}
+
+
 void nr::operator + ( nr::Polygon& P, const nr::Point& A ) {
 	nr::translate( &P, A );
 }
@@ -799,14 +844,33 @@ double nr::diameter( const nr::Polygon& P ) {
 	for (size_t i=0; i<verts.size(); i++) {
 		for (size_t j=0; j<verts.size(); j++) {
 			if (i != j) {
-				if (dist(verts.at(i), verts.at(j)) > d ) {
-					d = dist(verts.at(i), verts.at(j));
+				if (nr::dist(verts.at(i), verts.at(j)) > d ) {
+					d = nr::dist(verts.at(i), verts.at(j));
 				}
 			}
 		}
 	}
 
 	return d;
+}
+
+double nr::radius( const nr::Polygon& P, const nr::Point& reference_point ) {
+	/* Initialize polygon radius. */
+	double r = 0;
+	/* Loop over all polygon contours. */
+	for (size_t c=0; c<P.contour.size(); c++) {
+		/* Loop over all contour vertices. */
+		for (size_t v=0; v<P.contour[c].size(); v++) {
+			/* Compare the distance of the vertex from the reference point with
+			   the current polygon radius. */
+			double d = nr::dist( reference_point, P.contour[c][v] );
+			if (d > r) {
+				r = d;
+			}
+		}
+	}
+
+	return r;
 }
 
 double nr::area( const nr::Polygon& P ) {
