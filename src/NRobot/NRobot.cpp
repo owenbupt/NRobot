@@ -44,6 +44,7 @@ nr::MA::MA() {
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
+	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
 	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = 0.01;
@@ -71,6 +72,7 @@ nr::MA::MA(
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
+	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
 	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = time_step;
@@ -100,6 +102,7 @@ nr::MA::MA(
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
 	this->control_input = std::vector<double> (6,0);
+	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
 	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = time_step;
@@ -532,27 +535,39 @@ void nr::simulate_dynamics(
 	switch (agent->dynamics) {
 		default:
 		case DYNAMICS_SI_GROUND_XY:
-		agent->position.x += agent->time_step * agent->control_input[0];
-		agent->position.y += agent->time_step * agent->control_input[1];
+		agent->position.x += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0];
+		agent->position.y += agent->time_step *
+		    agent->control_input_gains[1] * agent->control_input[1];
 		break;
 
 		case DYNAMICS_SI_GROUND_XYy:
-		agent->position.x += agent->time_step * agent->control_input[0];
-		agent->position.y += agent->time_step * agent->control_input[1];
-		agent->attitude.yaw += agent->time_step * agent->control_input[2];
+		agent->position.x += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0];
+		agent->position.y += agent->time_step *
+		    agent->control_input_gains[1] * agent->control_input[1];
+		agent->attitude.yaw += agent->time_step *
+		    agent->control_input_gains[2] * agent->control_input[2];
 		break;
 
 		case DYNAMICS_SI_AIR_XYZ:
-		agent->position.x += agent->time_step * agent->control_input[0];
-		agent->position.y += agent->time_step * agent->control_input[1];
-		agent->position.z += agent->time_step * agent->control_input[2];
+		agent->position.x += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0];
+		agent->position.y += agent->time_step *
+		    agent->control_input_gains[1] * agent->control_input[1];
+		agent->position.z += agent->time_step *
+		    agent->control_input_gains[2] * agent->control_input[2];
 		break;
 
 		case DYNAMICS_SI_AIR_XYZy:
-		agent->position.x += agent->time_step * agent->control_input[0];
-		agent->position.y += agent->time_step * agent->control_input[1];
-		agent->position.z += agent->time_step * agent->control_input[2];
-		agent->attitude.yaw += agent->time_step * agent->control_input[3];
+		agent->position.x += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0];
+		agent->position.y += agent->time_step *
+		    agent->control_input_gains[1] * agent->control_input[1];
+		agent->position.z += agent->time_step *
+		    agent->control_input_gains[2] * agent->control_input[2];
+		agent->attitude.yaw += agent->time_step *
+		    agent->control_input_gains[3] * agent->control_input[3];
 		break;
 	}
 }
@@ -1027,7 +1042,7 @@ void nr::plot_cells(
 	const SDL_Color& color
 ) {
 	for (size_t i=0; i<agents.size(); i++) {
-		nr::plot_polygon( agents[i].cell, color );
+		nr::plot_cell( agents[i], color );
 	}
 }
 

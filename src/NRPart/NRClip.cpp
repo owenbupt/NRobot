@@ -41,8 +41,6 @@ int nr::polygon_clip_fast(
 		for (size_t j=0; j<S1.contour[i].size(); j++) {
 			subj[i][j].X = sc * S1.contour[i][j].x;
 			subj[i][j].Y = sc * S1.contour[i][j].y;
-			// subj[i][j].X = std::scalbn(S1.contour[i][j].x, sc);
-			// subj[i][j].Y = std::scalbn(S1.contour[i][j].y, sc);
 		}
 	}
 
@@ -53,8 +51,6 @@ int nr::polygon_clip_fast(
 		for (size_t j=0; j<S2.contour[i].size(); j++) {
 			clip[i][j].X = sc * S2.contour[i][j].x;
 			clip[i][j].Y = sc * S2.contour[i][j].y;
-			// subj[i][j].X = std::scalbn(S2.contour[i][j].x, sc);
-			// subj[i][j].Y = std::scalbn(S2.contour[i][j].y, sc);
 		}
 	}
 
@@ -103,8 +99,6 @@ int nr::polygon_clip_fast(
 		for (size_t j=0; j<Nv; j++) {
 			R->contour[i][j].x = result[i][j].X / sc;
 			R->contour[i][j].y = result[i][j].Y / sc;
-			// R->contour[i][j].x = std::scalbn(result[i][j].X, -sc);
-			// R->contour[i][j].y = std::scalbn(result[i][j].Y, -sc);
 		}
 	}
 
@@ -161,13 +155,8 @@ int nr::polygon_clip(
 	for (size_t i=0; i<S1.contour.size(); i++) {
 		subj[i].resize( S1.contour[i].size() );
 		for (size_t j=0; j<S1.contour[i].size(); j++) {
-			#if NR_EXPONENT_SCALING
-				subj[i][j].X = std::scalbn(S1.contour[i][j].x, sc);
-				subj[i][j].Y = std::scalbn(S1.contour[i][j].y, sc);
-			#else
-				subj[i][j].Y = sc * S1.contour[i][j].y;
-				subj[i][j].X = sc * S1.contour[i][j].x;
-			#endif
+			subj[i][j].Y = sc * S1.contour[i][j].y;
+			subj[i][j].X = sc * S1.contour[i][j].x;
 		}
 	}
 
@@ -176,13 +165,8 @@ int nr::polygon_clip(
 	for (size_t i=0; i<S2.contour.size(); i++) {
 		clip[i].resize( S2.contour[i].size() );
 		for (size_t j=0; j<S2.contour[i].size(); j++) {
-			#if NR_EXPONENT_SCALING
-				clip[i][j].X = std::scalbn(S2.contour[i][j].x, sc);
-				clip[i][j].Y = std::scalbn(S2.contour[i][j].y, sc);
-			#else
-				clip[i][j].Y = sc * S2.contour[i][j].y;
-				clip[i][j].X = sc * S2.contour[i][j].x;
-			#endif
+			clip[i][j].Y = sc * S2.contour[i][j].y;
+			clip[i][j].X = sc * S2.contour[i][j].x;
 		}
 	}
 
@@ -193,12 +177,12 @@ int nr::polygon_clip(
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
-		// nr::print(S1);
+		nr::print(S1);
 		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
-		// nr::print(S2);
+		nr::print(S2);
 		return nr::ERROR_INVALID_CLIP;
 	}
 
@@ -232,13 +216,8 @@ int nr::polygon_clip(
 		R->contour[i].resize(Nv);
 
 		for (size_t j=0; j<Nv; j++) {
-			#if NR_EXPONENT_SCALING
-				R->contour[i][j].x = std::scalbn(cnode->Contour[j].X, -sc);
-				R->contour[i][j].y = std::scalbn(cnode->Contour[j].Y, -sc);
-			#else
-				R->contour[i][j].x = cnode->Contour[j].X / sc;
-				R->contour[i][j].y = cnode->Contour[j].Y / sc;
-			#endif
+			R->contour[i][j].x = cnode->Contour[j].X / sc;
+			R->contour[i][j].y = cnode->Contour[j].Y / sc;
 		}
 
 		cnode = cnode->GetNext();

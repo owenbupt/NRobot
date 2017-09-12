@@ -145,6 +145,10 @@ class MA {
         /* The control input vector. Its length and elements depend on the
            chosen dynamics. The default constructors create a vector of 6
            elements. */
+        std::vector<double> control_input_gains;
+        /* The control input gains. Its length and elements depend on the
+          chosen dynamics. The default constructors create a vector of 6
+          elements with value 1. */
 
         /****** Dynamics and simulation ******/
         dynamics_type dynamics;
@@ -319,6 +323,21 @@ double calculate_objective(
    The computation depends on the control law and partitioning selected. */
 
 
+
+
+
+/************************/
+/****** Simulation ******/
+/************************/
+int export_results(
+    Polygon& region,
+    MAs& agents,
+    std::vector<double> objective,
+    double duration,
+    double time_step,
+    double elapsed_time
+);
+/* Export the simulation results to three text files. */
 
 
 

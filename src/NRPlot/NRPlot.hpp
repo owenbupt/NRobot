@@ -27,13 +27,21 @@
 #include "NRBase.hpp"
 
 /* Colors */
-extern SDL_Color RED;
-extern SDL_Color GREEN;
-extern SDL_Color BLUE;
 extern SDL_Color BLACK;
 extern SDL_Color WHITE;
 extern SDL_Color GRAY;
 extern SDL_Color GREY;
+extern SDL_Color RED;
+extern SDL_Color GREEN;
+extern SDL_Color BLUE;
+extern SDL_Color YELLOW;
+extern SDL_Color MAGENTA;
+extern SDL_Color ORANGE;
+extern SDL_Color CYAN;
+extern SDL_Color BROWN;
+extern SDL_Color PINK;
+/* Color palettes */
+extern std::vector<SDL_Color> PLOT_COLORS;
 
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;
@@ -47,8 +55,6 @@ extern double PLOT_Y_OFFSET;
 /* Create global variables for the plot window and renderer */
 extern SDL_Window *PLOT_WINDOW;
 extern SDL_Renderer *PLOT_RENDERER;
-/* Color palettes */
-extern std::vector<SDL_Color> PLOT_COLORS;
 
 
 namespace nr {

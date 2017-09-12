@@ -41,29 +41,45 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 1;
+	double Tfinal = 5;
 	double Tstep = 0.01;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
-	nr::read( &region, "resources/region_sq.txt", true);
+	nr::read( &region, "resources/region_cb.txt", true);
 
 	/****** Setup agents ******/
     /* Agent initial positions */
 	nr::Points P;
-	P.push_back( nr::Point(0,0) );
-	P.push_back( nr::Point(1.5,0.5) );
-	P.push_back( nr::Point(-2,3) );
+	// P.push_back( nr::Point(0,0) );
+	// P.push_back( nr::Point(1.5,0.5) );
+	// P.push_back( nr::Point(-2,3) );
+    P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
+	P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
+	P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
+	P.push_back( nr::Point(1.5360483374617235,1.4543510611496755) );
+	P.push_back( nr::Point(1.4431379448894295,1.6047375622673639) );
+	P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
+	P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
+	P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
-	A.push_back( nr::Orientation(0,0,M_PI/2) );
-	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
-	A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
+	// A.push_back( nr::Orientation(0,0,M_PI/2) );
+	// A.push_back( nr::Orientation(0,0,M_PI*4/5) );
+	// A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
+    A.push_back( nr::Orientation(0,0, 2.4679773854259808 ) );
+	A.push_back( nr::Orientation(0,0, 0.28861356578484565 ) );
+	A.push_back( nr::Orientation(0,0, 4.9641841747027469 ) );
+	A.push_back( nr::Orientation(0,0, 0.274211804968107 ) );
+	A.push_back( nr::Orientation(0,0, 3.672512046080453 ) );
+	A.push_back( nr::Orientation(0,0, 1.3573179379420355 ) );
+	A.push_back( nr::Orientation(0,0, 3.5407470134652721 ) );
+	A.push_back( nr::Orientation(0,0, 1.2436339452103413 ) );
 	/* Number of agents */
 	size_t N = P.size();
     /* Sensing, uncertainty and communication radii */
 	std::vector<double> sradii (N, 1);
-	std::vector<double> uradii (N, 0.2);
+	std::vector<double> uradii (N, 0.1);
 	std::vector<double> cradii (N, 5);
 	/* Initialize agents */
 	nr::MAs agents (P, A, sradii, uradii, cradii);
@@ -73,9 +89,12 @@ int main() {
 		/* Dynamics */
 		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
 		/* Base sensing patterns */
-		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
+		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		agents[i].relaxed_sensing_quality = 1;
+        /* Increase gain for rotational control law */
+		agents[i].control_input_gains[2] = 10;
+		agents[i].save_unassigned_sensing = false;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
@@ -90,7 +109,7 @@ int main() {
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
-	PLOT_SCALE = 20;
+	PLOT_SCALE = 100;
 	bool uquit = false;
 	#endif
 
@@ -102,7 +121,7 @@ int main() {
     std::vector<std::vector<double>> Hi (N, std::vector<double> (smax, 0));
     double initial_relaxed_sensing_quality = agents[0].relaxed_sensing_quality;
     std::vector<bool> converged (N, false);
-    double H_threshold = 0.01;
+    double H_threshold = 0.001;
     size_t window_size = 10;
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
@@ -171,9 +190,12 @@ int main() {
 			nr::plot_positions( agents, BLACK );
 			nr::plot_uncertainty( agents, BLACK );
 			/* sdisks */
-			nr::plot_sensing( agents, RED );
+			// nr::plot_sensing( agents, RED );
 			/* cells */
-			nr::plot_cells( agents, BLUE );
+            // nr::plot_cells( agents, BLUE );
+			for (size_t i=0; i<N; i++) {
+				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
+			}
 			/* communication */
 			// nr::plot_communication( agents, GREEN );
 
@@ -203,11 +225,31 @@ int main() {
 	#endif
 
 	/****** Quit plot ******/
-	#if NR_PLOT_AVAILABLE
+    #if NR_PLOT_AVAILABLE
 		uquit = false;
 		while (!uquit) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			nr::plot_clear_render();
+			nr::plot_show_axes();
+
+			/* Region, nodes and udisks */
+			nr::plot_polygon( region, BLACK );
+			nr::plot_positions( agents, BLACK );
+			nr::plot_uncertainty( agents, BLACK );
+			/* sdisks */
+			// nr::plot_sensing( agents, RED );
+			/* cells */
+			// nr::plot_cells( agents, BLUE );
+			for (size_t i=0; i<N; i++) {
+				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
+			}
+			/* communication */
+			// nr::plot_communication( agents, GREEN );
+
+			nr::plot_render();
 			uquit = nr::plot_handle_input();
+			if (uquit) {
+				break;
+			}
 		}
 		nr::plot_quit();
 	#endif
