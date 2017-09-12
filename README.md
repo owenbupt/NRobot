@@ -16,7 +16,7 @@ make release
 ```
 
 ## File Formats
-A description of the file formats used when data is imported and exported can be found in [`doc/file_formats.md`](./doc/file_formats.md). All files used are simple ASCII text files.
+A description of the file formats used when data is imported and exported can be found in [`docs/file_formats.md`](./docs/file_formats.md). All files used are simple ASCII text files.
 
 ## Relevant Publications
 [1] S. Papatheodorou, Y. Stergiopoulos, and A. Tzes, [*Distributed area coverage control with imprecise robot localization*](http://ieeexplore.ieee.org/document/7535920/), In Proceedings of the 24th Mediterranean Conference on Control and Automation (MED), pp. 214-219, June 21-24, 2016, Athens, Greece
