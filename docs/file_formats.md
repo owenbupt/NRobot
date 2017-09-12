@@ -22,6 +22,7 @@ for each contour
 ```
 
 #### Simulation Parameters
+Filename: `sim_YYYYMMDD_HHMMSS_parameters.txt`. Saved at the end of the simulation.
 ```
 <Number of agents>
 <Simulation time>
@@ -36,6 +37,7 @@ for each contour
 ```
 
 #### Agent Parameters
+Filename: `sim_YYYYMMDD_HHMMSS_agent_X_parameters.txt` where X is the agent ID. Saved at the beginning of the simulation.
 ```
 <Agent ID>
 <Initial position>
@@ -60,6 +62,7 @@ for each contour
 
 #### Agent State
 This file is organized in columns. Each column contains < Simulation iterations > elements. Each column is shown in a different line for clarity below.
+Filename: `sim_YYYYMMDD_HHMMSS_agent_X_state.txt` where X is the agent ID. Saved at the end of the simulation.
 ```
 <Iteration number>
 <Position x>
@@ -75,8 +78,16 @@ This file is organized in columns. Each column contains < Simulation iterations 
 <Velocity pitch>
 <Velocity yaw>
 <Relaxed sensing quality>
+<Connected with neighbor 1>
+<Connected with neighbor 2>
+.
+.
+.
+<Connected with neighbor N>
 <Control input 1>
 <Control input 2>
-...
+.
+.
+.
 <Control input m (m is dependent on <Agent dynamics>)>
 ```
