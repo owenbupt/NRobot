@@ -18,8 +18,8 @@
  */
 
 /*
-   Same simulation as ICRA14 (YS, AT).
-*/
+ *  Same simulation as Stergiopoulos_Tzes_ICRA14 if uncertainty is set to zero.
+ */
 
 #include <cstdio>
 #include <cmath>
@@ -92,7 +92,6 @@ int main() {
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
-			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
 		}
 	}
@@ -101,6 +100,18 @@ int main() {
 	// nr::set_control( &agents, nr::CONTROL_ANISOTROPIC );
 	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
 	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
+
+	/****** Create constrained regions ******/
+	nr::Polygons offset_regions;
+	for (size_t i=0; i<N; i++) {
+		offset_regions.push_back( region );
+
+		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
+		if (err) {
+			return nr::ERROR_CLIPPING_FAILED;
+		}
+	}
+
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE

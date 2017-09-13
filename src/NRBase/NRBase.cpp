@@ -1060,6 +1060,8 @@ int nr::offset_in(
 	 *  size.
 	 */
 	double P_diameter = nr::diameter( *P );
+	/* Create a copy of P. */
+	nr::Polygon P_copy = *P;
 	/* Loop over all polygon contours. */
 	for (size_t c=0; c<P->contour.size(); c++) {
 		/* Loop over all contour edges. */
@@ -1067,27 +1069,29 @@ int nr::offset_in(
 		for (size_t e=0; e<Ne; e++) {
 			/* Get the edge vertices. */
 			nr::Point v1 = P->contour[c][e];
-			nr::Point v2 = P->contour[c][e % Ne];
+			nr::Point v2 = P->contour[c][(e+1) % Ne];
 			/* Find the edge midpoint. */
 			nr::Point midpt = nr::midpoint(v1, v2);
 			/*
 			 *  Find a point inside P whose distance from the edge v1v2 at its
 			 *  midpoint is equal to 2*offset.
 			 */
-			nr::Point p = nr::rotate(v2-v1, M_PI/2) / nr::dist(v1,v2);
+			nr::Point p = nr::rotate(v2-v1, -M_PI/2) / nr::dist(v1,v2);
 			p = midpt + 2*offset * p;
 
 			/* Create a halfplane to subtract from the polygon. */
-			nr::Polygon H;
+			nr::Polygon H = nr::halfplane( midpt, p, P_diameter );
 
 			/* Subtract the halfplane from P. */
-			int err = nr::polygon_clip( nr::DIFF, *P, H, P );
+			int err = nr::polygon_clip( nr::DIFF, P_copy, H, &P_copy );
 			if (err) {
-				std::printf("Clipping operation returned error %d\n", err);
 				return nr::ERROR_CLIPPING_FAILED;
 			}
 		}
 	}
+
+	/* Copy the result back to P. */
+	*P = P_copy;
 
 	return nr::SUCCESS;
 }
@@ -1286,12 +1290,12 @@ int nr::polygon_clip(
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
 		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
-		nr::print(S1);
+		// nr::print(S1);
 		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
 		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
-		nr::print(S2);
+		// nr::print(S2);
 		return nr::ERROR_INVALID_CLIP;
 	}
 
@@ -1365,7 +1369,7 @@ nr::Polygon nr::halfplane(
 	H.contour[0][2].x = -length/2;
 	H.contour[0][2].y = length/2;
 	H.contour[0][3].x = 0;
-	H.contour[0][3].y = length;
+	H.contour[0][3].y = length/2;
 
 	/* Rotate halfplane */
 	double theta = std::atan2(B.y-A.y, B.x-A.x);

@@ -107,6 +107,17 @@ int main() {
 	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
 	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
 
+    /****** Create constrained regions ******/
+    nr::Polygons offset_regions;
+    for (size_t i=0; i<N; i++) {
+        offset_regions.push_back( region );
+
+        int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
+        if (err) {
+            return nr::ERROR_CLIPPING_FAILED;
+        }
+    }
+    
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
