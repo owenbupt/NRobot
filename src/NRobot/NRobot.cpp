@@ -43,6 +43,7 @@ nr::MA::MA() {
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
 	this->control_input = std::vector<double> (6,0);
 	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
@@ -71,6 +72,7 @@ nr::MA::MA(
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
 	this->control_input = std::vector<double> (6,0);
 	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
@@ -101,6 +103,7 @@ nr::MA::MA(
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
+	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
 	this->control_input = std::vector<double> (6,0);
 	this->control_input_gains = std::vector<double> (6,1);
 	/* Dynamics and simulation */
@@ -839,6 +842,40 @@ void nr::compute_control(
 		default:
 		std::printf("Invalid control law selected.\n");
 		break;
+	}
+}
+
+void nr::ensure_collision_avoidance(
+    nr::MA* agent
+) {
+	/* Collision avoidance tolerance. */
+	double e = 0.001;
+	/* Loop over all neighbors. */
+	for (size_t j=0; j<agent->neighbors.size(); j++) {
+		/* Find the distance from the neighbor. */
+		double d = nr::dist( agent->position, agent->neighbors[j].position );
+		/* If the distance plus the tolerance is equal or less than the sum of
+		   the positioning uncertainties of the agents, they might collide. */
+		if (d+e <= agent->position_uncertainty +
+		agent->neighbors[j].position_uncertainty) {
+			/* The translational control input. */
+			nr::Point tmp_ctrl_input
+			(agent->control_input[0], agent->control_input[1]);
+			/* Vector from the agent to its neighbor. */
+			nr::Point v = agent->neighbors[j].position - agent->position;
+			/* Check if the control input points towards the neighbor. */
+			if (nr::dot( tmp_ctrl_input, v ) > 0) {
+				/* Create a vector with the direction of the bisector. */
+				nr::Point pb = nr::rotate(
+				agent->position-agent->neighbors[j].position, M_PI/2 );
+				/* Project the control input on the perpendicular bisector. */
+
+				tmp_ctrl_input = nr::projection( tmp_ctrl_input, pb );
+
+				agent->control_input[0] = tmp_ctrl_input.x;
+				agent->control_input[1] = tmp_ctrl_input.y;
+			}
+		}
 	}
 }
 

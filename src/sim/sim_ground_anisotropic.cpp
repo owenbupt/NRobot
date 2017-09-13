@@ -85,7 +85,7 @@ int main() {
 		/* Communication radius */
 		agents[i].communication_radius = 2 * agents[i].sensing_radius;
 		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		agents[i].relaxed_sensing_quality = 1;
 		/* Increase gain for rotational control law */
 		agents[i].control_input_gains[2] = 10;
 		agents[i].save_unassigned_sensing = false;
@@ -133,6 +133,8 @@ int main() {
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
+			/* Ensure collision avoidance. */
+            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */

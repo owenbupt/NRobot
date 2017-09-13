@@ -88,6 +88,8 @@ int main() {
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
+			/* Ensure collision avoidance. */
+            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */

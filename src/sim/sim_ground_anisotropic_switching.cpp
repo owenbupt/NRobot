@@ -154,10 +154,12 @@ int main() {
                 agents[i].relaxed_sensing_quality = !agents[i].relaxed_sensing_quality;
                 std::printf("Agent %lu switched at iteration %lu\n", agents[i].ID, s);
             }
-			/* Compute own cell using neighbors vector */
+			/* Compute own cell using neighbors vector. */
 			nr::compute_cell( &(agents[i]), region );
-			/* Compute own control input */
+			/* Compute own control input. */
 			nr::compute_control( &(agents[i]) );
+            /* Ensure collision avoidance. */
+            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */

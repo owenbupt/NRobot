@@ -311,6 +311,13 @@ bool is_point( const Circle& C );
 void print( const Orientation& A );
 
 /****** Others ******/
+Point projection(
+	const Point& A,
+	const Point& B
+);
+/* Returns the projection of vector A on vector B. The formula used is
+   p = (a * b) / (b * b) b, where * denotes the vector dot product. */
+
 std::vector<double> linspace(
 	double start,
 	double end,

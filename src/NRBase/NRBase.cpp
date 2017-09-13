@@ -1087,6 +1087,13 @@ void nr::print( const nr::Orientation& A ) {
 }
 
 /****** Others ******/
+nr::Point nr::projection(
+	const nr::Point& A,
+	const nr::Point& B
+) {
+	return (nr::dot(A,B) / nr::dot(B,B)) * B;
+}
+
 std::vector<double> nr::linspace(
 	double start,
 	double end,

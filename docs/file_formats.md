@@ -53,6 +53,7 @@ Filename: `sim_YYYYMMDD_HHMMSS_agent_X_parameters.txt` where X is the agent ID. 
 <Agent time-step>
 <Partitioning scheme>
 <Control scheme>
+<Collision avoidance scheme>
 <Control input gains (a line with a number of values dependent on <Agent dynamics>)>
 <Base sensing (using Polygon format)>
 <Base guaranteed sensing (using Polygon format)>

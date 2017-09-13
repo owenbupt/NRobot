@@ -61,6 +61,13 @@ enum control_type{
 };
 
 /*******************************************************/
+/**************** Collision avoidance ******************/
+/*******************************************************/
+enum avoidance_type{
+    AVOIDANCE_DISK_BISECTOR
+};
+
+/*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
 /*!
@@ -143,6 +150,9 @@ class MA {
 		control_type control;
         /* The type of the control law used. Tightly coupled with the
            dynamics. */
+       avoidance_type avoidance;
+       /* The type of collision avoidance used. This is used after the control
+          input has been computed. */
         std::vector<double> control_input;
         /* The control input vector. Its length and elements depend on the
            chosen dynamics. The default constructors create a vector of 6
@@ -279,6 +289,12 @@ void compute_control(
 );
 /* Compute the value of the control input for the MA based on the value of the
    control variable. */
+
+void ensure_collision_avoidance(
+    MA* agent
+);
+/* Modifies the control input so that the agent will not collide with any of
+   its neighbors. */
 
 double calculate_objective(
    MA& agent
