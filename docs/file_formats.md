@@ -37,18 +37,13 @@ Filename: `sim_YYYYMMDD_HHMMSS_parameters.txt`. Saved at the end of the simulati
 ```
 
 #### Agent Parameters
-Filename: `sim_YYYYMMDD_HHMMSS_agent_X_parameters.txt` where X is the agent ID. Saved at the beginning of the simulation.
+Filename: `sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt` where XXXX is the agent ID. Saved at the beginning of the simulation.
 ```
 <Agent ID>
-<Initial position>
-<Initial attitude>
-<Initial translational velocity>
-<Initial rotational velocity>
 <Sensing radius>
 <Communication radius>
 <Position uncertainty>
 <Attitude uncertainty>
-<Initial relaxed sensing quality>
 <Agent dynamics>
 <Agent time-step>
 <Partitioning scheme>
@@ -58,7 +53,6 @@ Filename: `sim_YYYYMMDD_HHMMSS_agent_X_parameters.txt` where X is the agent ID. 
 <Base sensing (using Polygon format)>
 <Base guaranteed sensing (using Polygon format)>
 <Base relaxed sensing (using Polygon format)>
-<Base total sensing (using Polygon format)>
 ```
 
 #### Agent State

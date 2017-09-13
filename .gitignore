@@ -33,4 +33,4 @@ bin
 build
 
 # Exclude simulation results
-sim_*
+sim_*.txt

@@ -298,6 +298,7 @@ void make_CCW( Contour* C );
 /****************************** Polygon ******************************/
 int read( Polygon* P, const char* fname, bool read_hole = false, bool read_open = false );
 int write( const Polygon& P, const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
+int write( const Polygon& P, FILE* file, bool write_hole = false, bool write_open = false );
 void print( const Polygon& P );
 double diameter( const Polygon& P );
 double radius( const Polygon& P, const Point& reference_point = Point(0,0) );

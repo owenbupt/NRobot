@@ -757,40 +757,49 @@ int nr::write( const nr::Polygon& P, const char* fname, bool write_hole, bool wr
 	FILE* fp = std::fopen(fname, mode);
 	if (fp != NULL) {
 
-		/* Write contour number */
-		std::fprintf(fp, "%lu\n", P.contour.size());
-
-		/* Loop over each contour */
-		for (size_t i=0; i<P.contour.size(); i++) {
-
-			/* Write vertex number */
-			std::fprintf(fp, "%lu\n", P.contour[i].size());
-
-			/* Write hole flag */
-			if (write_hole) {
-				std::fprintf(fp, "%d\n", (int) P.is_hole[i]);
-			}
-
-			/* Write open flag */
-			if (write_open) {
-				std::fprintf(fp, "%d\n", (int) P.is_open[i]);
-			}
-
-			/* Loop over each vertex */
-			for (size_t j=0; j<P.contour[i].size(); j++) {
-
-				/* Write each vertex */
-				std::fprintf(fp, "% lf % lf\n",
-				(double) P.contour[i][j].x,	(double) P.contour[i][j].y);
-			}
-		}
+		nr::write( P, fp, write_hole, write_open );
 
 		std::fclose(fp);
-		return 0;
+		return nr::SUCCESS;
 	} else {
 		std::printf("Polygon write error: file %s could not be opened\n", fname);
-		return 1;
+		return nr::ERROR_FILE;
 	}
+}
+
+int nr::write(
+	const nr::Polygon& P,
+	FILE* file,
+	bool write_hole,
+	bool write_open
+) {
+	if (file == NULL) {
+		return nr::ERROR_FILE;
+	}
+	/* Write contour number */
+	std::fprintf(file, "%lu\n", P.contour.size());
+	/* Loop over each contour */
+	for (size_t i=0; i<P.contour.size(); i++) {
+		/* Write vertex number */
+		std::fprintf(file, "%lu\n", P.contour[i].size());
+		/* Write hole flag */
+		if (write_hole) {
+			std::fprintf(file, "%d\n", (int) P.is_hole[i]);
+		}
+		/* Write open flag */
+		if (write_open) {
+			std::fprintf(file, "%d\n", (int) P.is_open[i]);
+		}
+		/* Loop over each vertex */
+		for (size_t j=0; j<P.contour[i].size(); j++) {
+			/* Write each vertex */
+			std::fprintf(file, "% .*f % .*f\n",
+			NR_FLOAT_DIGITS, (double) P.contour[i][j].x,
+			NR_FLOAT_DIGITS, (double) P.contour[i][j].y);
+		}
+	}
+
+	return nr::SUCCESS;
 }
 
 void nr::print( const nr::Polygon& P ) {

@@ -14,4 +14,7 @@ clean:
 	rm -rf bin
 	rm -rf build
 
+clean_results:
+	rm -f sim_*.txt
+
 # End of makefile ##############################################################

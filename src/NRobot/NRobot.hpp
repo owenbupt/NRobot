@@ -381,6 +381,16 @@ int export_simulation_parameters(
  *  default values. The filename is "sim_YYYYMMDD_HHMMSS_parameters.txt".
  */
 
+int export_agent_parameters(
+    struct tm* start_time,
+    MAs& agents
+);
+/*
+ *  Export the parameters of each agent to a separate file, timestamped with the
+ *  start time of the simulation. The filename is
+ *  "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt" where XXXX is the agent ID.
+ */
+
 
 /********************/
 /****** NRPlot ******/

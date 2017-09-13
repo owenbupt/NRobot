@@ -208,6 +208,10 @@ int main() {
 	if (err) {
 		return nr::ERROR_FILE;
 	}
+	err = nr::export_agent_parameters( start_time, agents );
+	if (err) {
+		return nr::ERROR_FILE;
+	}
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE

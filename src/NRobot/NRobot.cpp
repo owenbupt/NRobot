@@ -1115,7 +1115,7 @@ int nr::export_simulation_parameters(
 	 *  Create filename "sim_YYYYMMDD_HHMMSS_parameters.txt".
 	 *  It is 34 characters long.
 	 */
-	char* fname = (char*) std::malloc( (34+1) * sizeof(char) );
+	char fname[34+1];
 	std::snprintf( fname, 34+1, "sim_%.4d%.2d%.2d_%.2d%.2d%.2d_parameters.txt",
 	start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
 	start_time->tm_hour, start_time->tm_min, start_time->tm_sec );
@@ -1144,28 +1144,79 @@ int nr::export_simulation_parameters(
 	std::fprintf( f, "\n" );
 	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, objective_function_threshold );
 	std::fprintf( f, "%lu\n", objective_function_average_window );
-	/* Write contour number */
-	std::fprintf(f, "%lu\n", region.contour.size());
-	/* Loop over each contour */
-	for (size_t i=0; i<region.contour.size(); i++) {
-		/* Write vertex number */
-		std::fprintf(f, "%lu\n", region.contour[i].size());
-		/* Write hole flag */
-		std::fprintf(f, "%d\n", (int) region.is_hole[i]);
-		/* Write open flag */
-		std::fprintf(f, "%d\n", (int) region.is_open[i]);
-		/* Loop over each vertex */
-		for (size_t j=0; j<region.contour[i].size(); j++) {
-			/* Write each vertex */
-			std::fprintf(f, "% .*f % .*f\n",
-			NR_FLOAT_DIGITS, (double) region.contour[i][j].x,
-			NR_FLOAT_DIGITS, (double) region.contour[i][j].y);
+	nr::write( region, f, true, true );
+
+	/* Close file. */
+	std::fclose( f );
+	return nr::SUCCESS;
+}
+
+int nr::export_agent_parameters(
+	struct tm* start_time,
+    nr::MAs& agents
+) {
+	/* Loop over each agent. */
+	for (size_t i=0; i<agents.size(); i++) {
+		/*
+		 *  Create filename "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt".
+		 *  It is 45 characters long.
+		 */
+		char fname[45+1];
+		std::snprintf( fname, 45+1,
+		"sim_%.4d%.2d%.2d_%.2d%.2d%.2d_agent_%.4lu_parameters.txt",
+		start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+		start_time->tm_hour, start_time->tm_min, start_time->tm_sec,
+		agents[i].ID );
+
+		/* Open file for writing. */
+		FILE* f;
+		f = std::fopen( fname, "w" );
+		if (f == NULL) {
+			return nr::ERROR_FILE;
 		}
+
+		/* Write data to file. */
+		std::fprintf( f, "%lu\n", agents[i].ID );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].sensing_radius );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].communication_radius );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].position_uncertainty );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].attitude_uncertainty );
+		std::fprintf( f, "%d\n", agents[i].dynamics );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].time_step );
+		std::fprintf( f, "%d\n", agents[i].partitioning );
+		std::fprintf( f, "%d\n", agents[i].control );
+		std::fprintf( f, "%d\n", agents[i].avoidance );
+		switch (agents[i].dynamics) {
+			case DYNAMICS_SI_GROUND_XY:
+			std::fprintf( f, "% .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1] );
+			break;
+
+			case DYNAMICS_SI_GROUND_XYy:
+			case DYNAMICS_SI_AIR_XYZ:
+			std::fprintf( f, "% .*f % .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[2] );
+			break;
+
+			case DYNAMICS_SI_AIR_XYZy:
+			std::fprintf( f, "% .*f % .*f % .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[2],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[3] );
+			break;
+		}
+		nr::write( agents[i].base_sensing, f, true, true );
+		nr::write( agents[i].base_guaranteed_sensing, f, true, true );
+		nr::write( agents[i].base_relaxed_sensing, f, true, true );
+
+		/* Close file. */
+		std::fclose( f );
 	}
 
-	/* Close file and free memory. */
-	std::fclose( f );
-	std::free(fname);
 	return nr::SUCCESS;
 }
 
