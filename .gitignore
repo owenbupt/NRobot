@@ -28,6 +28,9 @@
 *.out
 *.app
 
+# MATLAB temporary files
+*.m~
+
 # Exclude bin and build directories
 bin
 build

@@ -19,9 +19,12 @@ clear variables
 close all
 
 % Select simulation to load and set plot options
-simulation_date = '20170913_231857';
+simulation_date = '20170914_033601';
 simulation_directory = '..';
 PLOT_OBJECTIVE = 0;
+PLOT_TRAJECTORIES = 1;
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Load Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load simulation parameters
@@ -30,10 +33,12 @@ sim_params_filename = strjoin(...
 simulation_parameters = load_simulation_parameters( sim_params_filename );
 % Number of agents
 N = simulation_parameters.N;
+% Number of iterations
+iterations = simulation_parameters.iterations;
 % Time vector
-t = linspace(0, simulation_parameters.Tfinal, simulation_parameters.iterations);
+t = linspace(0, simulation_parameters.Tfinal, iterations);
 % Iteration vector
-s = 1:500;
+s = 1:iterations;
 
 % Load agent parameters
 agents = cell([1 N]);
@@ -44,11 +49,35 @@ for i=1:N
 	agents{i} = load_agent_parameters( agent_params_filename );
 end
 
+% Load agent state
+agent_state = cell([1 N]);
+for i=1:N
+	ID = sprintf('%.4d', i);
+	agent_state_filename = strjoin(...
+	{'../', 'sim_', simulation_date, '_agent_', ID, '_state.txt'}, '');
+	agent_state{i} = load_agent_state( agent_state_filename );
+end
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if PLOT_OBJECTIVE
-	figure
+	figure('Name','Objective');
 	plot( s, simulation_parameters.H, 'b' );
 end
+
+if PLOT_TRAJECTORIES
+	figure('Name','Trajectories');
+	hold on
+	axis equal
+	plot_poly( simulation_parameters.region, 'k' );
+	for i=1:N
+		plot( agent_state{i}.x, agent_state{i}.y, 'b' );
+		plot( agent_state{i}.x(1), agent_state{i}.y(1), 'b.' );
+		plot( agent_state{i}.x(end), agent_state{i}.y(end), 'bo' );
+	end
+end
+
 
 
 
@@ -99,7 +128,7 @@ function agent_parameters = load_agent_parameters( filename )
 		return;
 	end
 
-    % Read simulation parameters
+    % Read agent parameters
     agent_parameters.ID = fscanf(f, '%d', 1);
 	agent_parameters.sensing_radius = fscanf(f, '%f', 1);
 	agent_parameters.communication_radius = fscanf(f, '%f', 1);
@@ -128,6 +157,28 @@ function agent_parameters = load_agent_parameters( filename )
 
     % Close file
     fclose(f);
+end
+
+% Load the agent state from the given file and return a struct
+% containing it.
+function agent_state = load_agent_state( filename )
+    % Read file contents as a matrix
+	d = importdata( filename );
+	
+	% Put data into matrices
+	agent_state.x = d(:,2);
+	agent_state.y = d(:,3);
+	agent_state.z = d(:,4);
+	agent_state.roll = d(:,5);
+	agent_state.pitch = d(:,6);
+	agent_state.yaw = d(:,7);
+	agent_state.x_velocity = d(:,8);
+	agent_state.y_velocity = d(:,9);
+	agent_state.z_velocity = d(:,10);
+	agent_state.roll_velocity = d(:,11);
+	agent_state.pitch_velocity = d(:,12);
+	agent_state.yaw_velocity = d(:,13);
+	agent_state.relaxed_sensing_quality = d(:,14);
 end
 
 function P = load_polygon( file_ID )

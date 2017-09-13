@@ -186,6 +186,81 @@ nr::MAs::MAs(
 
 
 
+/*******************************************************/
+/****************** MA_evolution class *****************/
+/*******************************************************/
+nr::MA_evolution::MA_evolution(
+) {
+
+	this->ID = 0;
+	this->number_of_agents = 0;
+	this->iterations = 0;
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
+	size_t number_of_inputs = 2;
+	this->position =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->attitude =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->velocity_translational =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->velocity_rotational =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->relaxed_sensing_quality = std::vector<double> (iterations, 0);
+	this->neighbor_connectivity = std::vector<std::vector<bool>>
+	(this->number_of_agents, std::vector<bool> (iterations, false));
+	this->control_input = std::vector<std::vector<double>>
+	(number_of_inputs, std::vector<double> (iterations, 0));
+}
+
+nr::MA_evolution::MA_evolution(
+	size_t ID,
+	size_t number_of_agents,
+	size_t iterations,
+	dynamics_type dynamics
+) {
+	size_t number_of_inputs;
+	this->ID = ID;
+	this->number_of_agents = number_of_agents;
+	this->iterations = iterations;
+	this->dynamics = dynamics;
+	switch (dynamics) {
+		case nr::DYNAMICS_SI_GROUND_XY:
+		number_of_inputs = 2;
+		break;
+
+		case nr::DYNAMICS_SI_GROUND_XYy:
+		case nr::DYNAMICS_SI_AIR_XYZ:
+		number_of_inputs = 3;
+		break;
+
+		case nr::DYNAMICS_SI_AIR_XYZy:
+		number_of_inputs = 4;
+		break;
+
+		default:
+		std::printf("Invalid dynamics %d\n", this->dynamics);
+		std::printf("Switching to %d\n", nr::DYNAMICS_SI_GROUND_XY);
+		this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
+		number_of_inputs = 2;
+	}
+	this->position =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->attitude =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->velocity_translational =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->velocity_rotational =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->relaxed_sensing_quality = std::vector<double> (iterations, 0);
+	this->neighbor_connectivity = std::vector<std::vector<bool>>
+	(this->number_of_agents, std::vector<bool> (iterations, false));
+	this->control_input = std::vector<std::vector<double>>
+	(number_of_inputs, std::vector<double> (iterations, 0));
+}
+
+
+
+
 
 /*******************************************************/
 /********************* Non Members *********************/
@@ -1226,11 +1301,10 @@ int nr::export_agent_parameters(
 
 int nr::export_agent_state(
     struct tm* start_time,
-    size_t number_of_iterations,
-	nr::MAs& agents
+    std::vector<nr::MA_evolution>& agents_evolution
 ) {
 	/* Loop over each agent. */
-	for (size_t i=0; i<agents.size(); i++) {
+	for (size_t i=0; i<agents_evolution.size(); i++) {
 		/*
 		 *  Create filename "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt".
 		 *  It is 40 characters long.
@@ -1240,7 +1314,7 @@ int nr::export_agent_state(
 		"sim_%.4d%.2d%.2d_%.2d%.2d%.2d_agent_%.4lu_state.txt",
 		start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
 		start_time->tm_hour, start_time->tm_min, start_time->tm_sec,
-		agents[i].ID );
+		agents_evolution[i].ID );
 
 		/* Open file for writing. */
 		FILE* f;
@@ -1250,8 +1324,42 @@ int nr::export_agent_state(
 		}
 
 		/* Write data to file. Loop over each iteration. */
-		for (size_t s=1; s<=number_of_iterations; s++) {
-			std::fprintf( f, "%lu", s );
+		for (size_t s=1; s<=agents_evolution[i].iterations; s++) {
+			std::fprintf( f, "%lu ", s );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].x );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].y );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].z );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].roll );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].pitch );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].yaw );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].x );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].y );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].z );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].roll );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].pitch );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].yaw );
+			std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].relaxed_sensing_quality[s-1] );
+			for (size_t j=0; j<agents_evolution[i].number_of_agents; j++) {
+				std::fprintf( f, "%d ",
+				(int) agents_evolution[i].neighbor_connectivity[j][s-1] );
+			}
+			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+				std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+				agents_evolution[i].control_input[j][s-1] );
+			}
 			std::fprintf( f, "\n" );
 		}
 

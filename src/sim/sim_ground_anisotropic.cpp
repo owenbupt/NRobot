@@ -32,15 +32,18 @@
 
 
 int main() {
+	/****** Simulation parameters ******/
+	double Tfinal = 1;
+	double Tstep = 0.01;
+	bool export_results = true;
+
 	/* Get the current time. */
 	clock_t start_time_raw = std::time(NULL);
 	struct tm* start_time = std::localtime( &start_time_raw );
-	nr::info();
+	/* Number of iterations */
+	size_t smax = std::floor(Tfinal/Tstep);
 
-	/****** Simulation parameters ******/
-	double Tfinal = 5;
-	double Tstep = 0.01;
-	bool export_results = true;
+	nr::info();
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -117,6 +120,15 @@ int main() {
 		}
 	}
 
+	/****** Initialize MA evolution vector ******/
+	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
+	if (export_results) {
+		for (size_t i=0; i<N; i++) {
+			agents_evolution[i] =
+			nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
+		}
+	}
+
 
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
@@ -128,7 +140,6 @@ int main() {
 
 
 	/****** Simulate agents ******/
-	size_t smax = std::floor(Tfinal/Tstep);
 	std::vector<double> H (smax, 0);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
@@ -156,6 +167,28 @@ int main() {
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+
+		/* Save agent evolution. */
+		if (export_results) {
+			for (size_t i=0; i<N; i++) {
+				agents_evolution[i].position[s-1] = agents[i].position;
+				agents_evolution[i].attitude[s-1] = agents[i].attitude;
+				agents_evolution[i].velocity_translational[s-1] =
+				agents[i].velocity_translational;
+				agents_evolution[i].velocity_rotational[s-1] =
+				agents[i].velocity_rotational;
+				agents_evolution[i].relaxed_sensing_quality[s-1] =
+				agents[i].relaxed_sensing_quality;
+				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+					agents_evolution[i].
+					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
+				}
+				for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+					agents_evolution[i].control_input[j][s-1] =
+					agents[i].control_input[j];
+				}
+			}
+		}
 
 		// nr::print( agents, 0 );
 
@@ -214,7 +247,7 @@ int main() {
 		if (err) {
 			return nr::ERROR_FILE;
 		}
-		err = nr::export_agent_state( start_time, smax, agents );
+		err = nr::export_agent_state( start_time, agents_evolution );
 		if (err) {
 			return nr::ERROR_FILE;
 		}

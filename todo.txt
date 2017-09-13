@@ -1,9 +1,10 @@
 TODO
     project control input on offset region boundary
-    export agent state
-    m code to plot simulation results
+    finish m code to plot simulation results
+    add simulation export to other sims
     MA unassigned_region and save_unassigned are no longer used
     EDITED nr::in FUNCTION, MIGHT BE WRONG
+    create functions number_of_inputs/number_of_states/name( dynamics_type )
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
         http://alienryderflex.com/polygon_fill/

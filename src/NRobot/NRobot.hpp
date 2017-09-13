@@ -75,9 +75,6 @@ enum avoidance_type{
 /*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
-/*!
-	Mobile Agent class.
-*/
 class MA {
 	public:
 		/*********** Data members ***********/
@@ -200,9 +197,6 @@ class MA {
 /*******************************************************/
 /********************** MAs class **********************/
 /*******************************************************/
-/*!
-	Vector of Mobile Agents.
-*/
 class MAs: public std::vector<MA> {
 	public:
 		/*********** Data members ***********/
@@ -238,6 +232,53 @@ class MAs: public std::vector<MA> {
 			std::vector<double>& cradii
 		);
 };
+
+
+
+
+/*******************************************************/
+/****************** MA_evolution class *****************/
+/*******************************************************/
+class MA_evolution {
+	public:
+		/*********** Data members ***********/
+        size_t ID;
+        /* The MA's unique ID. */
+        size_t number_of_agents;
+        /* The total number of agents in the network. */
+        size_t iterations;
+        /* The number of iterations in the simulation. */
+        dynamics_type dynamics;
+        /* The agent dynamics. Used to allocate memory for control inputs. */
+        std::vector<Point> position;
+        std::vector<Orientation> attitude;
+        std::vector<Point> velocity_translational;
+        std::vector<Orientation> velocity_rotational;
+        /* Vectors containing the MA's state at each iteration. */
+        std::vector<double> relaxed_sensing_quality;
+        /* The MA's relaxed_sensing_quality at each iteration. */
+        std::vector<std::vector<bool>> neighbor_connectivity;
+        /*
+         *  neighbor_connectivity[i][s] is true if the MA was communicating
+         *  with agent i at iteration s.
+         */
+        std::vector<std::vector<double>> control_input;
+        /*
+         *  control_input[i][s] holds the value of control input i at iteration
+         *  s. The number of control inputs depends on the dynamics.
+         */
+
+		/*********** Constructors ***********/
+        MA_evolution();
+
+        MA_evolution(
+            size_t ID,
+            size_t number_of_agents,
+			size_t iterations,
+            dynamics_type dynamics
+		);
+};
+
 
 
 
@@ -393,8 +434,7 @@ int export_agent_parameters(
 
 int export_agent_state(
     struct tm* start_time,
-    size_t number_of_iterations,
-    MAs& agents
+    std::vector<nr::MA_evolution>& agents_evolution
 );
 /*
  * Export the state and other time varying parameters of each agent to a
