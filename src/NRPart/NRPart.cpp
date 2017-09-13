@@ -17,11 +17,6 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-
 #include "NRPart.hpp"
 
 

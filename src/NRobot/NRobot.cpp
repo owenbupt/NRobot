@@ -17,9 +17,6 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
-#include <string>
-
 #include "NRobot.hpp"
 
 
@@ -1095,6 +1092,81 @@ double nr::calculate_objective(
 	}
 
 	return H;
+}
+
+
+
+
+/************************/
+/****** Simulation ******/
+/************************/
+int nr::export_simulation_parameters(
+    struct tm* start_time,
+    size_t number_of_agents,
+    double simulation_duration,
+    double time_step,
+    double elapsed_time,
+    std::vector<double>& objective,
+    nr::Polygon& region,
+    double objective_function_threshold,
+    size_t objective_function_average_window
+) {
+	/*
+	 *  Create filename "sim_YYYYMMDD_HHMMSS_parameters.txt".
+	 *  It is 34 characters long.
+	 */
+	char* fname = (char*) std::malloc( (34+1) * sizeof(char) );
+	std::snprintf( fname, 34+1, "sim_%.4d%.2d%.2d_%.2d%.2d%.2d_parameters.txt",
+	start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+	start_time->tm_hour, start_time->tm_min, start_time->tm_sec );
+
+	/* Calculate number of iterations and average iteration time. */
+	size_t number_of_iterations = std::floor(simulation_duration/time_step);
+	double average_iteration = elapsed_time / number_of_iterations;
+
+	/* Open file for writing. */
+	FILE* f;
+	f = std::fopen( fname, "w" );
+	if (f == NULL) {
+		return nr::ERROR_FILE;
+	}
+
+	/* Write data to file. */
+	std::fprintf( f, "%lu\n", number_of_agents );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, simulation_duration );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, time_step );
+	std::fprintf( f, "%lu\n", number_of_iterations );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, elapsed_time );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, average_iteration );
+	for (size_t s=0; s<number_of_iterations; s++) {
+		std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS, objective[s] );
+	}
+	std::fprintf( f, "\n" );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, objective_function_threshold );
+	std::fprintf( f, "%lu\n", objective_function_average_window );
+	/* Write contour number */
+	std::fprintf(f, "%lu\n", region.contour.size());
+	/* Loop over each contour */
+	for (size_t i=0; i<region.contour.size(); i++) {
+		/* Write vertex number */
+		std::fprintf(f, "%lu\n", region.contour[i].size());
+		/* Write hole flag */
+		std::fprintf(f, "%d\n", (int) region.is_hole[i]);
+		/* Write open flag */
+		std::fprintf(f, "%d\n", (int) region.is_open[i]);
+		/* Loop over each vertex */
+		for (size_t j=0; j<region.contour[i].size(); j++) {
+			/* Write each vertex */
+			std::fprintf(f, "% .*f % .*f\n",
+			NR_FLOAT_DIGITS, (double) region.contour[i][j].x,
+			NR_FLOAT_DIGITS, (double) region.contour[i][j].y);
+		}
+	}
+
+	/* Close file and free memory. */
+	std::fclose( f );
+	std::free(fname);
+	return nr::SUCCESS;
 }
 
 

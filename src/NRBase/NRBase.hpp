@@ -20,9 +20,11 @@
 #ifndef __NRBase_hpp
 #define __NRBase_hpp
 
-#include <iostream>
+#include <cmath>
+#include <cstdio>
 #include <vector>
 
+#include "clipper.hpp"
 #include "NRConfig.hpp"
 
 
@@ -57,7 +59,8 @@ enum error_type {
 	ERROR_INVALID_CLIP,
 	ERROR_CLIPPING_FAILED,
 	ERROR_PARTITIONING_FAILED,
-	ERROR_INVALID_PARTITIONING
+	ERROR_INVALID_PARTITIONING,
+	ERROR_FILE
 };
 
 enum Clip_type {
@@ -261,9 +264,6 @@ template <class T> Point operator * ( T k, const Point& P ) {
 template <class T> Point operator / ( const Point& P, T k ) {
 	return Point(P.x/k, P.y/k, P.z/k);
 }
-/* Stream operator overloading */
-std::ostream& operator << ( std::ostream& output, const Point& P );
-std::ostream& operator << ( std::ostream& output, const Contour& C );
 
 /****************************** Point ******************************/
 void print( const Point& A );

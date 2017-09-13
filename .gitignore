@@ -31,3 +31,6 @@
 # Exclude bin and build directories
 bin
 build
+
+# Exclude simulation results
+sim_*

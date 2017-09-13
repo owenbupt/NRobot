@@ -17,15 +17,7 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmath>
-#include <cfloat>
-#include <cstdio>
-#include <iostream>
-#include <vector>
-#include <fstream>
-
 #include "NRBase.hpp"
-#include "clipper.hpp"
 
 
 #define NR_STRICTLY_SIMPLE false /* Experimental feature of clipper */
@@ -318,18 +310,6 @@ void nr::operator + ( const nr::Point& A, nr::Polygon& P ) {
 
 void nr::operator - ( nr::Polygon& P, const nr::Point& A ) {
 	nr::translate( &P, -A );
-}
-
-std::ostream& nr::operator << ( std::ostream& output, const nr::Point& P ) {
-	output << P.x << " " << P.y << " " << P.z;
-	return output;
-}
-
-std::ostream& nr::operator << ( std::ostream& output, const nr::Contour& C ) {
-	for (size_t i=0; i<C.size(); i++) {
-		output << C.at(i) << "\n";
-	}
-	return output;
 }
 
 /****************************** Point ******************************/
@@ -1173,11 +1153,11 @@ int nr::polygon_clip_fast(
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
+		std::printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
 		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
+		std::printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
 		return nr::ERROR_INVALID_CLIP;
 	}
 
@@ -1194,7 +1174,7 @@ int nr::polygon_clip_fast(
 	/****** Execute clipping ******/
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		std::printf("Clipper error: nr::Polygon clipping failed.\n");
 		return nr::ERROR_CLIPPING_FAILED;
 	}
 
@@ -1312,7 +1292,7 @@ int nr::polygon_clip(
 	/****** Execute clipping ******/
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		std::printf("Clipper error: nr::Polygon clipping failed.\n");
 		return nr::ERROR_CLIPPING_FAILED;
 	}
 

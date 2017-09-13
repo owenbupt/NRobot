@@ -23,6 +23,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -31,6 +32,9 @@
 
 
 int main() {
+	/* Get the current time. */
+	clock_t start_time_raw = std::time(NULL);
+	struct tm* start_time = std::localtime( &start_time_raw );
 	nr::info();
 
 	/****** Simulation parameters ******/
@@ -196,6 +200,14 @@ int main() {
 	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
 	#endif
+
+	/****** Export simulation results ******/
+	int err;
+	err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
+	elapsed_time, H, region );
+	if (err) {
+		return nr::ERROR_FILE;
+	}
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE

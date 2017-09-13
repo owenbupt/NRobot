@@ -1,5 +1,5 @@
 TODO
-    offset region inwards
+    project control input on offset region boundary
     export simulation results
     m code to plot simulation results
     MA.unassigned_region and save_unassigned are no longer used
@@ -22,12 +22,12 @@ TODO
     add error handling function to make code cleaner (return appropriate error message)
     NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
     fix partitioning for coincident seeds?
-    test NRCLip scaling (look for library to do proper scaling)
+    test NRClip scaling (look for library to do proper scaling)
     Finish in/on functions in NBase
     Consistently comment/format every function
-    Change code style in function declarations-definitions (one argument per line)
+    Change code style in function declarations-definitions (one argument per line) and comments
 	add testing executables (and automated tests?)
-    check if preprocessor can process header files (want to remove sdl stuff is sdl is not available)
+    check if preprocessor can process header files (want to remove plot stuff if sdl is not available)
 
 Improve functions
 	double n::area( const Polygon& P )
@@ -53,8 +53,6 @@ Improve functions
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
         make contour CW on setup (do not use reverse_order)
-    double n::diameter( const Polygon& P )
-		use convex hull to reduce complexity in non-convex polygons
 
 AWGV - low priority
     check AWGV partitioning

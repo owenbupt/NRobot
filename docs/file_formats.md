@@ -25,14 +25,14 @@ for each contour
 Filename: `sim_YYYYMMDD_HHMMSS_parameters.txt`. Saved at the end of the simulation.
 ```
 <Number of agents>
-<Simulation time>
+<Simulation duration>
 <Simulation time-step>
 <Simulation iterations>
 <Elapsed simulation time>
 <Average iteration time>
 <Objective function values (a line with <Simulation iterations> values)>
-<Objective function threshold (omitted by default)>
-<Objective function average window (omitted by default)>
+<Objective function threshold>
+<Objective function average window>
 <Region (using Polygon format)>
 ```
 

@@ -41,4 +41,10 @@
 /* Polygon quality */
 #define NR_PPC 60
 
+/*
+ *  The number of digits after the decimal point used when reading/writing
+ *  floating point numbers to files.
+ */
+#define NR_FLOAT_DIGITS 15
+
 #endif

@@ -17,9 +17,6 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmath>
-#include <SDL2/SDL.h>
-
 #include "NRPlot.hpp"
 
 

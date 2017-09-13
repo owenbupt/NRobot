@@ -20,9 +20,12 @@
 #ifndef __NRobot_hpp
 #define __NRobot_hpp
 
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+
 #include "NRBase.hpp"
 #include "NRPart.hpp"
-// #include "NRClip.hpp"
 #if NR_PLOT_AVAILABLE
 #include "NRPlot.hpp"
 #endif
@@ -360,16 +363,23 @@ double calculate_objective(
 /************************/
 /****** Simulation ******/
 /************************/
-int export_results(
-    Polygon& region,
-    MAs& agents,
-    std::vector<double> objective,
-    double duration,
+int export_simulation_parameters(
+    struct tm* start_time,
+    size_t number_of_agents,
+    double simulation_duration,
     double time_step,
-    double elapsed_time
+    double elapsed_time,
+    std::vector<double>& objective,
+    Polygon& region,
+    double objective_function_threshold = -1,
+    size_t objective_function_average_window = 0
 );
-/* Export the simulation results to three text files. */
-
+/*
+ *  Export the simulation parameters to a file timestamped with the start time
+ *  of the simulation. objective_function_threshold and
+ *  objective_function_average_window are not always needed and are thus given
+ *  default values. The filename is "sim_YYYYMMDD_HHMMSS_parameters.txt".
+ */
 
 
 /********************/
