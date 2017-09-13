@@ -1,25 +1,33 @@
 TODO
-    check AWGV partitioning
-    Jn functions are wrong
-        jacobians
-            they are zero for some reason
-        normals
-            normals of j need a minus in x coordinate
-            removed the minus in from of aj in Hji creation
-            when plotting make sure to use the same vertices used to calculate the normals
-    fix header file logic
-    MA
-        add dynamics member?
-    add error handling function to make code cleaner (return appropriate error message)
-    can NRPlot functions fail? (and plot functions in general)
+    offset region inwards
+    export simulation results
+    m code to plot simulation results
+    MA.unassigned_region and save_unassigned are no longer used
+    EDITED nr::in FUNCTION, MIGHT BE WRONG
+    find a way to fill polygons with SDL2
+        http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
+        http://alienryderflex.com/polygon_fill/
+    finish au_partitioning_cell()
+        return list of neighbors?
+        IMPORTANT: return common sensing for all cases (case for beta in (0,1) missing)
+        also change the objective calculation accordingly
+    simple switch to run simulation without plotting?
+    create function to copy MA class without neighbors vector (use in find neighbors)
+    check ellipse creation with orientation and center
+    add more functions for MAs class (ease of use wrappers for MA functions)
+    better MA/MAs constructors (using the new members added)
     Finish MAs constructors (add default vector values)
+    create functions for enum->string for the dynamics/partitioning/control enums (use in print MA)
+    allow points and orientations to be accessed by [] operator ([0] is x or roll etc.)
+    add error handling function to make code cleaner (return appropriate error message)
+    NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
     fix partitioning for coincident seeds?
-    test NRCLip scaling
+    test NRCLip scaling (look for library to do proper scaling)
     Finish in/on functions in NBase
-    Consistently comment every function
+    Consistently comment/format every function
     Change code style in function declarations-definitions (one argument per line)
 	add testing executables (and automated tests?)
-    in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
+    check if preprocessor can process header files (want to remove sdl stuff is sdl is not available)
 
 Improve functions
 	double n::area( const Polygon& P )
@@ -28,7 +36,7 @@ Improve functions
         make it work for polygons with multiple contours
             (add centroids of external and subtract centroids of internal contours?)
 		How does it handle non-simple polygons?
-    bool nr::in( const nr::Point& A, const nr::Polygon& P )
+    bool nr::in/on( const nr::Point& A, const nr::Polygon& P )
         make it work for polygons with multiple contours
 	void nr::ys_partitioning()
         return neighbor relationships
@@ -37,6 +45,10 @@ Improve functions
     nr::Polygon nr_hyperbola_branch()
         add cases for ray and plane minus ray cells
         why is BA = -BA; needed when a < 0?
+    nr::print( const nr::MA )
+        fix indentation of polygon vertices and polygon vertex printing location
+        show all information
+        show information depending on dynamics/partitioning/control
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
@@ -44,9 +56,24 @@ Optimizations
     double n::diameter( const Polygon& P )
 		use convex hull to reduce complexity in non-convex polygons
 
+AWGV - low priority
+    check AWGV partitioning
+    Jn functions are wrong
+        jacobians
+            they are zero for some reason
+        normals
+            normals of j need a minus in x coordinate
+            removed the minus in from of aj in Hji creation
+            when plotting make sure to use the same vertices used to calculate the normals
+    in Jn.cpp replace cos() with std::cos() etc. to avoid using namespace std
+
+
+
+--------------------------------------------------------------------------------
+GUIDELINES
 --------------------------------------------------------------------------------
 
-Structure
+Structure (update dependencies)
     NRobot (various robot classes and control laws) [NBase, NPart]
     NPart (Partitioning algorithms) [NBase, Clipper]
     NPlot (Visualization and plotting) [NBase, SDL]
@@ -69,6 +96,26 @@ Code Style
         ) {
             code
         }
+
+    Multiline commands
+    variable =
+    value;
+
+    Spaces and tabs
+        tabs for indentation (function arguments are indented by one tab)
+        spaces for alignment (in comments or multiline commands)
+
+    Comments
+        /* Single line comment. */
+        /*
+         *  Multi-line
+         *  comment.
+         */
+        comments explaining functions are always multiline
+
+Adding new dynamics/partitioning/control
+    Add a new value to the respective enum
+    change the respective function (simulate_dynamics/compute_cell/compute_control)
 
 Other
     The last vertex of a polygon contour must NOT be the same as the first. This is what

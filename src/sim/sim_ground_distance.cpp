@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2017 Sotiris Papatheodorou
-
-	This file is part of NPart.
-
-    NPart is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NPart is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NPart.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cstdio>
 #include <cmath>
@@ -23,7 +23,7 @@
 #include <chrono>
 #include <thread>
 
-#include "NR.hpp"
+#include <NR.hpp>
 
 
 int main() {
@@ -51,38 +51,59 @@ int main() {
 	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
 	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
 	/* Initialize agents */
-	nr::MAs agents (P, sradii, uradii, cradii);
+	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
 	/* Set control law */
 	nr::set_control( &agents, nr::CONTROL_DISTANCE );
 
+	/****** Create constrained regions ******/
+	nr::Polygons offset_regions;
+	for (size_t i=0; i<N; i++) {
+		offset_regions.push_back( region );
+
+		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
+		if (err) {
+			return nr::ERROR_CLIPPING_FAILED;
+		}
+	}
+	
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
-		if (nr::plot_init()) exit(1);
-		PLOT_SCALE = 20;
+	if (nr::plot_init()) exit(1);
+	PLOT_SCALE = 20;
+	bool uquit = false;
 	#endif
 
 
 
 	/****** Simulate agents ******/
 	size_t smax = std::floor(Tfinal/Tstep);
-	bool uquit = false;
+	std::vector<double> H (smax, 0);
+	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
+	#endif
 
 	for (size_t s=1; s<=smax; s++) {
-		std::printf("Iteration: %lu\r", s);
 
 		/* Each agent computes its own control input separately */
 		for (size_t i=0; i<N; i++) {
-			/* Create sensing region */
-			nr::create_sensing_disk( &(agents[i]) );
+            /* Translate and rotate for real sensing */
+    		nr::update_sensing_patterns( &(agents[i]) );
+		}
+		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
 			/* Compute own cell using neighbors vector */
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
+			/* Ensure collision avoidance. */
+            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
+
+		/* Calculate objective function and print progress. */
+		H[s-1] = nr::calculate_objective( agents );
+		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
 		// nr::print( agents, false );
 
@@ -90,22 +111,19 @@ int main() {
 		#if NR_PLOT_AVAILABLE
 			nr::plot_clear_render();
 			nr::plot_show_axes();
-			/* White for region, nodes and udisks */
-			PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
-			nr::plot_polygon( region );
-			nr::plot_positions( agents );
-			nr::plot_uncertainty( agents );
-			/* Red for sdisks */
-			PLOT_FOREGROUND_COLOR = {0xAA, 0x00, 0x00, 0xFF};
-			nr::plot_sensing( agents );
-			/* Blue for cells */
-			PLOT_FOREGROUND_COLOR = {0x00, 0x00, 0xAA, 0xFF};
-			nr::plot_cells( agents );
-			/* Green for communication */
-			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
-			nr::plot_communication( agents );
-			nr::plot_render();
 
+			/* Region, nodes and udisks */
+			nr::plot_polygon( region, BLACK );
+			nr::plot_positions( agents, BLACK );
+			nr::plot_uncertainty( agents, BLACK );
+			/* sdisks */
+			nr::plot_sensing( agents, RED );
+			/* cells */
+			nr::plot_cells( agents, BLUE );
+			/* communication */
+			// nr::plot_communication( agents, GREEN );
+
+			nr::plot_render();
 			uquit = nr::plot_handle_input();
 			if (uquit) {
 				break;
@@ -114,18 +132,20 @@ int main() {
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {
-			agents[i].position += Tstep * agents[i].velocity_translational;
+			nr::simulate_dynamics( &(agents[i]) );
 		}
 	}
 
 
 
 	/****** Print simulation info ******/
+	#if NR_TIME_EXECUTION
 	end = clock();
 	double elapsed_time = (double)(end - begin) / CLOCKS_PER_SEC;
 	double average_iteration = elapsed_time / smax;
 	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
+	#endif
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE

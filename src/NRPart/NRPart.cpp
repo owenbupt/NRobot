@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cmath>
 #include <cstdio>
@@ -23,47 +23,12 @@
 #include <iostream>
 
 #include "NRPart.hpp"
-#include "NRClip.hpp"
 
 
 
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
-nr::Polygon nr_halfplane(
-	const nr::Point& A,
-	const nr::Point& B,
-	const double diam
-) {
-	/* Initialize halfplane */
-	nr::Polygon H;
-	H.contour.resize(1);
-	H.is_hole.resize(1);
-	H.is_open.resize(1);
-	H.is_hole[0] = false;
-	H.is_open[0] = false;
-	H.contour[0].resize(4);
-
-	/* Create halfplane assuming both points are on x axis with center on origin */
-	H.contour[0][0].x = 0;
-	H.contour[0][0].y = -diam;
-	H.contour[0][1].x = -diam;
-	H.contour[0][1].y = -diam;
-	H.contour[0][2].x = -diam;
-	H.contour[0][2].y = diam;
-	H.contour[0][3].x = 0;
-	H.contour[0][3].y = diam;
-
-	/* Rotate halfplane */
-	double theta = std::atan2(B.y-A.y, B.x-A.x);
-	nr::rotate( &H, theta, true);
-
-	/* Translate halfplane */
-	nr::translate( &H, nr::midpoint(A,B) );
-
-	return H;
-}
-
 nr::Polygon nr_hyperbola_branch(
 	const nr::Point& A,
 	const nr::Point& B,
@@ -111,7 +76,7 @@ nr::Polygon nr_hyperbola_branch(
 		H.contour[0][3].y = diam;
 	} else if ( std::abs(a) <= NR_CMP_ERR ) {
 		/* The cell of A with respect to B is a halfplane */
-		H = nr_halfplane( A, B, diam );
+		H = nr::halfplane( A, B, diam );
 	} else if (a > 0) {
 		/* The convex cell of A with respect to B is bound by a hyperbola branch */
 		double b = std::sqrt( c*c - a*a );
@@ -214,7 +179,7 @@ int nr::voronoi(
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the halfplane containing i with respect to j */
-				nr::Polygon h = nr_halfplane( seeds[i], seeds[j], diam );
+				nr::Polygon h = nr::halfplane( seeds[i], seeds[j], diam );
 				/* Intersect the current cell with the halfplane with j */
 				int err = nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 				if (err) {
@@ -243,7 +208,7 @@ int nr::voronoi_cell(
 	for (size_t j=0; j<N; j++) {
 		if (subject != j) {
 			/* Create the halfplane with respect to j containing subject */
-			nr::Polygon h = nr_halfplane( seeds[subject], seeds[j], diam );
+			nr::Polygon h = nr::halfplane( seeds[subject], seeds[j], diam );
 			/* Intersect the current cell with the halfplane with respect to j */
 			int err = nr::polygon_clip( nr::AND, *cell, h, cell );
 			if (err) {
@@ -373,7 +338,7 @@ int nr::ys_partitioning(
 
 	/* Loop over all seed pairs */
 	for (size_t i=0; i<N; i++) {
-		/* Initialize the cell of i to the region */
+		/* Initialize the cell of i to its sensing pattern */
 		(*cells)[i] = seeds[i];
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
@@ -410,6 +375,52 @@ int nr::ys_partitioning(
 	if (err) {
 		std::printf("Clipping operation returned error %d\n", err);
 		return nr::ERROR_PARTITIONING_FAILED;
+	}
+
+	return nr::SUCCESS;
+}
+
+int nr::anisotropic_partitioning_cell(
+	const nr::Polygon& region,
+	const nr::Polygons& sensing,
+	const size_t subject,
+	nr::Polygon* cell,
+	nr::Polygon* unassigned_region
+) {
+	/* Return value of clipping operations. */
+	int err;
+	/* Initialize the cell */
+	*cell = sensing[subject];
+	/* Number of seeds */
+	size_t N = sensing.size();
+	/* Loop over all other sensing patterns */
+	for (size_t j=0; j<N; j++) {
+		if (subject != j) {
+			/* Subtract the sensing pattern. */
+			err = nr::polygon_clip( nr::DIFF, *cell, sensing[j], cell );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		}
+	}
+
+	/* Constrain the cell inside the region */
+	err = nr::polygon_clip( nr::AND, *cell, region, cell );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_PARTITIONING_FAILED;
+	}
+
+	/* Calculate the unassigned sensing region. Initialize common sensing
+	   region if needed. */
+	if (unassigned_region != NULL) {
+		nr::make_empty(unassigned_region);
+		err = nr::polygon_clip( nr::DIFF, sensing[subject], *cell, unassigned_region );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
 	}
 
 	return nr::SUCCESS;
@@ -460,7 +471,7 @@ int nr::ysuq_partitioning(
 						}
 					} else if (quality[i] == quality[j]) {
 						/* Use the arbitrary partitioning */
-						nr::Polygon H = nr_halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
+						nr::Polygon H = nr::halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
 						err = nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
 						if (err) {
 							std::printf("Clipping operation returned error %d\n", err);
@@ -492,5 +503,130 @@ int nr::ysuq_partitioning(
 			return nr::ERROR_PARTITIONING_FAILED;
 		}
 	}
+	return nr::SUCCESS;
+}
+
+int nr::au_partitioning_cell(
+	const nr::Polygon& region,
+	const nr::Polygons& guaranteed_sensing,
+	const nr::Polygons& relaxed_sensing,
+	const nr::Polygons& total_sensing,
+	const double relaxed_sensing_quality,
+	const size_t subject,
+	nr::Polygon* cell,
+	nr::Polygon* unassigned_region
+) {
+	/* Return value of clipping operations. */
+	int err;
+	/* Initialize common sensing region if needed */
+	if (unassigned_region != NULL) {
+		nr::make_empty(unassigned_region);
+	}
+	/* Number of seeds */
+	size_t N = guaranteed_sensing.size();
+	/* Change partitioning procedure depending on the quality at the possible
+		sensing region (beta on the paper). */
+	if (relaxed_sensing_quality == 0.0) {
+		/* Quality is zero, use only guaranteed sensing */
+		/* Initialize the cell of subject to its guaranteed sensing pattern */
+		*cell = guaranteed_sensing[subject];
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the guaranteed sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, *cell, guaranteed_sensing[j], cell );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+			}
+		}
+
+	} else if (relaxed_sensing_quality == 1.0) {
+		/* Quality is one, use total sensing */
+		/* Initialize the cell of subject to its total sensing pattern */
+		*cell = total_sensing[subject];
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the total sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, *cell, total_sensing[j], cell );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+			}
+		}
+	} else {
+		/* Quality is between zero and one, use more complex partitioning */
+		nr::Polygon nc_gs = guaranteed_sensing[subject];
+		/* Non-common part of guaranteed sensing */
+		nr::Polygon nc_rs = relaxed_sensing[subject];
+		/* Non-common part of rellaxed sensing */
+		/* Loop over all other agents */
+		for (size_t j=0; j<N; j++) {
+			if (subject != j) {
+				/* Remove the guaranteed sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, nc_gs, guaranteed_sensing[j], &nc_gs );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+				/* Remove the total sensing pattern of j */
+				err = nr::polygon_clip( nr::DIFF, nc_rs, total_sensing[j], &nc_rs );
+				if (err) {
+					std::printf("Clipping operation returned error %d\n", err);
+					return nr::ERROR_PARTITIONING_FAILED;
+				}
+				/* Calculate the unassigned region */
+				if (unassigned_region != NULL) {
+
+				}
+			}
+		}
+		/* The cell is the union of the two sub-cells (nc_gs and nc_rs) */
+		err = nr::polygon_clip( nr::OR, nc_gs, nc_rs, cell );
+		if (err) {
+			std::printf("Clipping operation returned error %d\n", err);
+			return nr::ERROR_PARTITIONING_FAILED;
+		}
+	}
+
+	/* Constrain the cell inside the region */
+	err = nr::polygon_clip( nr::AND, *cell, region, cell );
+	if (err) {
+		std::printf("Clipping operation returned error %d\n", err);
+		return nr::ERROR_PARTITIONING_FAILED;
+	}
+	/* Calculate the unassigned sensing region. */
+	if (unassigned_region != NULL) {
+		/* Remove the cell from the guaranteed cell. */
+		if (relaxed_sensing_quality == 0) {
+			err = nr::polygon_clip( nr::DIFF, guaranteed_sensing[subject],
+				*cell, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		} else if (relaxed_sensing_quality == 1) {
+			/* Remove the cell from the total cell. */
+			err = nr::polygon_clip( nr::DIFF, total_sensing[subject],
+				*cell, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		} else {
+			/* Intersect the unassigned region with the region of interest. The
+			   unassigned region has been already calculated. */
+			err = nr::polygon_clip( nr::AND, *unassigned_region,
+			   region, unassigned_region );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_PARTITIONING_FAILED;
+			}
+		}
+	}
+
 	return nr::SUCCESS;
 }

@@ -1,28 +1,28 @@
 /*
-	Copyright (C) 2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cmath>
 #include <cstdio>
 #include <vector>
 #include <iostream>
 
-#include "NR.hpp"
+#include <NR.hpp>
 #include "Jn.hpp"
 #include "n.hpp"
 #include "J.hpp"
@@ -31,8 +31,10 @@ int main() {
     nr::info();
 
     /* Options */
-    bool PLOT_NORMALS = true;
-    bool PLOT_NEW_CELL = false;
+    #if NR_PLOT_AVAILABLE
+        bool PLOT_NORMALS = true;
+        bool PLOT_NEW_CELL = false;
+    #endif
 
     /* Setup agents */
     double c = 2;
@@ -177,7 +179,7 @@ int main() {
     /******************************* Plot *************************************/
 	#if NR_PLOT_AVAILABLE
 		if (nr::plot_init()) exit(1);
-        PLOT_BACKGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+        PLOT_BACKGROUND_COLOR = {0x30, 0x30, 0x30, 0xFF};
 		PLOT_SCALE = 50;
 		bool uquit = false;
 

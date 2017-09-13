@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cmath>
 #include <SDL2/SDL.h>
@@ -26,13 +26,30 @@
 /********************* Plot initial settings *********************/
 int PLOT_WIDTH = 700;
 int PLOT_HEIGHT = 700;
-SDL_Color PLOT_BACKGROUND_COLOR = {0x44, 0x44, 0x44, 0xFF};
-SDL_Color PLOT_AXES_COLOR = {0x30, 0x30, 0x30, 0xFF};
-SDL_Color PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
 double PLOT_SCALE = 5.0;
 double PLOT_X_OFFSET = 0.0;
 double PLOT_Y_OFFSET = 0.0;
 /*****************************************************************/
+
+/* Colors */
+SDL_Color BLACK = {0x00, 0x00, 0x00, 0xFF};
+SDL_Color WHITE = {0xFF, 0xFF, 0xFF, 0xFF};
+SDL_Color GRAY = {0x77, 0x77, 0x77, 0xFF};
+SDL_Color GREY = GRAY;
+SDL_Color RED = {0xFF, 0x00, 0x00, 0xFF};
+SDL_Color GREEN = {0x00, 0xFF, 0x00, 0xFF};
+SDL_Color BLUE = {0x00, 0x00, 0xFF, 0xFF};
+SDL_Color YELLOW = {0xFF, 0xFF, 0x00, 0xFF};
+SDL_Color MAGENTA = {0xFF, 0x00, 0xFF, 0xFF};
+SDL_Color CYAN = {0x00, 0xFF, 0xFF, 0xFF};
+SDL_Color ORANGE = {0xFF, 0x77, 0x00, 0xFF};
+SDL_Color BROWN = {0xAB, 0x59, 0x04, 0xFF};
+SDL_Color PINK = {0xFF, 0x00, 0x77, 0xFF};
+SDL_Color PLOT_BACKGROUND_COLOR = WHITE;
+SDL_Color PLOT_AXES_COLOR = GRAY;
+SDL_Color PLOT_FOREGROUND_COLOR = BLACK;
+
+std::vector<SDL_Color> PLOT_COLORS = { RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, ORANGE, BROWN, PINK };
 
 #define SCALE_INCREMENT 0.3
 #define OFFSET_INCREMENT 5
@@ -55,9 +72,9 @@ bool nr_handle_keyboard_down(SDL_Event& e) {
 
 		/* R pressed - Reset view */
 		case SDLK_r:
-		PLOT_BACKGROUND_COLOR = {0x44, 0x44, 0x44, 0xFF};
-		PLOT_AXES_COLOR = {0x30, 0x30, 0x30, 0xFF};
-		PLOT_FOREGROUND_COLOR = {0xAA, 0xAA, 0xAA, 0xFF};
+		PLOT_BACKGROUND_COLOR = WHITE;
+		PLOT_AXES_COLOR = GRAY;
+		PLOT_FOREGROUND_COLOR = BLACK;
 		PLOT_SCALE = 5.0;
 		PLOT_X_OFFSET = 0.0;
 		PLOT_Y_OFFSET = 0.0;
@@ -409,6 +426,18 @@ void nr::plot_circles(
 
 	/* Plot the polygon */
 	nr::plot_polygons( circle_polys, color );
+}
+
+void nr::plot_ellipse(
+	const nr::Ellipse& E,
+	const SDL_Color& color
+) {
+	/* Create a polygon from the ellipse */
+	nr::Polygon ellipse_poly;
+	ellipse_poly = nr::Polygon( E );
+
+	/* Plot the polygon */
+	nr::plot_polygon( ellipse_poly, color );
 }
 
 void nr::plot_segment(

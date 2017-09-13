@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __NRBase_hpp
 #define __NRBase_hpp
@@ -41,11 +41,31 @@ class Polygon;
 class Polygons;
 class Circle;
 class Circles;
+class Ellipse;
 class Orientation;
 /* Typedef for ease of use */
 typedef Contour Points;
 typedef std::vector<Orientation> Orientations;
 
+
+/*******************************************************/
+/*********************** enums *************************/
+/*******************************************************/
+enum error_type {
+	SUCCESS,
+	ERROR_INVALID_SUBJECT,
+	ERROR_INVALID_CLIP,
+	ERROR_CLIPPING_FAILED,
+	ERROR_PARTITIONING_FAILED,
+	ERROR_INVALID_PARTITIONING
+};
+
+enum Clip_type {
+	AND,
+	OR,
+	XOR,
+	DIFF
+};
 
 
 
@@ -105,6 +125,7 @@ class Polygon {
 		Polygon( const Point& P );
 		Polygon( const Contour& C );
 		Polygon( const Circle& C, size_t points_per_circle = NR_PPC );
+		Polygon( const Ellipse& E, size_t points_per_circle = NR_PPC );
 };
 
 
@@ -137,8 +158,7 @@ class Circle {
 
 		/****** Constructor ******/
 		/* Default behavior is center at origin and zero radius */
-		Circle();
-		Circle( const Point& C, double r = 0 );
+		Circle( const Point& center = Point(0,0), double r = 0 );
 };
 
 
@@ -152,6 +172,33 @@ class Circles: public std::vector<Circle> {
 		/****** Constructor ******/
 		Circles();
 		Circles( const Points& centers, const std::vector<double>& radii );
+};
+
+
+
+
+/*********************************************************/
+/********************* Ellipse class *********************/
+/*********************************************************/
+class Ellipse {
+	public:
+		/****** Data members ******/
+		Point center;
+		Point focus1;
+		Point focus2;
+		double a;
+		double b;
+		double c;
+		double theta;
+		double eccentricity;
+
+		/****** Constructor ******/
+		Ellipse(
+			double a = 2,
+			double b = 1,
+			const Point& center = Point(0,0),
+			double theta = 0
+		);
 };
 
 
@@ -184,9 +231,9 @@ class Orientation {
 
 /*********************************************************/
 /********************* Non Members **********************/
-/*********************************************************/
+/********************************************************/
 
-/****** Operator overloads ******/
+/***************************** Operator overloads *****************************/
 bool operator == ( const Point&, const Point& );
 bool operator != ( const Point&, const Point& );
 Point operator + ( const Point&, const Point& );
@@ -194,6 +241,13 @@ Point operator - ( const Point&, const Point& );
 Point operator - ( const Point& );
 void operator += ( Point&, const Point& );
 void operator -= ( Point&, const Point& );
+bool operator == ( const Orientation&, const Orientation& );
+bool operator != ( const Orientation&, const Orientation& );
+Orientation operator + ( const Orientation&, const Orientation& );
+Orientation operator - ( const Orientation&, const Orientation& );
+Orientation operator - ( const Orientation& );
+void operator += ( Orientation&, const Orientation& );
+void operator -= ( Orientation&, const Orientation& );
 void operator + ( Polygon&, const Point& );
 void operator + ( const Point&, Polygon& );
 void operator - ( Polygon&, const Point& );
@@ -211,7 +265,8 @@ template <class T> Point operator / ( const Point& P, T k ) {
 std::ostream& operator << ( std::ostream& output, const Point& P );
 std::ostream& operator << ( std::ostream& output, const Contour& C );
 
-/****** Point ******/
+/****************************** Point ******************************/
+void print( const Point& A );
 double norm( const Point& A );
 double dist( const Point& A, const Point& B );
 double dist( const Point& A, const Contour& C ); 					/* TODO */
@@ -222,13 +277,14 @@ Point midpoint( const Point& A, const Point& B );
 // double dist_from_line( const Point& A, const Point&, const Point& );
 // Point closest_to_line( const Point& A, const Point&, const Point& );
 bool in( const Point& A, const Contour& C );
-// bool on( const Point& A, const Contour& C );
+bool on( const Point& A, const Contour& C );
 bool in( const Point& A, const Polygon& P );
-// bool on( const Point& A, const Polygon& P );
+bool on( const Point& A, const Polygon& P );
 // bool in( const Point& A, const Circle& C );
 // bool on( const Point& A, const Circle& C );
+bool is_vertex_of( const Point& A, const Polygon& P );
 
-/****** Contour ******/
+/****************************** Contour ******************************/
 int read( Contour* C, const char* fname );
 int write( const Contour& C, const char* fname, const char* mode = "w" );
 void print( const Contour& C );
@@ -239,11 +295,12 @@ void reverse_order( Contour* C );
 void make_CW( Contour* C );
 void make_CCW( Contour* C );
 
-/****** Polygon ******/
+/****************************** Polygon ******************************/
 int read( Polygon* P, const char* fname, bool read_hole = false, bool read_open = false );
 int write( const Polygon& P, const char* fname, bool write_hole = false, bool write_open = false, const char* mode = "w" );
 void print( const Polygon& P );
 double diameter( const Polygon& P );
+double radius( const Polygon& P, const Point& reference_point = Point(0,0) );
 double area( const Polygon& P );
 Point centroid( const Polygon& P );
 Point normal( const Polygon& P, size_t contour, size_t edge );
@@ -253,28 +310,127 @@ bool is_empty( const Polygon& P );
 void make_empty( Polygon* P );
 void fix_orientation( Polygon* P, bool follow_hole_flags = true );
 void translate( Polygon* P, const Point& p );
-void rotate( Polygon* P, double theta, bool around_origin = false );
-void scale( Polygon* P, double scale_factor );
-Contour convex_hull( const Polygon& P ); 							/* TODO */
+void rotate(
+	Polygon* P,
+	double theta,
+	bool around_origin = false
+);
+/*
+ *  Rotate polygon P theta radians around its centroid, unless the around_origin
+ *  flag is true.
+ */
 
-/****** Polygons ******/
-void print( const Polygons& P );
+void scale(
+	Polygon* P,
+	double scale_factor
+);
 
-/****** Circle ******/
-double area( const Circle& C );
-bool is_point( const Circle& C );
+int offset_in(
+	Polygon* P,
+	double offset
+);
+/*
+ *  Offset the polygon edges inwards by offset.
+ *  THIS FUNCTION WORKS CORRECTLY ONLY FOR POLYGONS WITH A SINGLE EXTERNAL
+ *  CONTOUR.
+ */
 
-/*******************************************************/
-/*********************** enums *************************/
-/*******************************************************/
-enum error_type {
-	SUCCESS,
-	ERROR_INVALID_SUBJECT,
-	ERROR_INVALID_CLIP,
-	ERROR_CLIPPING_FAILED,
-	ERROR_PARTITIONING_FAILED,
-	ERROR_INVALID_PARTITIONING
-};
+Contour convex_hull(
+	const Polygon& P
+);
+/*
+ *  THIS FUNCTION HAS NOT BEEN IMPLEMENTED YET.
+ */
+
+/****************************** Polygons ******************************/
+void print(
+	const Polygons& P
+);
+
+/****************************** Circle ******************************/
+double area(
+	const Circle& C
+);
+
+bool is_point(
+	const Circle& C
+);
+
+/****************************** Orientation ******************************/
+void print(
+	const Orientation& A
+);
+
+/****************************** Polygon clipping ******************************/
+int polygon_clip_fast(
+	Clip_type,
+	const Polygon& S1,
+	const Polygon& S2,
+	Polygon* R
+);
+/*
+ *  Execute a polygon clipping operation between S1 and S2 storing the
+ *  result in R. The resulting polygon's contour orientation is not
+ *  consistent. This function is faster but does not distinguish
+ *  between external and internal contours.
+ */
+
+int polygon_clip(
+	Clip_type,
+	const Polygon& S1,
+	const Polygon& S2,
+	Polygon* R
+);
+/*
+ *  Execute a polygon clipping operation between S1 and S2 storing the
+ *  result in R. This function is slower but the result has correct
+ *  is_hole and is_open flags for each contour.
+*/
+
+/****************************** Others ******************************/
+Point projection(
+	const Point& A,
+	const Point& B
+);
+/*
+ *  Returns the projection of vector A on vector B. The formula used is
+ *  p = (a * b) / (b * b) b, where * denotes the vector dot product.
+ */
+
+Polygon halfplane(
+	const Point& A,
+	const Point& B,
+	double length
+);
+/*
+ *  Returns a halfplane approximated by a rectangle with side length. The
+ *  halfplane is the one containing A and defined by the perpendicular
+ *  bisector of A and B.
+ */
+
+std::vector<double> linspace(
+	double start,
+	double end,
+	size_t num = 100
+);
+/*
+ *  Creates a linearly spaced vector from start to end inclusive with num
+ *  elements.
+ */
+
+Point cart2pol(
+	const Point& P
+);
+/*
+ *  Convert a point from cartesian to polar coordinates.
+ */
+
+Point pol2cart(
+	const Point& P
+);
+/*
+ *  Convert a point from polar to cartesian coordinates.
+ */
 
 } /* End of namespace */
 

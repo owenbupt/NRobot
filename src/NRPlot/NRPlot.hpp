@@ -1,29 +1,46 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __NRPlot_hpp
 #define __NRPlot_hpp
 
 #include <SDL2/SDL.h>
+#include <vector>
 
 #include "NRBase.hpp"
+
+/* Colors */
+extern SDL_Color BLACK;
+extern SDL_Color WHITE;
+extern SDL_Color GRAY;
+extern SDL_Color GREY;
+extern SDL_Color RED;
+extern SDL_Color GREEN;
+extern SDL_Color BLUE;
+extern SDL_Color YELLOW;
+extern SDL_Color MAGENTA;
+extern SDL_Color ORANGE;
+extern SDL_Color CYAN;
+extern SDL_Color BROWN;
+extern SDL_Color PINK;
+/* Color palettes */
+extern std::vector<SDL_Color> PLOT_COLORS;
 
 /* Global variables for the plot settings*/
 extern int PLOT_WIDTH;
@@ -106,6 +123,12 @@ namespace nr {
 		const SDL_Color& color = PLOT_FOREGROUND_COLOR
 	);
 	/* Plot a list of circles. Optionally set their color */
+
+	void plot_ellipse(
+		const Ellipse&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Plot a single ellipse. Optionally set its color */
 
 	void plot_segment(
 		const Point&,
