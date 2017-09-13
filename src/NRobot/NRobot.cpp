@@ -1208,10 +1208,52 @@ int nr::export_agent_parameters(
 		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[2],
 		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[3] );
 			break;
+
+			default:
+			std::printf("Invalid dynamics %d\n", agents[i].dynamics);
+			return nr::ERROR_INVALID_DYNAMICS;
 		}
 		nr::write( agents[i].base_sensing, f, true, true );
 		nr::write( agents[i].base_guaranteed_sensing, f, true, true );
 		nr::write( agents[i].base_relaxed_sensing, f, true, true );
+
+		/* Close file. */
+		std::fclose( f );
+	}
+
+	return nr::SUCCESS;
+}
+
+int nr::export_agent_state(
+    struct tm* start_time,
+    size_t number_of_iterations,
+	nr::MAs& agents
+) {
+	/* Loop over each agent. */
+	for (size_t i=0; i<agents.size(); i++) {
+		/*
+		 *  Create filename "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt".
+		 *  It is 40 characters long.
+		 */
+		char fname[40+1];
+		std::snprintf( fname, 40+1,
+		"sim_%.4d%.2d%.2d_%.2d%.2d%.2d_agent_%.4lu_state.txt",
+		start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+		start_time->tm_hour, start_time->tm_min, start_time->tm_sec,
+		agents[i].ID );
+
+		/* Open file for writing. */
+		FILE* f;
+		f = std::fopen( fname, "w" );
+		if (f == NULL) {
+			return nr::ERROR_FILE;
+		}
+
+		/* Write data to file. Loop over each iteration. */
+		for (size_t s=1; s<=number_of_iterations; s++) {
+			std::fprintf( f, "%lu", s );
+			std::fprintf( f, "\n" );
+		}
 
 		/* Close file. */
 		std::fclose( f );

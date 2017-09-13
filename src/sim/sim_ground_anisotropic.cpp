@@ -40,6 +40,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.01;
+	bool export_results = true;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -202,15 +203,21 @@ int main() {
 	#endif
 
 	/****** Export simulation results ******/
-	int err;
-	err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
-	elapsed_time, H, region );
-	if (err) {
-		return nr::ERROR_FILE;
-	}
-	err = nr::export_agent_parameters( start_time, agents );
-	if (err) {
-		return nr::ERROR_FILE;
+	if (export_results) {
+		int err;
+		err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
+		elapsed_time, H, region );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_parameters( start_time, agents );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_state( start_time, smax, agents );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
 	}
 
 	/****** Quit plot ******/

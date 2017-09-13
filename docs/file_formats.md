@@ -57,7 +57,7 @@ Filename: `sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt` where XXXX is the agen
 
 #### Agent State
 This file is organized in columns. Each column contains < Simulation iterations > elements. Each column is shown in a different line for clarity below.
-Filename: `sim_YYYYMMDD_HHMMSS_agent_X_state.txt` where X is the agent ID. Saved at the end of the simulation.
+Filename: `sim_YYYYMMDD_HHMMSS_agent_XXXX_state.txt` where XXXX is the agent ID. Saved at the end of the simulation.
 ```
 <Iteration number>
 <Position x>

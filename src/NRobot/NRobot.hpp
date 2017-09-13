@@ -391,6 +391,20 @@ int export_agent_parameters(
  *  "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt" where XXXX is the agent ID.
  */
 
+int export_agent_state(
+    struct tm* start_time,
+    size_t number_of_iterations,
+    MAs& agents
+);
+/*
+ * Export the state and other time varying parameters of each agent to a
+ *  separate file, timestamped with the
+ *  start time of the simulation. The filename is
+ *  "sim_YYYYMMDD_HHMMSS_agent_XXXX_state.txt" where XXXX is the agent ID.
+ */
+
+
+
 
 /********************/
 /****** NRPlot ******/
