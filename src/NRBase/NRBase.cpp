@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cmath>
 #include <cfloat>
@@ -25,6 +25,11 @@
 #include <fstream>
 
 #include "NRBase.hpp"
+#include "clipper.hpp"
+
+
+#define NR_STRICTLY_SIMPLE false /* Experimental feature of clipper */
+#define NR_SCALING_FACTOR 15
 
 
 /*******************************************************/
@@ -212,7 +217,7 @@ nr::Orientation::Orientation( double r, double p, double y ) {
 /********************* Non Members *********************/
 /*******************************************************/
 
-/****** Operator overloads ******/
+/***************************** Operator overloads *****************************/
 
 bool nr::operator == ( const nr::Point& A, const nr::Point& B ) {
 	if ( (std::abs(A.x - B.x) <= NR_CMP_ERR) &&
@@ -327,7 +332,7 @@ std::ostream& nr::operator << ( std::ostream& output, const nr::Contour& C ) {
 	return output;
 }
 
-/****** Point ******/
+/****************************** Point ******************************/
 void nr::print( const nr::Point& A ) {
 	std::printf("% .5lf % .5lf % .5lf\n", (double) A.x, (double) A.y, (double) A.z);
 }
@@ -548,7 +553,7 @@ bool nr::is_vertex_of( const nr::Point& A, const nr::Polygon& P ) {
 	return false;
 }
 
-/****** Contour ******/
+/****************************** Contour ******************************/
 int nr::read( nr::Contour* C, const char* fname ) {
 	size_t  num_vertices;
 	double x, y;
@@ -682,7 +687,7 @@ void nr::make_CCW( nr::Contour* C ) {
 	}
 }
 
-/****** Polygon ******/
+/****************************** Polygon ******************************/
 int nr::read( nr::Polygon* P, const char* fname, bool read_hole, bool read_open ) {
 	size_t num_contours, num_vertices;
 	int is_hole, is_open;
@@ -1046,12 +1051,53 @@ void nr::scale( nr::Polygon* P, double scale_factor ) {
 	}
 }
 
+int nr::offset_in(
+	nr::Polygon* P,
+	double offset
+) {
+	/*
+	 *  Compute the polygon diameter in order to create halfplanes of proper
+	 *  size.
+	 */
+	double P_diameter = nr::diameter( *P );
+	/* Loop over all polygon contours. */
+	for (size_t c=0; c<P->contour.size(); c++) {
+		/* Loop over all contour edges. */
+		size_t Ne = P->contour[c].size();
+		for (size_t e=0; e<Ne; e++) {
+			/* Get the edge vertices. */
+			nr::Point v1 = P->contour[c][e];
+			nr::Point v2 = P->contour[c][e % Ne];
+			/* Find the edge midpoint. */
+			nr::Point midpt = nr::midpoint(v1, v2);
+			/*
+			 *  Find a point inside P whose distance from the edge v1v2 at its
+			 *  midpoint is equal to 2*offset.
+			 */
+			nr::Point p = nr::rotate(v2-v1, M_PI/2) / nr::dist(v1,v2);
+			p = midpt + 2*offset * p;
+
+			/* Create a halfplane to subtract from the polygon. */
+			nr::Polygon H;
+
+			/* Subtract the halfplane from P. */
+			int err = nr::polygon_clip( nr::DIFF, *P, H, P );
+			if (err) {
+				std::printf("Clipping operation returned error %d\n", err);
+				return nr::ERROR_CLIPPING_FAILED;
+			}
+		}
+	}
+
+	return nr::SUCCESS;
+}
+
 nr::Contour nr::convex_hull( const nr::Polygon& P ) {
 	/* https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain */
 	return nr::Contour();
 }
 
-/****** Polygons ******/
+/****************************** Polygons ******************************/
 void nr::print( const nr::Polygons& P ) {
 
 	std::printf("Polygons %lu\n", P.size());
@@ -1068,7 +1114,7 @@ void nr::print( const nr::Polygons& P ) {
 	}
 }
 
-/****** Circle ******/
+/****************************** Circle ******************************/
 double nr::area( const nr::Circle& C ) {
 	return M_PI * C.radius * C.radius;
 }
@@ -1081,17 +1127,254 @@ bool nr::is_point( const nr::Circle& C ) {
 	}
 }
 
-/****** Orientation ******/
+/****************************** Orientation ******************************/
 void nr::print( const nr::Orientation& A ) {
 	std::printf("% .5lf % .5lf % .5lf\n", (double) A.roll, (double) A.pitch, (double) A.yaw);
 }
 
-/****** Others ******/
+/****************************** Polygon clipping ******************************/
+int nr::polygon_clip_fast(
+	nr::Clip_type clip_type,
+	const nr::Polygon& S1,
+	const nr::Polygon& S2,
+	nr::Polygon* R
+) {
+
+	/****** Find the appropriate scaling factor ******/
+	double sc = std::pow(10,NR_SCALING_FACTOR);
+
+	/****** Create subject Polygon paths from S1 ******/
+	ClipperLib::Paths subj( S1.contour.size() );
+	for (size_t i=0; i<S1.contour.size(); i++) {
+		subj[i].resize( S1.contour[i].size() );
+		for (size_t j=0; j<S1.contour[i].size(); j++) {
+			subj[i][j].X = sc * S1.contour[i][j].x;
+			subj[i][j].Y = sc * S1.contour[i][j].y;
+		}
+	}
+
+	/****** Create clip Polygon paths from S2 ******/
+	ClipperLib::Paths clip( S2.contour.size() );
+	for (size_t i=0; i<S2.contour.size(); i++) {
+		clip[i].resize( S2.contour[i].size() );
+		for (size_t j=0; j<S2.contour[i].size(); j++) {
+			clip[i][j].X = sc * S2.contour[i][j].x;
+			clip[i][j].Y = sc * S2.contour[i][j].y;
+		}
+	}
+
+	/****** Initialize Clipper class ******/
+	ClipperLib::Clipper clpr;
+	clpr.StrictlySimple(NR_STRICTLY_SIMPLE);
+
+	/****** Add the paths/Polygons to the clipper class ******/
+	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
+		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
+		return nr::ERROR_INVALID_SUBJECT;
+	}
+	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
+		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
+		return nr::ERROR_INVALID_CLIP;
+	}
+
+	/****** Set clipping operation ******/
+	ClipperLib::ClipType clipType;
+	switch (clip_type) {
+		case AND: clipType = ClipperLib::ctIntersection; break;
+		case OR: clipType = ClipperLib::ctUnion; break;
+		case XOR: clipType = ClipperLib::ctXor; break;
+		case DIFF: clipType = ClipperLib::ctDifference; break;
+		default: clipType = ClipperLib::ctIntersection;
+	}
+
+	/****** Execute clipping ******/
+	ClipperLib::Paths result;
+	if ( !clpr.Execute( clipType, result ) ) {
+		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		return nr::ERROR_CLIPPING_FAILED;
+	}
+
+	/****** Create Polygon from paths ******/
+	size_t Nc = result.size();
+	R->contour.resize(Nc);
+	R->is_hole.resize(Nc);
+	R->is_open.resize(Nc);
+	for (size_t i=0; i<Nc; i++) {
+		R->is_hole[i] = false;
+		R->is_open[i] = false;
+
+		size_t Nv = result[i].size();
+		R->contour[i].resize(Nv);
+		for (size_t j=0; j<Nv; j++) {
+			R->contour[i][j].x = result[i][j].X / sc;
+			R->contour[i][j].y = result[i][j].Y / sc;
+		}
+	}
+
+	return nr::SUCCESS;
+}
+
+
+int nr::polygon_clip(
+	nr::Clip_type clip_type,
+	const nr::Polygon& S1,
+	const nr::Polygon& S2,
+	nr::Polygon* R
+) {
+
+	/****** Check for empty inputs ******/
+	if (is_empty(S1) && is_empty(S2)) {
+		/* Both polygons are empty */
+		make_empty(R);
+		return nr::SUCCESS;
+	} else if (is_empty(S1)) {
+		/* Subject polygon is empty */
+		switch (clip_type) {
+			case AND:
+			case DIFF:
+				make_empty(R);
+				break;
+			case OR:
+			case XOR:
+				*R = S2;
+				break;
+		}
+		return nr::SUCCESS;
+	} else if (is_empty(S2)) {
+		/* Clip polygon is empty */
+		switch (clip_type) {
+			case AND:
+				make_empty(R);
+				break;
+			case OR:
+			case XOR:
+			case DIFF:
+				*R = S1;
+				break;
+		}
+		return nr::SUCCESS;
+	}
+	/* Else continue normally */
+
+	/****** Find the appropriate scaling factor ******/
+	double sc = std::pow(10,NR_SCALING_FACTOR);
+
+	/****** Create subject Polygon paths from S1 ******/
+	ClipperLib::Paths subj( S1.contour.size() );
+	for (size_t i=0; i<S1.contour.size(); i++) {
+		subj[i].resize( S1.contour[i].size() );
+		for (size_t j=0; j<S1.contour[i].size(); j++) {
+			subj[i][j].Y = sc * S1.contour[i][j].y;
+			subj[i][j].X = sc * S1.contour[i][j].x;
+		}
+	}
+
+	/****** Create clip Polygon paths from S2 ******/
+	ClipperLib::Paths clip( S2.contour.size() );
+	for (size_t i=0; i<S2.contour.size(); i++) {
+		clip[i].resize( S2.contour[i].size() );
+		for (size_t j=0; j<S2.contour[i].size(); j++) {
+			clip[i][j].Y = sc * S2.contour[i][j].y;
+			clip[i][j].X = sc * S2.contour[i][j].x;
+		}
+	}
+
+	/****** Initialize Clipper class ******/
+	ClipperLib::Clipper clpr;
+	clpr.StrictlySimple(NR_STRICTLY_SIMPLE);
+
+	/****** Add the paths/Polygons to the clipper class ******/
+	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
+		std::printf("Clipper error: Invalid subject polygon %p.\n", (void*) &S1);
+		nr::print(S1);
+		return nr::ERROR_INVALID_SUBJECT;
+	}
+	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
+		std::printf("Clipper error: Invalid clip polygon %p.\n", (void*) &S2);
+		nr::print(S2);
+		return nr::ERROR_INVALID_CLIP;
+	}
+
+	/****** Set clipping operation ******/
+	ClipperLib::ClipType clipType;
+	switch (clip_type) {
+		case AND: clipType = ClipperLib::ctIntersection; break;
+		case OR: clipType = ClipperLib::ctUnion; break;
+		case XOR: clipType = ClipperLib::ctXor; break;
+		case DIFF: clipType = ClipperLib::ctDifference; break;
+		default: clipType = ClipperLib::ctIntersection;
+	}
+
+	/****** Execute clipping ******/
+	ClipperLib::PolyTree result;
+	if ( !clpr.Execute( clipType, result ) ) {
+		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		return nr::ERROR_CLIPPING_FAILED;
+	}
+
+	/****** Create Polygon from PolyTree ******/
+	R->contour.resize(result.Total());
+	R->is_hole.resize(result.Total());
+	R->is_open.resize(result.Total());
+
+	ClipperLib::PolyNode *cnode = result.GetFirst();
+	for (int i=0; i<result.Total(); i++) {
+		size_t Nv = cnode->Contour.size();
+		R->is_hole[i] = cnode->IsHole();
+		R->is_open[i] = cnode->IsOpen();
+		R->contour[i].resize(Nv);
+
+		for (size_t j=0; j<Nv; j++) {
+			R->contour[i][j].x = cnode->Contour[j].X / sc;
+			R->contour[i][j].y = cnode->Contour[j].Y / sc;
+		}
+
+		cnode = cnode->GetNext();
+	}
+
+	return nr::SUCCESS;
+}
+
+/****************************** Others ******************************/
 nr::Point nr::projection(
 	const nr::Point& A,
 	const nr::Point& B
 ) {
 	return (nr::dot(A,B) / nr::dot(B,B)) * B;
+}
+
+nr::Polygon nr::halfplane(
+	const nr::Point& A,
+	const nr::Point& B,
+	double length
+) {
+	/* Initialize halfplane */
+	nr::Polygon H;
+	H.contour.resize(1);
+	H.is_hole.resize(1);
+	H.is_open.resize(1);
+	H.is_hole[0] = false;
+	H.is_open[0] = false;
+	H.contour[0].resize(4);
+
+	/* Create halfplane assuming both points are on x axis with center on origin */
+	H.contour[0][0].x = 0;
+	H.contour[0][0].y = -length/2;
+	H.contour[0][1].x = -length/2;
+	H.contour[0][1].y = -length/2;
+	H.contour[0][2].x = -length/2;
+	H.contour[0][2].y = length/2;
+	H.contour[0][3].x = 0;
+	H.contour[0][3].y = length;
+
+	/* Rotate halfplane */
+	double theta = std::atan2(B.y-A.y, B.x-A.x);
+	nr::rotate( &H, theta, true);
+
+	/* Translate halfplane */
+	nr::translate( &H, nr::midpoint(A,B) );
+
+	return H;
 }
 
 std::vector<double> nr::linspace(

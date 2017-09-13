@@ -8,8 +8,8 @@ INCLUDE_DIRECTORIES(NRPlot)
 INCLUDE_DIRECTORIES(NRobot)
 
 # Source files to compile
-SET(NRBASE_SRC "NRBase/NRBase.cpp")
-SET(NRPART_SRC "NRPart/clipper.cpp" "NRPart/NRClip.cpp" "NRPart/NRPart.cpp")
+SET(NRBASE_SRC "NRBase/clipper.cpp" "NRBase/NRBase.cpp")
+SET(NRPART_SRC "NRPart/NRPart.cpp")
 SET(NROBOT_SRC "NRobot/NRobot.cpp" "NRobot/Jn.cpp" "NRobot/n.cpp" "NRobot/J.cpp")
 IF(NR_PLOT_AVAILABLE)
     SET(NRPLOT_SRC "NRPlot/NRPlot.cpp")

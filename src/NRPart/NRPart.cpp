@@ -1,21 +1,21 @@
 /*
-	Copyright (C) 2016-2017 Sotiris Papatheodorou
-
-	This file is part of NRobot.
-
-    NRobot is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    NRobot is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *  Copyright (C) 2016-2017 Sotiris Papatheodorou
+ *
+ *  This file is part of NRobot.
+ *
+ *  NRobot is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  NRobot is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cmath>
 #include <cstdio>
@@ -23,47 +23,12 @@
 #include <iostream>
 
 #include "NRPart.hpp"
-#include "NRClip.hpp"
 
 
 
 /************************************************************/
 /********************* Helper functions *********************/
 /************************************************************/
-nr::Polygon nr_halfplane(
-	const nr::Point& A,
-	const nr::Point& B,
-	const double diam
-) {
-	/* Initialize halfplane */
-	nr::Polygon H;
-	H.contour.resize(1);
-	H.is_hole.resize(1);
-	H.is_open.resize(1);
-	H.is_hole[0] = false;
-	H.is_open[0] = false;
-	H.contour[0].resize(4);
-
-	/* Create halfplane assuming both points are on x axis with center on origin */
-	H.contour[0][0].x = 0;
-	H.contour[0][0].y = -diam;
-	H.contour[0][1].x = -diam;
-	H.contour[0][1].y = -diam;
-	H.contour[0][2].x = -diam;
-	H.contour[0][2].y = diam;
-	H.contour[0][3].x = 0;
-	H.contour[0][3].y = diam;
-
-	/* Rotate halfplane */
-	double theta = std::atan2(B.y-A.y, B.x-A.x);
-	nr::rotate( &H, theta, true);
-
-	/* Translate halfplane */
-	nr::translate( &H, nr::midpoint(A,B) );
-
-	return H;
-}
-
 nr::Polygon nr_hyperbola_branch(
 	const nr::Point& A,
 	const nr::Point& B,
@@ -111,7 +76,7 @@ nr::Polygon nr_hyperbola_branch(
 		H.contour[0][3].y = diam;
 	} else if ( std::abs(a) <= NR_CMP_ERR ) {
 		/* The cell of A with respect to B is a halfplane */
-		H = nr_halfplane( A, B, diam );
+		H = nr::halfplane( A, B, diam );
 	} else if (a > 0) {
 		/* The convex cell of A with respect to B is bound by a hyperbola branch */
 		double b = std::sqrt( c*c - a*a );
@@ -214,7 +179,7 @@ int nr::voronoi(
 		for (size_t j=0; j<N; j++) {
 			if (i != j) {
 				/* Create the halfplane containing i with respect to j */
-				nr::Polygon h = nr_halfplane( seeds[i], seeds[j], diam );
+				nr::Polygon h = nr::halfplane( seeds[i], seeds[j], diam );
 				/* Intersect the current cell with the halfplane with j */
 				int err = nr::polygon_clip( nr::AND, (*cells)[i], h, &((*cells)[i]) );
 				if (err) {
@@ -243,7 +208,7 @@ int nr::voronoi_cell(
 	for (size_t j=0; j<N; j++) {
 		if (subject != j) {
 			/* Create the halfplane with respect to j containing subject */
-			nr::Polygon h = nr_halfplane( seeds[subject], seeds[j], diam );
+			nr::Polygon h = nr::halfplane( seeds[subject], seeds[j], diam );
 			/* Intersect the current cell with the halfplane with respect to j */
 			int err = nr::polygon_clip( nr::AND, *cell, h, cell );
 			if (err) {
@@ -506,7 +471,7 @@ int nr::ysuq_partitioning(
 						}
 					} else if (quality[i] == quality[j]) {
 						/* Use the arbitrary partitioning */
-						nr::Polygon H = nr_halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
+						nr::Polygon H = nr::halfplane( seeds[j].center, seeds[i].center, seeds[j].radius );
 						err = nr::polygon_clip(nr::DIFF, (*cells)[i], H, &((*cells)[i]));
 						if (err) {
 							std::printf("Clipping operation returned error %d\n", err);
