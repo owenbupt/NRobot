@@ -38,11 +38,18 @@ double average( std::vector<double>& v, size_t begin, size_t end ) {
 }
 
 int main() {
-	nr::info();
-
-	/****** Simulation parameters ******/
+    /****** Simulation parameters ******/
 	double Tfinal = 10;
 	double Tstep = 0.01;
+	bool export_results = true;
+
+	/* Get the current time. */
+	clock_t start_time_raw = std::time(NULL);
+	struct tm* start_time = std::localtime( &start_time_raw );
+	/* Number of iterations */
+	size_t smax = std::floor(Tfinal/Tstep);
+
+	nr::info();
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -54,14 +61,22 @@ int main() {
 	// P.push_back( nr::Point(0,0) );
 	// P.push_back( nr::Point(1.5,0.5) );
 	// P.push_back( nr::Point(-2,3) );
-    P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
-	P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
-	P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
-	P.push_back( nr::Point(1.5360483374617235,1.4543510611496755) );
-	P.push_back( nr::Point(1.4431379448894295,1.6047375622673639) );
-	P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
-	P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
-	P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
+    // P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
+	// P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
+	// P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
+	// P.push_back( nr::Point(1.5360483374617235,1.4543510611496755) );
+	// P.push_back( nr::Point(1.4431379448894295,1.6047375622673639) );
+	// P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
+	// P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
+	// P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
+	P.push_back( nr::Point(1.821,0.913) );
+	P.push_back( nr::Point(1.482,1.206) );
+	P.push_back( nr::Point(2.006,1.342) );
+	P.push_back( nr::Point(1.536,1.454) );
+	P.push_back( nr::Point(1.443,1.655) );
+	P.push_back( nr::Point(1.792,1.585) );
+	P.push_back( nr::Point(1.255,1.134) );
+	P.push_back( nr::Point(1.911,0.705) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
 	// A.push_back( nr::Orientation(0,0,M_PI/2) );
@@ -99,7 +114,6 @@ int main() {
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {
-			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
 		}
 	}
@@ -117,7 +131,18 @@ int main() {
             return nr::ERROR_CLIPPING_FAILED;
         }
     }
-    
+
+
+    /****** Initialize MA evolution vector ******/
+	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
+	if (export_results) {
+		for (size_t i=0; i<N; i++) {
+			agents_evolution[i] =
+			nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
+		}
+	}
+
+
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
@@ -128,13 +153,13 @@ int main() {
 
 
 	/****** Simulate agents ******/
-	size_t smax = std::floor(Tfinal/Tstep);
 	std::vector<double> H (smax, 0);
     std::vector<std::vector<double>> Hi (N, std::vector<double> (smax, 0));
     double initial_relaxed_sensing_quality = agents[0].relaxed_sensing_quality;
     std::vector<bool> converged (N, false);
     double H_threshold = 0.001;
-    size_t window_size = 10;
+    double window_time = 0.5;
+    size_t window_size = std::floor(window_time / Tstep);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
 	begin = std::clock();
@@ -184,9 +209,7 @@ int main() {
                 double diff = std::abs(rolling_average-Hi[i][s-1]);
                 if ( diff < H_threshold &&
                     (agents[i].relaxed_sensing_quality == initial_relaxed_sensing_quality) &&
-                    !converged[agents[i].ID-1] &&
-                    agents[i].position != P[i] &&
-                    agents[i].attitude != A[i]) {
+                    !converged[agents[i].ID-1]) {
                     /* H increase is below the threshold and the agent hasn't
                        converged. */
                     converged[agents[i].ID-1] = true;
@@ -195,6 +218,28 @@ int main() {
             }
         }
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+
+        /* Save agent evolution. */
+		if (export_results) {
+			for (size_t i=0; i<N; i++) {
+				agents_evolution[i].position[s-1] = agents[i].position;
+				agents_evolution[i].attitude[s-1] = agents[i].attitude;
+				agents_evolution[i].velocity_translational[s-1] =
+				agents[i].velocity_translational;
+				agents_evolution[i].velocity_rotational[s-1] =
+				agents[i].velocity_rotational;
+				agents_evolution[i].relaxed_sensing_quality[s-1] =
+				agents[i].relaxed_sensing_quality;
+				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+					agents_evolution[i].
+					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
+				}
+				for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+					agents_evolution[i].control_input[j][s-1] =
+					agents[i].control_input[j];
+				}
+			}
+		}
 
 		// nr::print( agents, false );
 
@@ -241,6 +286,24 @@ int main() {
 	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
 	#endif
+
+    /****** Export simulation results ******/
+	if (export_results) {
+		int err;
+		err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
+		elapsed_time, H, region, H_threshold, window_size );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_parameters( start_time, agents );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_state( start_time, agents_evolution );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+	}
 
 	/****** Quit plot ******/
     #if NR_PLOT_AVAILABLE

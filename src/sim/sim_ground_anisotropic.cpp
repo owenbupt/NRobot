@@ -33,7 +33,7 @@
 
 int main() {
 	/****** Simulation parameters ******/
-	double Tfinal = 1;
+	double Tfinal = 5;
 	double Tstep = 0.01;
 	bool export_results = true;
 
@@ -55,14 +55,22 @@ int main() {
 	// P.push_back( nr::Point(0,0) );
 	// P.push_back( nr::Point(1.5,0.5) );
 	// P.push_back( nr::Point(-2,3) );
-	P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
-	P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
-	P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
-	P.push_back( nr::Point(1.5360483374617235,1.4543510611496755) );
-	P.push_back( nr::Point(1.4431379448894295,1.6047375622673639) );
-	P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
-	P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
-	P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
+	// P.push_back( nr::Point(1.8213681165510334,0.91283954968302494) );
+	// P.push_back( nr::Point(1.4816585705892809,1.2055884878021055) );
+	// P.push_back( nr::Point(2.0061832707330876,1.3419690768039203) );
+	// P.push_back( nr::Point(1.5360483374617235,1.4543510611496755) );
+	// P.push_back( nr::Point(1.4431379448894295,1.6047375622673639) );
+	// P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
+	// P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
+	// P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
+	P.push_back( nr::Point(1.821,0.913) );
+	P.push_back( nr::Point(1.482,1.206) );
+	P.push_back( nr::Point(2.006,1.342) );
+	P.push_back( nr::Point(1.536,1.454) );
+	P.push_back( nr::Point(1.443,1.655) );
+	P.push_back( nr::Point(1.792,1.585) );
+	P.push_back( nr::Point(1.255,1.134) );
+	P.push_back( nr::Point(1.911,0.705) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
 	// A.push_back( nr::Orientation(0,0,M_PI/2) );
@@ -119,6 +127,7 @@ int main() {
 			return nr::ERROR_CLIPPING_FAILED;
 		}
 	}
+
 
 	/****** Initialize MA evolution vector ******/
 	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
@@ -217,6 +226,11 @@ int main() {
 				break;
 			}
 		#endif
+
+		// if (s >= 73 && s <= 75) {
+		// 	nr::print( agents, 0 );
+		// 	std::getchar();
+		// }
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {

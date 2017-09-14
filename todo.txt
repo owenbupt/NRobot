@@ -1,6 +1,5 @@
 TODO
     project control input on offset region boundary
-    finish m code to plot simulation results
     add simulation export to other sims
     MA unassigned_region and save_unassigned are no longer used
     EDITED nr::in FUNCTION, MIGHT BE WRONG
