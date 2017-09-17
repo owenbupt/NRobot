@@ -39,7 +39,7 @@ double average( std::vector<double>& v, size_t begin, size_t end ) {
 
 int main() {
     /****** Simulation parameters ******/
-	double Tfinal = 10;
+	double Tfinal = 5;
 	double Tstep = 0.01;
 	bool export_results = true;
 
@@ -69,27 +69,35 @@ int main() {
 	// P.push_back( nr::Point(1.7923852150366215,1.5852600819312745) );
 	// P.push_back( nr::Point(1.3049294775487454,1.1343085651524876) );
 	// P.push_back( nr::Point(1.9108348621516573,0.79464716869746166) );
-	P.push_back( nr::Point(1.821,0.913) );
+    P.push_back( nr::Point(1.721,1.013) );
 	P.push_back( nr::Point(1.482,1.206) );
 	P.push_back( nr::Point(2.006,1.342) );
 	P.push_back( nr::Point(1.536,1.454) );
 	P.push_back( nr::Point(1.443,1.655) );
 	P.push_back( nr::Point(1.792,1.585) );
 	P.push_back( nr::Point(1.255,1.134) );
-	P.push_back( nr::Point(1.911,0.705) );
+	P.push_back( nr::Point(1.911,0.905) );
 	/* Agent initial attitudes */
 	nr::Orientations A;
 	// A.push_back( nr::Orientation(0,0,M_PI/2) );
 	// A.push_back( nr::Orientation(0,0,M_PI*4/5) );
 	// A.push_back( nr::Orientation(0,0, 1.7*M_PI ) );
+    // A.push_back( nr::Orientation(0,0, 2.4679773854259808 ) );
+	// A.push_back( nr::Orientation(0,0, 0.28861356578484565 ) );
+	// A.push_back( nr::Orientation(0,0, 4.9641841747027469 ) );
+	// A.push_back( nr::Orientation(0,0, 0.274211804968107 ) );
+	// A.push_back( nr::Orientation(0,0, 3.672512046080453 ) );
+	// A.push_back( nr::Orientation(0,0, 1.3573179379420355 ) );
+	// A.push_back( nr::Orientation(0,0, 3.5407470134652721 ) );
+	// A.push_back( nr::Orientation(0,0, 1.2436339452103413 ) );
     A.push_back( nr::Orientation(0,0, 2.4679773854259808 ) );
 	A.push_back( nr::Orientation(0,0, 0.28861356578484565 ) );
 	A.push_back( nr::Orientation(0,0, 4.9641841747027469 ) );
 	A.push_back( nr::Orientation(0,0, 0.274211804968107 ) );
-	A.push_back( nr::Orientation(0,0, 3.672512046080453 ) );
+	A.push_back( nr::Orientation(0,0, 5.672512046080453 ) );
 	A.push_back( nr::Orientation(0,0, 1.3573179379420355 ) );
-	A.push_back( nr::Orientation(0,0, 3.5407470134652721 ) );
-	A.push_back( nr::Orientation(0,0, 1.2436339452103413 ) );
+	A.push_back( nr::Orientation(0,0, 0.5407470134652721 ) );
+	A.push_back( nr::Orientation(0,0, 1.4436339452103413 ) );
 	/* Number of agents */
 	size_t N = P.size();
 	/* Initialize agents */

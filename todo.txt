@@ -1,5 +1,6 @@
 TODO
-    project control input on offset region boundary
+	fix collision avoidance to use offset power diagram cell instead of bisector
+    project control input on offset region boundary to keep in region
     add simulation export to other sims
     MA unassigned_region and save_unassigned are no longer used
     EDITED nr::in FUNCTION, MIGHT BE WRONG

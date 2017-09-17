@@ -1,38 +1,41 @@
-%   Copyright (C) 2017 Sotiris Papatheodorou
-%
-%   This file is part of NRobot.
-%
-%   NRobot is free software: you can redistribute it and/or modify
-%   it under the terms of the GNU General Public License as published by
-%   the Free Software Foundation, either version 3 of the License, or
-%   (at your option) any later version.
-%
-%   NRobot is distributed in the hope that it will be useful,
-%   but WITHOUT ANY WARRANTY; without even the implied warranty of
-%   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%   GNU General Public License for more details.
-%
-%   You should have received a copy of the GNU General Public License
-%   along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
-
-% TODO
-% Compute H using random real sensing
-% Show assigned cells
-% Show final state (copy initial state when finished
-% Show constrained region?
+% Copyright 2017 Sotiris Papatheodorou
+% 
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+% 
+%    http://www.apache.org/licenses/LICENSE-2.0
+% 
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
 
 clear variables
 close all
 
+colors = [ 255, 0, 77 ;
+           0, 228, 54 ;
+		   41, 173, 255 ;
+		   255, 163, 0 ;
+		   126, 37, 83 ;
+		   0, 135, 81 ;
+		   171, 82, 54 ;
+		   255, 119, 168 ] ./ 255;
+
 % Select simulation to load and set plot options
-simulation_date = '20170914_183648'; % Relaxed only
-% simulation_date = '20170914_182208'; % Guaranteed only
-% simulation_date = '20170914_125829'; % Relaxed -> guaranteed
-simulation_directory = '..';
-PLOT_OBJECTIVE = 1;
-PLOT_TRAJECTORIES = 0;
+simulation_date = '20170915_031359'; % Guaranteed only
+simulation_directory = '/home/sotiris/Dropbox/Conferences/2018/ICRA18_PT/Figures/Sim1/Results';
+% simulation_date = '20170915_044029'; % Relaxed -> guaranteed
+% simulation_directory = '/home/sotiris/Dropbox/Conferences/2018/ICRA18_PT/Figures/Sim2/Results';
+
+PLOT_OBJECTIVE = 0;
+PLOT_GUARANTEED_OBJECTIVE = 0;
+PLOT_TRAJECTORIES = 1;
 PLOT_INITIAL_STATE = 0;
 PLOT_FINAL_STATE = 0;
+CALCULATE_REAL_FINAL_COVERAGE = 0;
 
 
 
@@ -50,14 +53,14 @@ t = linspace(0, simulation_parameters.Tfinal, iterations);
 % Iteration vector
 s = 1:iterations;
 % Axis scale for region
-simulation_parameters.axis = [-0.5 3 -0.5 3];
+simulation_parameters.axis = [0 3 -0.5 2.5];
 
 % Load agent parameters
 agents = cell([1 N]);
 for i=1:N
 	ID = sprintf('%.4d', i);
 	agent_params_filename = strjoin(...
-	{'../', 'sim_', simulation_date, '_agent_', ID, '_parameters.txt'}, '');
+	{simulation_directory, '/', 'sim_', simulation_date, '_agent_', ID, '_parameters.txt'}, '');
 	agents{i} = load_agent_parameters( agent_params_filename );
 end
 
@@ -66,16 +69,71 @@ agent_state = cell([1 N]);
 for i=1:N
 	ID = sprintf('%.4d', i);
 	agent_state_filename = strjoin(...
-	{'../', 'sim_', simulation_date, '_agent_', ID, '_state.txt'}, '');
+	{simulation_directory, '/', 'sim_', simulation_date, '_agent_', ID, '_state.txt'}, '');
 	agent_state{i} = load_agent_state( agent_state_filename );
 end
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Text parameters
+text_size = 15;
+
 if PLOT_OBJECTIVE
 	figure('Name','Objective');
-	plot( s, simulation_parameters.H, 'b' );
+	plot( t, simulation_parameters.H, 'b' );
+end
+
+if PLOT_GUARANTEED_OBJECTIVE
+	% Vector with iterations at which agents converge
+	switched_law = zeros(1,N);
+	Hg = zeros(1,iterations);
+	% Compute the guaranteed objective for each iteration
+	for s=1:iterations
+		% Compute union of sensing regions
+		ux = [];
+		uy = [];
+		for i=1:N
+			% Create sensing
+			sensing = rot( agents{i}.base_guaranteed_sensing, ...
+			agent_state{i}.yaw(s) ) + ...
+			[agent_state{i}.x(s) ; agent_state{i}.y(s)];
+			% Add to union
+			[ux, uy] = polybool('or', ux, uy, sensing(1,:), sensing(2,:));
+			% Check convergence
+			if (s > 1) && ...
+			(agent_state{i}.relaxed_sensing_quality(s-1) ~= ...
+			agent_state{i}.relaxed_sensing_quality(s))
+				switched_law(i) = s;
+			end
+		end
+		% Intersect with region
+		[ux, uy] = polybool('and', ux, uy, ...
+		simulation_parameters.region(1,:), ...
+		simulation_parameters.region(2,:));
+		% Add union area to H
+		Hg(s) = polyarea_nan(ux, uy);
+		fprintf('Iteration %d\n',s);
+	end
+	% Calculate maximum guaranteed objective value
+	Hg_max = 0;
+	for i=1:N
+		Hg_max = Hg_max + polyarea( agents{i}.base_guaranteed_sensing(1,:), ...
+		agents{i}.base_guaranteed_sensing(2,:) );
+	end
+	
+	figure('Name','Guaranteed Objective');
+	hold on
+	plot( t, 100*Hg/Hg_max, 'b' );
+	plot( t, 100*ones(size(t)), 'k--' );
+	% Plot vertical lines at convergence
+	for i=1:N
+		plot( [t(switched_law(i)) t(switched_law(i))], ...
+			[0 100*Hg(switched_law(i))/Hg_max], 'k');
+	end
+	axis([t(1) t(end) 0 100]);
+	xlabel('Time');
+	ylabel('H (% of maximum)');
 end
 
 if PLOT_TRAJECTORIES
@@ -83,26 +141,73 @@ if PLOT_TRAJECTORIES
 	hold on
 	axis equal
 	axis off
-	axis([-0.5 3 -0.5 3]);
+	axis(simulation_parameters.axis);
 	plot_poly( simulation_parameters.region, 'k' );
 	for i=1:N
-		plot( agent_state{i}.x, agent_state{i}.y, 'b' );
-		plot( agent_state{i}.x(1), agent_state{i}.y(1), 'b.' );
-		plot( agent_state{i}.x(end), agent_state{i}.y(end), 'bo' );
+		plot( agent_state{i}.x, agent_state{i}.y, 'b', 'Color', colors(i,:) );
+		plot( agent_state{i}.x(1), agent_state{i}.y(1), 'b.', 'Color', colors(i,:) );
+		plot( agent_state{i}.x(end), agent_state{i}.y(end), 'bo', 'Color', colors(i,:) );
 	end
 end
 
 if PLOT_INITIAL_STATE
 	figure('Name','Initial State');
-	plot_state( simulation_parameters, agents, agent_state, 1 );
+	plot_state( simulation_parameters, agents, agent_state, 1, colors );
 end
 
 if PLOT_FINAL_STATE
 	figure('Name','Final State');
-	plot_state( simulation_parameters, agents, agent_state, iterations );
+	plot_state( simulation_parameters, agents, agent_state, iterations, colors );
 end
 
-
+if CALCULATE_REAL_FINAL_COVERAGE
+	s = iterations;
+	% Calculate maximum possible real coverage
+	H_max = 0;
+	for i=1:N
+		H_max = H_max + polyarea( agents{i}.base_sensing(1,:), ...
+		agents{i}.base_sensing(2,:) );
+	end
+	H_low = H_max;
+	H_high = 0;
+	% Calculate real coverage at M random final states
+	M = 100;
+	for k=1:M
+		% Compute union of sensing regions
+		ux = [];
+		uy = [];
+		for i=1:N
+			% Generate a random position and orientation within the uncertainty bounds
+			magnitude = agents{i}.position_uncertainty * rand();
+			angle = 2*pi * rand();
+			[x, y] = pol2cart( angle, magnitude );
+			agents{i}.random_position = [x ; y];
+			agents{i}.random_attitude = ...
+			agents{i}.attitude_uncertainty * 2*(rand()-0.5);
+			% Create sensing
+			sensing = rot( agents{i}.base_sensing, ...
+			agent_state{i}.yaw(s) + agents{i}.random_attitude ) + ...
+			[agent_state{i}.x(s) ; agent_state{i}.y(s)] + agents{i}.random_position;
+			% Add to union
+			[ux, uy] = polybool('or', ux, uy, sensing(1,:), sensing(2,:));
+		end
+		% Intersect with region
+		[ux, uy] = polybool('and', ux, uy, ...
+		simulation_parameters.region(1,:), ...
+		simulation_parameters.region(2,:));
+		% Add union area to H
+		H = polyarea_nan(ux, uy);
+		if H < H_low
+			H_low = H;
+		end
+		if H > H_high
+			H_high = H;
+		end
+	end
+	
+	fprintf('Real coverage at final state %.2f %% - %.2f %% as computed by %d random configurations\n', ...
+	100*H_low/H_max, 100*H_high/H_max, M);
+end
 
 
 
@@ -363,36 +468,36 @@ function H = fill_nan( x , y , colorspec, opac, color )
 end
 
 function h = plot_uncertainty( p, P , o, O, color )
-% Save hold state
-a = ishold;
-hold on
-% Default color
-if nargin == 2
-    color = 'b';
-end
+	% Save hold state
+	a = ishold;
+	hold on
+	% Default color
+	if nargin == 2
+		color = 'b';
+	end
 
-% Positioning uncertainty
-h1 = plot_poly( p, strcat(color,'.') );
-h2 = plot_circle( p , P , color);
+	% Positioning uncertainty
+	h1 = plot_poly( p, strcat(color,'.') );
+	h2 = plot_circle( p , P , color);
 
-% Orientation uncertainty
-heading = zeros(2,1);
-heading1 = zeros(2,1);
-heading2 = zeros(2,1);
-[heading(1), heading(2)] = pol2cart( o, 2*P );
-[heading1(1), heading1(2)] = pol2cart( o-O, P );
-[heading2(1), heading2(2)] = pol2cart( o+O, P );
-h3 = plot_poly( [p heading+p], color );
-h4 = plot_poly( [p heading1+p], strcat(color,'--') );
-h5 = plot_poly( [p heading2+p], strcat(color,'--') );
+	% Orientation uncertainty
+	heading = zeros(2,1);
+	heading1 = zeros(2,1);
+	heading2 = zeros(2,1);
+	[heading(1), heading(2)] = pol2cart( o, 2*P );
+	[heading1(1), heading1(2)] = pol2cart( o-O, P );
+	[heading2(1), heading2(2)] = pol2cart( o+O, P );
+	h3 = plot_poly( [p heading+p], color );
+	h4 = plot_poly( [p heading1+p], strcat(color,'-') );
+	h5 = plot_poly( [p heading2+p], strcat(color,'-') );
 
-h = [ h1 h2 h3 h4 h5 ];
-% Restore hold state
-if a
-    hold on
-else
-    hold off
-end
+	h = [ h1 h2 h3 h4 h5 ];
+	% Restore hold state
+	if a
+		hold on
+	else
+		hold off
+	end
 end
 
 % Plots a circle with center O and radius r
@@ -411,7 +516,7 @@ plot_handle = plot(x,y,linespec);
 end
 
 % Plots the state of the network at iteration s
-function plot_state( simulation_parameters, agents, agent_state, s )
+function plot_state( simulation_parameters, agents, agent_state, s, colors )
 	% Number of agents
 	N = simulation_parameters.N;
 	% Find sensing patterns
@@ -435,18 +540,53 @@ function plot_state( simulation_parameters, agents, agent_state, s )
 	for i=1:N
 		% Show cell
 		if ~isempty(W{i})
-			fill_nan( W{i}(1,:), W{i}(2,:), 'r' );
+			if nargin == 5
+				fill_nan( W{i}(1,:), W{i}(2,:), 'r', 1, colors(i,:) );
+			else
+				fill_nan( W{i}(1,:), W{i}(2,:), 'r' );
+			end
 		end
 		% Show sensing
-		plot_poly( sensing{i}, 'b' );
+		plot_poly( sensing{i}, 'k' );
 		% Show random real sensing
 		real_sensing = rot( agents{i}.base_sensing, ...
 		agent_state{i}.yaw(s) + agents{i}.random_attitude ) + ...
 		[agent_state{i}.x(s) ; agent_state{i}.y(s)] + agents{i}.random_position;
-		plot_poly( real_sensing, 'k--' );
+% 		plot_poly( real_sensing, 'k--' );
 		% Show reported state and uncertainty
 		plot_uncertainty( [agent_state{i}.x(s) ; agent_state{i}.y(s)],...
 		agents{i}.position_uncertainty,...
 		agent_state{i}.yaw(s), agents{i}.attitude_uncertainty, 'k' );
+		% Show agent ID
+		text(agent_state{i}.x(s) - 0.5*agents{i}.position_uncertainty, ...
+		agent_state{i}.y(s) - 2*agents{i}.position_uncertainty, ...
+		sprintf('%d',agents{i}.ID), 'FontSize', 15);
+	end
+end
+
+% Finds the area of a polygon with holes
+% polygon contours are Nan delimited
+function area = polyarea_nan(x, y)
+	% The outer contour is the last NaN delimited segment
+	nan_indices = find(isnan( x ));
+	indices = [ 0 nan_indices length(x)+1 ];
+	area = 0;
+
+	if ~isempty(nan_indices)
+		for i=1:length(nan_indices)+1
+
+			tempx = x( indices(i)+1 : indices(i+1)-1 );
+			tempy = y( indices(i)+1 : indices(i+1)-1 );
+			if ispolycw(tempx, tempy)
+				% external contour
+				area = area + polyarea(tempx, tempy);
+			else
+				% internal contour
+				area = area - polyarea(tempx, tempy);
+			end
+
+		end
+	else
+		area = polyarea(x, y);
 	end
 end
