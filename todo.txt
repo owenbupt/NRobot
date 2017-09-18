@@ -1,5 +1,7 @@
 TODO
-	fix collision avoidance to use offset power diagram cell instead of bisector
+	export frames from sdl
+		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
+	fix collision avoidance to use same method as icra2018
     project control input on offset region boundary to keep in region
     add simulation export to other sims
     MA unassigned_region and save_unassigned are no longer used
