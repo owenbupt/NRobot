@@ -33,7 +33,7 @@
 
 int main() {
 	/****** Simulation parameters ******/
-	double Tfinal = 5;
+	double Tfinal = 10;
 	double Tstep = 0.01;
 	bool export_results = true;
 
@@ -98,7 +98,7 @@ int main() {
 	nr::MAs agents ( P, A, Tstep );
 	for (size_t i=0; i<N; i++) {
 		/* Dynamics */
-		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
+		agents[i].dynamics = nr::DYNAMICS_DUBINS_GROUND_XYy;
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
 		agents[i].sensing_radius = nr::radius( agents[i].base_sensing );
@@ -111,7 +111,7 @@ int main() {
 		/* Sensing quality at relaxed sensing */
 		agents[i].relaxed_sensing_quality = 0;
 		/* Increase gain for rotational control law */
-		agents[i].control_input_gains[2] = 10;
+		agents[i].control_input_gains[1] = 10;
 		agents[i].save_unassigned_sensing = false;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
@@ -120,10 +120,10 @@ int main() {
 		}
 	}
 	/* Set partitioning and control law */
-	// nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC );
-	// nr::set_control( &agents, nr::CONTROL_ANISOTROPIC );
-	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
-	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
+	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC );
+	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC );
+	// nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
+	// nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
@@ -235,10 +235,13 @@ int main() {
 			}
 		#endif
 
-		// if (s >= 73 && s <= 75) {
-		// 	nr::print( agents, 0 );
-		// 	std::getchar();
-		// }
+		/* Change control inputs according to dubins dynamics. */
+		for (size_t i=0; i<N; i++) {
+			agents[i].control_input[0] =
+			std::cos(agents[i].attitude.yaw) * agents[i].control_input[0] +
+			std::sin(agents[i].attitude.yaw) * agents[i].control_input[1];
+			agents[i].control_input[1] = agents[i].control_input[2];
+		}
 
 		/* The movement of each agent is simulated */
 		for (size_t i=0; i<N; i++) {

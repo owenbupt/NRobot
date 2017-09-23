@@ -25,12 +25,12 @@ colors = [ 255, 0, 77 ;
 		   255, 119, 168 ] ./ 255;
 
 % Select simulation to load and set plot options
-simulation_date = '20170915_031359'; % Guaranteed only
-simulation_directory = '/home/sotiris/Dropbox/Conferences/2018/ICRA18_PT/Figures/Sim1/Results';
+simulation_date = '20170924_022009'; % Guaranteed only
+simulation_directory = '..';
 % simulation_date = '20170915_044029'; % Relaxed -> guaranteed
 % simulation_directory = '/home/sotiris/Dropbox/Conferences/2018/ICRA18_PT/Figures/Sim2/Results';
 
-PLOT_OBJECTIVE = 0;
+PLOT_OBJECTIVE = 1;
 PLOT_GUARANTEED_OBJECTIVE = 0;
 PLOT_TRAJECTORIES = 1;
 PLOT_INITIAL_STATE = 0;
@@ -269,7 +269,7 @@ function agent_parameters = load_agent_parameters( filename )
 	agent_parameters.control = fscanf(f, '%d', 1);
 	agent_parameters.avoidance = fscanf(f, '%d', 1);
 	switch agent_parameters.dynamics
-		case 0
+		case {0, 4}
 			agent_parameters.control_input_gains = fscanf(f, '%f', 2);
 		case {1, 2}
 			agent_parameters.control_input_gains = fscanf(f, '%f', 3);

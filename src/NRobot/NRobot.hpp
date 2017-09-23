@@ -41,6 +41,8 @@ enum dynamics_type{
     DYNAMICS_SI_GROUND_XYy, /* State vector: [x y yaw] */
     DYNAMICS_SI_AIR_XYZ, /* State vector: [x y z] */
     DYNAMICS_SI_AIR_XYZy, /* State vector: [x y z yaw] */
+    /* Dubins path dynamics */
+    DYNAMICS_DUBINS_GROUND_XYy /* State vector: [x y yaw] */
 };
 
 /*******************************************************/

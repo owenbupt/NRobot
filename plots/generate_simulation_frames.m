@@ -92,7 +92,7 @@ for s=1:iterations
 	
 	clf
 end
-
+close
 
 
 

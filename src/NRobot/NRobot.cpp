@@ -225,6 +225,7 @@ nr::MA_evolution::MA_evolution(
 	this->dynamics = dynamics;
 	switch (dynamics) {
 		case nr::DYNAMICS_SI_GROUND_XY:
+		case nr::DYNAMICS_DUBINS_GROUND_XYy:
 		number_of_inputs = 2;
 		break;
 
@@ -669,6 +670,17 @@ void nr::simulate_dynamics(
 		    agent->control_input_gains[2] * agent->control_input[2];
 		agent->attitude.yaw += agent->time_step *
 		    agent->control_input_gains[3] * agent->control_input[3];
+		break;
+
+		case DYNAMICS_DUBINS_GROUND_XYy:
+		agent->position.x += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0] *
+			std::cos(agent->attitude.yaw);
+		agent->position.y += agent->time_step *
+		    agent->control_input_gains[0] * agent->control_input[0] *
+			std::sin(agent->attitude.yaw);
+		agent->attitude.yaw += agent->time_step *
+		    agent->control_input_gains[1] * agent->control_input[1];
 		break;
 	}
 }
@@ -1263,6 +1275,7 @@ int nr::export_agent_parameters(
 		std::fprintf( f, "%d\n", agents[i].avoidance );
 		switch (agents[i].dynamics) {
 			case DYNAMICS_SI_GROUND_XY:
+			case DYNAMICS_DUBINS_GROUND_XYy:
 			std::fprintf( f, "% .*f % .*f\n",
 			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
 			NR_FLOAT_DIGITS, agents[i].control_input_gains[1] );
