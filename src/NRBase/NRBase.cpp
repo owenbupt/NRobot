@@ -1353,9 +1353,9 @@ nr::Polygon nr::halfplane(
 	/* Create halfplane assuming both points are on x axis with center on origin */
 	H.contour[0][0].x = 0;
 	H.contour[0][0].y = -length/2;
-	H.contour[0][1].x = -length/2;
+	H.contour[0][1].x = -length;
 	H.contour[0][1].y = -length/2;
-	H.contour[0][2].x = -length/2;
+	H.contour[0][2].x = -length;
 	H.contour[0][2].y = length/2;
 	H.contour[0][3].x = 0;
 	H.contour[0][3].y = length/2;

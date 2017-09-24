@@ -673,14 +673,16 @@ void nr::simulate_dynamics(
 		break;
 
 		case DYNAMICS_DUBINS_GROUND_XYy:
+		double V =
+			std::cos(agent->attitude.yaw) * agent->control_input[0] +
+			std::sin(agent->attitude.yaw) * agent->control_input[1];
+		double omega = agent->control_input[2];
 		agent->position.x += agent->time_step *
-		    agent->control_input_gains[0] * agent->control_input[0] *
-			std::cos(agent->attitude.yaw);
+		    agent->control_input_gains[0] * V *	std::cos(agent->attitude.yaw);
 		agent->position.y += agent->time_step *
-		    agent->control_input_gains[0] * agent->control_input[0] *
-			std::sin(agent->attitude.yaw);
+		    agent->control_input_gains[0] * V *	std::sin(agent->attitude.yaw);
 		agent->attitude.yaw += agent->time_step *
-		    agent->control_input_gains[1] * agent->control_input[1];
+		    agent->control_input_gains[1] * omega;
 		break;
 	}
 }
@@ -1397,7 +1399,8 @@ void nr::plot_position(
 	nr::plot_point( agent.position, color );
 	/* Plot orientation if needed */
 	if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) ||
-	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy)) {
+	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy) ||
+		    (agent.dynamics == nr::DYNAMICS_DUBINS_GROUND_XYy)) {
 		nr::Point v = nr::pol2cart( nr::Point( agent.sensing_radius/2, agent.attitude.yaw ) );
 		nr::plot_segment( agent.position, agent.position+v, color );
 	}

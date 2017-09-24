@@ -1,9 +1,8 @@
 TODO
-	export frames from sdl
-		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
+	options at beginning of sim to select what to plot
+	create one universal simulation
 	fix collision avoidance to use same method as icra2018
     project control input on offset region boundary to keep in region
-    add simulation export to other sims
     MA unassigned_region and save_unassigned are no longer used
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     create functions number_of_inputs/number_of_states/name( dynamics_type )
@@ -16,6 +15,7 @@ TODO
         also change the objective calculation accordingly
     simple switch to run simulation without plotting?
     create function to copy MA class without neighbors vector (use in find neighbors)
+		or define assignment operator
     check ellipse creation with orientation and center
     add more functions for MAs class (ease of use wrappers for MA functions)
     better MA/MAs constructors (using the new members added)
@@ -23,6 +23,8 @@ TODO
     create functions for enum->string for the dynamics/partitioning/control enums (use in print MA)
     allow points and orientations to be accessed by [] operator ([0] is x or roll etc.)
     add error handling function to make code cleaner (return appropriate error message)
+	export frames from sdl
+		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
     NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
     fix partitioning for coincident seeds?
     test NRClip scaling (look for library to do proper scaling)
