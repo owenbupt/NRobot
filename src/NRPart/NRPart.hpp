@@ -107,8 +107,7 @@ namespace nr {
 		const Polygon& region,
 		const Polygons& sensing,
 		const size_t subject,
-		Polygon* cell,
-		Polygon* unassigned_region = NULL
+		Polygon* cell
 	);
 	/*
 		Yannis Stergiopoulos partitioning (ICRA 2014)
@@ -130,8 +129,7 @@ namespace nr {
 		const Polygons& total_sensing,
 		const double relaxed_sensing_quality,
 		const size_t subject,
-		Polygon* cell,
-		Polygon* unassigned_region = NULL
+		Polygon* cell
 	);
 	/*
 		Partitioning when using anisotropic sensors with positioning and

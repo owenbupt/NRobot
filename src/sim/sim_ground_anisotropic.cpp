@@ -112,7 +112,6 @@ int main() {
 		agents[i].relaxed_sensing_quality = 0;
 		/* Increase gain for rotational control law */
 		agents[i].control_input_gains[1] = 10;
-		agents[i].save_unassigned_sensing = false;
         /* Compute base sensing patterns */
 		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
 		if (err) {

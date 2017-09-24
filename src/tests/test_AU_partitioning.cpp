@@ -86,15 +86,7 @@ int main() {
 
 	/* Find common sensing region */
 	nr::make_empty( &unassigned_region );
-	for (size_t i=0; i<N; i++) {
-		/* Base sensing patterns */
-		int err = nr::polygon_clip( nr::OR, unassigned_region,
-			agents[i].unassigned_sensing, &unassigned_region );
-		if (err) {
-			std::printf("Clipping operation returned error %d\n", err);
-			return nr::ERROR_PARTITIONING_FAILED;
-		}
-	}
+
 
 
 

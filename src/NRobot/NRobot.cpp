@@ -31,7 +31,6 @@ nr::MA::MA() {
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -60,7 +59,6 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -91,7 +89,6 @@ nr::MA::MA(
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
 	this->relaxed_sensing_quality = 0;
-	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -391,14 +388,8 @@ int nr_cell_anisotropic_partitioning( nr::MA* agent, const nr::Polygon& region )
 		sensing.push_back( agent->neighbors[j].sensing );
 	}
 
-	int err;
-	if (agent->save_unassigned_sensing) {
-		err = nr::anisotropic_partitioning_cell( region, sensing, 0,
-		    &(agent->cell), &(agent->unassigned_sensing) );
-	} else {
-		err = nr::anisotropic_partitioning_cell( region, sensing, 0,
-		    &(agent->cell) );
-	}
+	int err = nr::anisotropic_partitioning_cell( region, sensing, 0,
+	    &(agent->cell) );
 
 	if (err) {
         std::printf("Clipping operation returned error %d\n", err);
@@ -424,16 +415,9 @@ int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
 		total_sensing.push_back( agent->neighbors[j].total_sensing );
 	}
 
-	int err;
-	if (agent->save_unassigned_sensing) {
-		err = nr::au_partitioning_cell( region, guaranteed_sensing,
-		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
-		    &(agent->cell), &(agent->unassigned_sensing) );
-	} else {
-		err = nr::au_partitioning_cell( region, guaranteed_sensing,
-		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
-		    &(agent->cell) );
-	}
+	int err = nr::au_partitioning_cell( region, guaranteed_sensing,
+	    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+	    &(agent->cell) );
 
 	if (err) {
         std::printf("Clipping operation returned error %d\n", err);
@@ -1007,7 +991,8 @@ void nr::print(
 	    agent.position.x, agent.position.y, agent.position.z);
 	/* Only print orientation if the dynamics require it. */
 	if ((agent.dynamics == DYNAMICS_SI_GROUND_XYy) ||
-	    (agent.dynamics == DYNAMICS_SI_AIR_XYZy) || verbose >= 3 ) {
+	    (agent.dynamics == DYNAMICS_SI_AIR_XYZy) ||
+		(agent.dynamics == DYNAMICS_DUBINS_GROUND_XYy) || verbose >= 3 ) {
 		std::printf("%s  Attitude: %f %f %f\n", is.c_str(),
 		    agent.attitude.roll, agent.attitude.pitch, agent.attitude.yaw);
 	}
@@ -1030,8 +1015,6 @@ void nr::print(
 	    agent.attitude_uncertainty);
 	std::printf("%s  Relaxed Sensing Quality: %f\n", is.c_str(),
 	    agent.relaxed_sensing_quality);
-	std::printf("%s  Save Unassinged Sensing: %d\n", is.c_str(),
-	    (int) agent.save_unassigned_sensing);
 	/* Show if the various sensing polygons are empty or not. */
 	std::printf("%s  Base Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_sensing));
@@ -1049,8 +1032,6 @@ void nr::print(
 	    !nr::is_empty(agent.relaxed_sensing));
 	std::printf("%s  Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.total_sensing));
-	std::printf("%s  Unassigned Sensing: %d\n", is.c_str(),
-	    !nr::is_empty(agent.unassigned_sensing));
 	/* Show if the agent's cell is empty or not. */
 	std::printf("%s  Cell: %d\n", is.c_str(),
 	    !nr::is_empty(agent.cell));
