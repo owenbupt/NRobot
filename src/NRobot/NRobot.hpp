@@ -116,26 +116,34 @@ class MA {
         /* The region the MA is guaranteed to sense given its uncertainty when
            the MA is located at [x,y]=[0,0] with theta=0. */
         Polygon base_relaxed_sensing;
-        /* The region the MA is not guaranteed to sense excluding the region it
-           is guaranteed not to sense when the MA is located at [x,y]=[0,0]
-           with theta=0. */
+        /*
+         *  The region the MA is not guaranteed to sense excluding the region it
+         *  is guaranteed not to sense when the MA is located at [x,y]=[0,0]
+         *  with theta=0.
+         */
         Polygon base_total_sensing;
-        /* The union of the guaranteed and relaxed sensing regions when the MA
-           is located at [x,y]=[0,0] with theta=0. */
+        /*
+         *  The union of the guaranteed and relaxed sensing regions when the MA
+         *  is located at [x,y]=[0,0] with theta=0.
+         */
 		Polygon sensing;
         /* The curent sensing pattern of the agent. */
         Polygon guaranteed_sensing;
         /* The region the MA is guaranteed to sense given its uncertainty */
         Polygon relaxed_sensing;
-        /* The region the MA is not guaranteed to sense excluding the region it
-           is guaranteed not to sense. */
+        /*
+         *  The region the MA is not guaranteed to sense excluding the region it
+         *  is guaranteed not to sense.
+         */
         Polygon total_sensing;
         /* The union of the guaranteed and relaxed sensing regions. */
 		Polygon cell;
         /* The region assigned to the MA. */
 		Polygon rlimited_cell;
-        /* The interesection of the MA's cell with its circular sensing
-           pattern. */
+        /*
+         *  The interesection of the MA's cell with its circular sensing
+         *  pattern.
+         */
 
         /****** Neighbors ******/
 		std::vector<MA> neighbors;

@@ -136,5 +136,11 @@ namespace nr {
 		const SDL_Color& color = PLOT_FOREGROUND_COLOR
 	);
 	/* Plot a line segment defined by two points. Optionally set its color */
+
+	void fill_polygon(
+		const Polygon&,
+		const SDL_Color& color = PLOT_FOREGROUND_COLOR
+	);
+	/* Fill a single polygon. Optionally set its color */
 }
 #endif

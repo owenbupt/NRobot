@@ -83,7 +83,7 @@ nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle ) {
 	}
 
 	/* Make CW */
-	nr::reverse_order( &(this->contour[0]) );
+	nr::make_CW( &(this->contour[0]) );
 }
 
 nr::Polygon::Polygon( const nr::Ellipse& E, size_t points_per_circle ) {

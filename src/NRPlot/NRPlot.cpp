@@ -479,3 +479,73 @@ void nr::plot_segment(
 		PLOT_WIDTH/2.0 + PLOT_SCALE * P2.x + PLOT_X_OFFSET,
 		PLOT_HEIGHT/2.0 - PLOT_SCALE * P2.y + PLOT_Y_OFFSET );
 }
+
+void nr::fill_polygon(
+	const nr::Polygon& P,
+	const SDL_Color& color
+) {
+	std::printf("fill_polygon() IS NOT YET WORKING.\n");
+	/* Store the background color. Used for filling holes. */
+	SDL_Color bg_color;
+	SDL_GetRenderDrawColor( PLOT_RENDERER,
+		&(bg_color.r),
+		&(bg_color.g),
+		&(bg_color.b),
+		&(bg_color.a) );
+	/* Set the renderer color to the foreground color. */
+	SDL_SetRenderDrawColor( PLOT_RENDERER,
+		color.r,
+		color.g,
+		color.b,
+		color.a );
+
+	/* Minimum and maximum polygon y values in pixels. */
+	double miny_px = PLOT_HEIGHT;
+	double maxy_px = 0;
+	/* Convert coordinates to pixels. */
+	nr::Polygon P_px = P;
+	/* Loop over all contours. */
+	for (size_t i=0; i<P.contour.size(); i++) {
+		/* Loop over all vertices. */
+		size_t Nv = P.contour[i].size();
+		for (size_t j=0; j<Nv; j++) {
+			/* Scale and translate vertices. */
+			P_px.contour[i][j].x = PLOT_WIDTH/2.0 +
+			PLOT_SCALE * P.contour[i][j].x + PLOT_X_OFFSET;
+			P_px.contour[i][j].y = PLOT_HEIGHT/2.0 -
+			PLOT_SCALE * P.contour[i][j].y + PLOT_Y_OFFSET;
+			/* Find min and max vertex y coordinates in pixels. */
+			if (P_px.contour[i][j].y < miny_px) {
+				miny_px = P_px.contour[i][j].y;
+			}
+			if (P_px.contour[i][j].y > maxy_px) {
+				maxy_px = P_px.contour[i][j].y;
+			}
+		}
+	}
+
+	/* Loop over all polygon pixel rows. */
+	for (size_t r=(size_t) miny_px; r<=(size_t) maxy_px; r++) {
+		/* Create a vector of intersection x coordinates in pixels. */
+		/* Find intersections. */
+		/* Sort intersections. */
+		/* Fill between intersections. */
+	}
+
+	/* Plot polygon edges */
+	for (size_t i=0; i<P_px.contour.size(); i++) {
+		/* Loop over all vertex pairs */
+		size_t Nv = P_px.contour[i].size();
+		for (size_t j=0; j<Nv; j++) {
+			size_t jj = (j+1) % Nv;
+
+			/* Draw the line between the vertices */
+			/* Note that the y axis is inverted */
+			SDL_RenderDrawLine( PLOT_RENDERER,
+				P_px.contour[i].at(j).x,
+				P_px.contour[i].at(j).y,
+				P_px.contour[i].at(jj).x,
+				P_px.contour[i].at(jj).y);
+		}
+	}
+}

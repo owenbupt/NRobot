@@ -1,27 +1,25 @@
 TODO
+	use nullptr instead of NULL
 	options at beginning of sim to select what to plot
 	create one universal simulation
 	fix collision avoidance to use same method as icra2018
     project control input on offset region boundary to keep in region
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     create functions number_of_inputs/number_of_states/name( dynamics_type )
+		or make each enum into class containing more info
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
         http://alienryderflex.com/polygon_fill/
-    finish au_partitioning_cell()
-        return list of neighbors?
-        IMPORTANT: return common sensing for all cases (case for beta in (0,1) missing)
-        also change the objective calculation accordingly
     simple switch to run simulation without plotting?
     create function to copy MA class without neighbors vector (use in find neighbors)
-		or define assignment operator
+		or define copy/copy assignment operator
     check ellipse creation with orientation and center
     add more functions for MAs class (ease of use wrappers for MA functions)
     better MA/MAs constructors (using the new members added)
     Finish MAs constructors (add default vector values)
-    create functions for enum->string for the dynamics/partitioning/control enums (use in print MA)
     allow points and orientations to be accessed by [] operator ([0] is x or roll etc.)
     add error handling function to make code cleaner (return appropriate error message)
+		rename error_type to return_value and create reuturn_type class?
 	export frames from sdl
 		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
     NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
@@ -42,21 +40,18 @@ Improve functions
 		How does it handle non-simple polygons?
     bool nr::in/on( const nr::Point& A, const nr::Polygon& P )
         make it work for polygons with multiple contours
-	void nr::ys_partitioning()
+	void nr::ys_partitioning()/au_partitioning_cell()
         return neighbor relationships
-    void nr::print( const nr::MA& agent, const bool verbose )
-        more readable output when verbose is set
     nr::Polygon nr_hyperbola_branch()
         add cases for ray and plane minus ray cells
         why is BA = -BA; needed when a < 0?
     nr::print( const nr::MA )
-        fix indentation of polygon vertices and polygon vertex printing location
-        show all information
         show information depending on dynamics/partitioning/control
 
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
-        make contour CW on setup (do not use reverse_order)
+	nr::Polygon::Polygon( const nr::Ellipse& E, size_t points_per_circle )
+        make contour CW on setup (do not use make_CW)
 
 AWGV - low priority
     check AWGV partitioning
@@ -101,7 +96,7 @@ Code Style
 
     Multiline commands
     variable =
-    value;
+      value;
 
     Spaces and tabs
         tabs for indentation (function arguments are indented by one tab)

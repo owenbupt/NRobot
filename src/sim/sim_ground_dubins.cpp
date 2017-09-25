@@ -34,7 +34,7 @@
 int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 5;
-	double Tstep = 0.01;
+	double Tstep = 0.001;
 	bool export_results = false;
 
 	/* Get the current time. */
@@ -64,7 +64,7 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Agent initial attitudes */
-	nr::Orientations A (N, nr::Orientation(0,0, M_PI/4));
+	nr::Orientations A (N, nr::Orientation(0,0, M_PI/2));
 	/* Initialize agents */
 	nr::MAs agents ( P, A, Tstep );
 	for (size_t i=0; i<N; i++) {
@@ -78,10 +78,11 @@ int main() {
 		/* Attitude uncertainty */
 		// agents[i].attitude_uncertainty = M_PI/10;
 		/* Communication radius */
-		// agents[i].communication_radius = 3 * agents[i].sensing_radius;
+		// agents[i].communication_radius = 2 * agents[i].sensing_radius;
 		agents[i].communication_radius = rdiameter;
 		/* Increase gain for rotational control law */
-		agents[i].control_input_gains[1] = 10;
+		agents[i].control_input_gains[1] = 1;
+		// agents[i].control_input_gains[1] = agents[i].time_step;
 	}
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
@@ -90,11 +91,9 @@ int main() {
 
 	/****** Initialize MA evolution vector ******/
 	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
-	if (export_results) {
-		for (size_t i=0; i<N; i++) {
-			agents_evolution[i] =
-			nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
-		}
+	for (size_t i=0; i<N; i++) {
+		agents_evolution[i] =
+		nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
 	}
 
 
@@ -134,27 +133,25 @@ int main() {
 
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
-		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+		// std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
 		/* Save agent evolution. */
-		if (export_results) {
-			for (size_t i=0; i<N; i++) {
-				agents_evolution[i].position[s-1] = agents[i].position;
-				agents_evolution[i].attitude[s-1] = agents[i].attitude;
-				agents_evolution[i].velocity_translational[s-1] =
-				agents[i].velocity_translational;
-				agents_evolution[i].velocity_rotational[s-1] =
-				agents[i].velocity_rotational;
-				agents_evolution[i].relaxed_sensing_quality[s-1] =
-				agents[i].relaxed_sensing_quality;
-				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
-					agents_evolution[i].
-					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
-				}
-				for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
-					agents_evolution[i].control_input[j][s-1] =
-					agents[i].control_input[j];
-				}
+		for (size_t i=0; i<N; i++) {
+			agents_evolution[i].position[s-1] = agents[i].position;
+			agents_evolution[i].attitude[s-1] = agents[i].attitude;
+			agents_evolution[i].velocity_translational[s-1] =
+			agents[i].velocity_translational;
+			agents_evolution[i].velocity_rotational[s-1] =
+			agents[i].velocity_rotational;
+			agents_evolution[i].relaxed_sensing_quality[s-1] =
+			agents[i].relaxed_sensing_quality;
+			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+				agents_evolution[i].
+				neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
+			}
+			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+				agents_evolution[i].control_input[j][s-1] =
+				agents[i].control_input[j];
 			}
 		}
 
@@ -186,12 +183,28 @@ int main() {
 			}
 		#endif
 
-		/* Add rotational velocity control input. */
-		for (size_t i=0; i<N; i++) {
-			nr::Point v = nr::cart2pol( nr::Point(agents[i].control_input[0],agents[i].control_input[1]) );
-			double desired = v.y;
-			desired = M_PI/4;
-			agents[i].control_input[2] = (desired - agents[i].attitude.yaw) / agents[i].time_step;
+		/*
+		 *  Add rotational velocity control input.
+		 *  APPLIES ONLY TO DUBINS DYNAMICS WITH UNIFORM SENSING.
+		 */
+		if (s > 1) {
+			for (size_t i=0; i<N; i++) {
+				double th_desired_previous =
+				  std::atan2(agents_evolution[i].control_input[1][s-2],
+				  agents_evolution[i].control_input[0][s-2]);
+				double th_desired_current =
+				  std::atan2(agents[i].control_input[1],
+				  agents[i].control_input[0]);
+				double th_current = agents[i].attitude.yaw;
+				double th_error_current =
+				  th_desired_current - th_current;
+				double th_desired_derivative =
+				  (th_desired_current - th_desired_previous) /
+				  agents[i].time_step;
+				agents[i].control_input[2] =
+				  th_error_current / agents[i].time_step +
+				  th_desired_derivative;
+			}
 		}
 
 		/* The movement of each agent is simulated */
