@@ -30,7 +30,7 @@ nr::MA::MA() {
 	this->communication_radius = 0;
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -58,7 +58,7 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -88,7 +88,7 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
 	this->control = nr::CONTROL_CENTROID;
@@ -202,7 +202,7 @@ nr::MA_evolution::MA_evolution(
 	std::vector<nr::Point> (iterations, nr::Point());
 	this->velocity_rotational =
 	std::vector<nr::Orientation> (iterations, nr::Orientation());
-	this->relaxed_sensing_quality = std::vector<double> (iterations, 0);
+	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
 	this->neighbor_connectivity = std::vector<std::vector<bool>>
 	(this->number_of_agents, std::vector<bool> (iterations, false));
 	this->control_input = std::vector<std::vector<double>>
@@ -249,7 +249,7 @@ nr::MA_evolution::MA_evolution(
 	std::vector<nr::Point> (iterations, nr::Point());
 	this->velocity_rotational =
 	std::vector<nr::Orientation> (iterations, nr::Orientation());
-	this->relaxed_sensing_quality = std::vector<double> (iterations, 0);
+	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
 	this->neighbor_connectivity = std::vector<std::vector<bool>>
 	(this->number_of_agents, std::vector<bool> (iterations, false));
 	this->control_input = std::vector<std::vector<double>>
@@ -400,23 +400,24 @@ int nr_cell_anisotropic_partitioning( nr::MA* agent, const nr::Polygon& region )
 }
 
 int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
-	/* Create vectors containing all guaranteed, relaxed and total sensing
+	/* Create vectors containing all guaranteed, feasible and total sensing
 	   regions. */
-	nr::Polygons guaranteed_sensing, relaxed_sensing, total_sensing;
+	nr::Polygons guaranteed_sensing, feasible_sensing, total_sensing;
 	/* Add the sensing patterns fo the current agent. */
 	guaranteed_sensing.push_back( agent->guaranteed_sensing );
-	relaxed_sensing.push_back( agent->relaxed_sensing );
+	feasible_sensing.push_back( agent->feasible_sensing );
 	total_sensing.push_back( agent->total_sensing );
 
 	/* Add the sensing patterns of its neighbors. */
 	for (size_t j=0; j<agent->neighbors.size(); j++) {
 		guaranteed_sensing.push_back( agent->neighbors[j].guaranteed_sensing );
-		relaxed_sensing.push_back( agent->neighbors[j].relaxed_sensing );
+		feasible_sensing.push_back( agent->neighbors[j].feasible_sensing );
 		total_sensing.push_back( agent->neighbors[j].total_sensing );
 	}
 
-	int err = nr::au_partitioning_cell( region, guaranteed_sensing,
-	    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+	int err;
+	err = nr::au_partitioning_cell( region, guaranteed_sensing,
+	    feasible_sensing, total_sensing, agent->feasible_sensing_quality, 0,
 	    &(agent->cell) );
 
 	if (err) {
@@ -525,12 +526,12 @@ void nr_control_au( nr::MA* agent ) {
 	/* Loop over all vertices of sensing. If it is also a vertex of the cell,
 	   then add it to the integral. */
 
-	/* Select the sensing region based on the value of the relaxed sensing
+	/* Select the sensing region based on the value of the feasible sensing
 	   quality. */
 	nr::Polygon sensing;
-	if (agent->relaxed_sensing_quality == 0) {
+	if (agent->feasible_sensing_quality == 0) {
 		sensing = agent->guaranteed_sensing;
-	} else if (agent->relaxed_sensing_quality == 1) {
+	} else if (agent->feasible_sensing_quality == 1) {
 		sensing = agent->total_sensing;
 	} else {
 		/* Not implemented yet */
@@ -577,7 +578,9 @@ void nr_control_au( nr::MA* agent ) {
 void nr::create_sensing_disk(
 	nr::MA* agent
 ) {
-	nr::Circle C (agent->position, agent->sensing_radius);
+	nr::Circle C (nr::Point(), agent->sensing_radius);
+	agent->base_sensing = nr::Polygon( C );
+	C = Circle(agent->position, agent->sensing_radius);
 	agent->sensing = nr::Polygon( C );
 }
 
@@ -605,7 +608,7 @@ void nr::find_neighbors(
 				agent->neighbors.back().attitude_uncertainty = agents[j].attitude_uncertainty;
 				agent->neighbors.back().sensing = agents[j].sensing;
 				agent->neighbors.back().guaranteed_sensing = agents[j].guaranteed_sensing;
-				agent->neighbors.back().relaxed_sensing = agents[j].relaxed_sensing;
+				agent->neighbors.back().feasible_sensing = agents[j].feasible_sensing;
 				agent->neighbors.back().total_sensing = agents[j].total_sensing;
 				agent->neighbors.back().dynamics = agents[j].dynamics;
 				agent->neighbors.back().partitioning = agents[j].partitioning;
@@ -797,12 +800,12 @@ int nr::compute_base_sensing_patterns(
 		/* Set the base guaranteed sensing pattern on the agent */
 		agent->base_total_sensing = ts_tr;
 
-		/* Relaxed sensing computation */
+		/* feasible sensing computation */
 		/* Subtract the guaranteed sensing from the total sensing */
 		err = nr::polygon_clip( nr::DIFF,
 			agent->base_total_sensing,
 			agent->base_guaranteed_sensing,
-			&(agent->base_relaxed_sensing) );
+			&(agent->base_feasible_sensing) );
 		if (err) {
 			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
@@ -811,7 +814,7 @@ int nr::compute_base_sensing_patterns(
 
 	/* Fix contour orientation */
 	nr::fix_orientation( &(agent->base_guaranteed_sensing) );
-	nr::fix_orientation( &(agent->base_relaxed_sensing) );
+	nr::fix_orientation( &(agent->base_feasible_sensing) );
 	nr::fix_orientation( &(agent->base_total_sensing) );
 
 	return nr::SUCCESS;
@@ -830,11 +833,11 @@ void nr::update_sensing_patterns(
 		nr::rotate( &(agent->guaranteed_sensing), agent->attitude.yaw, true );
 		nr::translate( &(agent->guaranteed_sensing), agent->position );
 	}
-	/* Relaxed Sensing */
-	if ( !nr::is_empty(agent->base_relaxed_sensing) ) {
-		agent->relaxed_sensing = agent->base_relaxed_sensing;
-		nr::rotate( &(agent->relaxed_sensing), agent->attitude.yaw, true );
-		nr::translate( &(agent->relaxed_sensing), agent->position );
+	/* feasible Sensing */
+	if ( !nr::is_empty(agent->base_feasible_sensing) ) {
+		agent->feasible_sensing = agent->base_feasible_sensing;
+		nr::rotate( &(agent->feasible_sensing), agent->attitude.yaw, true );
+		nr::translate( &(agent->feasible_sensing), agent->position );
 	}
 	/* Total Sensing */
 	if ( !nr::is_empty(agent->base_total_sensing) ) {
@@ -1013,23 +1016,23 @@ void nr::print(
 	    agent.position_uncertainty);
 	std::printf("%s  Attitude Uncertainty: %f\n", is.c_str(),
 	    agent.attitude_uncertainty);
-	std::printf("%s  Relaxed Sensing Quality: %f\n", is.c_str(),
-	    agent.relaxed_sensing_quality);
+	std::printf("%s  Feasible Sensing Quality: %f\n", is.c_str(),
+	    agent.feasible_sensing_quality);
 	/* Show if the various sensing polygons are empty or not. */
 	std::printf("%s  Base Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_sensing));
 	std::printf("%s  Base Guaranteed Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_guaranteed_sensing));
-	std::printf("%s  Base Relaxed Sensing: %d\n", is.c_str(),
-	    !nr::is_empty(agent.base_relaxed_sensing));
+	std::printf("%s  Base Feasible Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_feasible_sensing));
 	std::printf("%s  Base Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_total_sensing));
 	std::printf("%s  Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.sensing));
 	std::printf("%s  Guaranteed Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.guaranteed_sensing));
-	std::printf("%s  Relaxed Sensing: %d\n", is.c_str(),
-	    !nr::is_empty(agent.relaxed_sensing));
+	std::printf("%s  Feasible Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.feasible_sensing));
 	std::printf("%s  Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.total_sensing));
 	/* Show if the agent's cell is empty or not. */
@@ -1067,7 +1070,9 @@ void nr::print(
 
 
 /****** MAs ******/
-void nr::create_sensing_disks( nr::MAs* agents ) {
+void nr::create_sensing_disks(
+	nr::MAs* agents
+) {
 	/* Create the sensing disk of each agent */
 	for (size_t i=0; i<agents->size(); i++) {
 		nr::create_sensing_disk( &(agents->at(i)) );
@@ -1136,10 +1141,10 @@ double nr::calculate_objective(
 			/* Select correct sensing depending on the partitioning used. */
 			if (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) {
 				tmp_sensing = agents[i].sensing;
-			} else if (agents[i].relaxed_sensing_quality == 0) {
+			} else if (agents[i].feasible_sensing_quality == 0) {
 				tmp_sensing = agents[i].guaranteed_sensing;
 			} else {
-				tmp_sensing = agents[i].relaxed_sensing;
+				tmp_sensing = agents[i].feasible_sensing;
 			}
 			err = nr::polygon_clip( nr::OR, tmp_sensing, union_sensing, &union_sensing );
 			if (err) {
@@ -1286,7 +1291,7 @@ int nr::export_agent_parameters(
 		}
 		nr::write( agents[i].base_sensing, f, true, true );
 		nr::write( agents[i].base_guaranteed_sensing, f, true, true );
-		nr::write( agents[i].base_relaxed_sensing, f, true, true );
+		nr::write( agents[i].base_feasible_sensing, f, true, true );
 
 		/* Close file. */
 		std::fclose( f );
@@ -1347,7 +1352,7 @@ int nr::export_agent_state(
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
 			agents_evolution[i].velocity_rotational[s-1].yaw );
 			std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].relaxed_sensing_quality[s-1] );
+			agents_evolution[i].feasible_sensing_quality[s-1] );
 			for (size_t j=0; j<agents_evolution[i].number_of_agents; j++) {
 				std::fprintf( f, "%d ",
 				(int) agents_evolution[i].neighbor_connectivity[j][s-1] );

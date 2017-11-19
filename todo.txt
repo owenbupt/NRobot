@@ -1,7 +1,9 @@
 TODO
-	use nullptr instead of NULL
 	options at beginning of sim to select what to plot
 	create one universal simulation
+	change relaxed to feasible
+	export frames from sdl
+		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
 	fix collision avoidance to use same method as icra2018
     project control input on offset region boundary to keep in region
     EDITED nr::in FUNCTION, MIGHT BE WRONG

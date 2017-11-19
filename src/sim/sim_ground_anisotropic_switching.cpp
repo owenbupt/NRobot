@@ -41,7 +41,7 @@ int main() {
     /****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.01;
-	bool export_results = true;
+	bool export_results = false;
 
 	/* Get the current time. */
 	clock_t start_time_raw = std::time(NULL);
@@ -92,8 +92,8 @@ int main() {
 		agents[i].attitude_uncertainty = M_PI/10;
 		/* Communication radius */
 		agents[i].communication_radius = 2 * (agents[i].sensing_radius + agents[i].position_uncertainty);
-		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 1;
+		/* Sensing quality at feasible sensing */
+		agents[i].feasible_sensing_quality = 1;
 		/* Increase gain for rotational control law */
 		agents[i].control_input_gains[2] = 10;
         /* Compute base sensing patterns */
@@ -140,7 +140,7 @@ int main() {
 	/****** Simulate agents ******/
 	std::vector<double> H (smax, 0);
     std::vector<std::vector<double>> Hi (N, std::vector<double> (smax, 0));
-    double initial_relaxed_sensing_quality = agents[0].relaxed_sensing_quality;
+    double initial_feasible_sensing_quality = agents[0].feasible_sensing_quality;
     std::vector<bool> converged (N, false);
     double H_threshold = 0.001;
     double window_time = 0.5;
@@ -161,7 +161,7 @@ int main() {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
             /* Check if switching of the control law is required. */
-            /* If all neighbors have converged too, change the relaxed sensing
+            /* If all neighbors have converged too, change the feasible sensing
                quality. */
             /* Initialize to the agents own convergence status. */
             bool neighbors_converged = converged[agents[i].ID-1];
@@ -171,8 +171,8 @@ int main() {
                     break;
                 }
             }
-            if (neighbors_converged && agents[i].relaxed_sensing_quality == initial_relaxed_sensing_quality) {
-                agents[i].relaxed_sensing_quality = !agents[i].relaxed_sensing_quality;
+            if (neighbors_converged && agents[i].feasible_sensing_quality == initial_feasible_sensing_quality) {
+                agents[i].feasible_sensing_quality = !agents[i].feasible_sensing_quality;
                 std::printf("Agent %lu switched at iteration %lu\n", agents[i].ID, s);
             }
 			/* Compute own cell using neighbors vector. */
@@ -193,7 +193,7 @@ int main() {
                 double rolling_average = average( Hi[i], s-2-(window_size-1), s-2 );
                 double diff = std::abs(rolling_average-Hi[i][s-1]);
                 if ( diff < H_threshold &&
-                    (agents[i].relaxed_sensing_quality == initial_relaxed_sensing_quality) &&
+                    (agents[i].feasible_sensing_quality == initial_feasible_sensing_quality) &&
                     !converged[agents[i].ID-1]) {
                     /* H increase is below the threshold and the agent hasn't
                        converged. */
@@ -213,8 +213,8 @@ int main() {
 				agents[i].velocity_translational;
 				agents_evolution[i].velocity_rotational[s-1] =
 				agents[i].velocity_rotational;
-				agents_evolution[i].relaxed_sensing_quality[s-1] =
-				agents[i].relaxed_sensing_quality;
+				agents_evolution[i].feasible_sensing_quality[s-1] =
+				agents[i].feasible_sensing_quality;
 				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
 					agents_evolution[i].
 					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
