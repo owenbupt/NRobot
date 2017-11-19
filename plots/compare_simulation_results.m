@@ -24,19 +24,27 @@ colors = [ 255, 0, 77 ;
 		   171, 82, 54 ;
 		   255, 119, 168 ] ./ 255;
 
+color1 = [0 0 255] ./ 255;
+color2 = [255 0 0] ./ 255;
 % Select simulation to load and set plot options
-simulation_date = '20170926_200437';
-simulation_directory = '..';
-% simulation_date = '20170926_193422';
-% simulation_directory = '..';
+simulation1_date = '20170926_192514';
+simulation1_directory = '..';
+% simulation2_date = '20170926_195742'; % K = 1;
+% simulation2_directory = '..';
+% simulation2_date = '20170926_193422'; % K = 0.1;
+% simulation2_directory = '..';
+simulation2_date = '20170926_193926'; % K = 0.01;
+simulation2_directory = '..';
+simulation2_date = '20170926_200437'; % K = 0.01;
+simulation2_directory = '..';
+
 
 PLOT_OBJECTIVE = 1;
 PLOT_GUARANTEED_OBJECTIVE = 0;
 PLOT_TRAJECTORIES = 1;
 PLOT_INITIAL_CONFIGURATION = 0;
 PLOT_FINAL_CONFIGURATION = 0;
-PLOT_STATE = 1;
-PLOT_INPUTS = 1;
+PLOT_STATE = 0;
 CALCULATE_REAL_FINAL_COVERAGE = 0;
 
 
@@ -44,35 +52,60 @@ CALCULATE_REAL_FINAL_COVERAGE = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Load Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load simulation parameters
 sim_params_filename = strjoin(...
-{simulation_directory, '/', 'sim_', simulation_date, '_parameters.txt'}, '');
-simulation_parameters = load_simulation_parameters( sim_params_filename );
+{simulation1_directory, '/', 'sim_', simulation1_date, '_parameters.txt'}, '');
+simulation1_parameters = load_simulation_parameters( sim_params_filename );
 % Number of agents
-N = simulation_parameters.N;
+N = simulation1_parameters.N;
 % Number of iterations
-iterations = simulation_parameters.iterations;
+iterations = simulation1_parameters.iterations;
 % Time vector
-t = linspace(0, simulation_parameters.Tfinal, iterations);
+t = linspace(0, simulation1_parameters.Tfinal, iterations);
 % Iteration vector
 s = 1:iterations;
 % Axis scale for region
-simulation_parameters.axis = [0 3 -0.5 2.5];
+simulation1_parameters.axis = [0 3 -0.5 2.5];
 
 % Load agent parameters
-agents = cell([1 N]);
+agents1 = cell([1 N]);
 for i=1:N
 	ID = sprintf('%.4d', i);
 	agent_params_filename = strjoin(...
-	{simulation_directory, '/', 'sim_', simulation_date, '_agent_', ID, '_parameters.txt'}, '');
-	agents{i} = load_agent_parameters( agent_params_filename );
+	{simulation1_directory, '/', 'sim_', simulation1_date, '_agent_', ID, '_parameters.txt'}, '');
+	agents1{i} = load_agent_parameters( agent_params_filename );
 end
 
 % Load agent state
-agent_state = cell([1 N]);
+agent_state1 = cell([1 N]);
 for i=1:N
 	ID = sprintf('%.4d', i);
 	agent_state_filename = strjoin(...
-	{simulation_directory, '/', 'sim_', simulation_date, '_agent_', ID, '_state.txt'}, '');
-	agent_state{i} = load_agent_state( agent_state_filename, N, agents{i}.number_of_inputs );
+	{simulation1_directory, '/', 'sim_', simulation1_date, '_agent_', ID, '_state.txt'}, '');
+	agent_state1{i} = load_agent_state( agent_state_filename, N, agents1{i}.number_of_inputs );
+end
+
+% Load simulation parameters
+sim_params_filename = strjoin(...
+{simulation2_directory, '/', 'sim_', simulation2_date, '_parameters.txt'}, '');
+simulation2_parameters = load_simulation_parameters( sim_params_filename );
+% Axis scale for region
+simulation2_parameters.axis = [0 3 -0.5 2.5];
+
+% Load agent parameters
+agents2 = cell([1 N]);
+for i=1:N
+	ID = sprintf('%.4d', i);
+	agent_params_filename = strjoin(...
+	{simulation2_directory, '/', 'sim_', simulation2_date, '_agent_', ID, '_parameters.txt'}, '');
+	agents2{i} = load_agent_parameters( agent_params_filename );
+end
+
+% Load agent state
+agent_state2 = cell([1 N]);
+for i=1:N
+	ID = sprintf('%.4d', i);
+	agent_state_filename = strjoin(...
+	{simulation2_directory, '/', 'sim_', simulation2_date, '_agent_', ID, '_state.txt'}, '');
+	agent_state2{i} = load_agent_state( agent_state_filename, N, agents2{i}.number_of_inputs );
 end
 
 
@@ -83,7 +116,9 @@ text_size = 15;
 
 if PLOT_OBJECTIVE
 	figure('Name','Objective');
-	plot( t, simulation_parameters.H, 'b' );
+	hold on
+	plot( t, simulation1_parameters.H, 'b', 'Color', color1 );
+	plot( t, simulation2_parameters.H, 'r', 'Color', color2 );
 	xlabel('Time (s)');
 	ylabel('H (% of maximum)');
 end
@@ -99,22 +134,22 @@ if PLOT_GUARANTEED_OBJECTIVE
 		uy = [];
 		for i=1:N
 			% Create sensing
-			sensing = rot( agents{i}.base_guaranteed_sensing, ...
-			agent_state{i}.yaw(s) ) + ...
-			[agent_state{i}.x(s) ; agent_state{i}.y(s)];
+			sensing = rot( agents1{i}.base_guaranteed_sensing, ...
+			agent_state1{i}.yaw(s) ) + ...
+			[agent_state1{i}.x(s) ; agent_state1{i}.y(s)];
 			% Add to union
 			[ux, uy] = polybool('or', ux, uy, sensing(1,:), sensing(2,:));
 			% Check convergence
 			if (s > 1) && ...
-			(agent_state{i}.relaxed_sensing_quality(s-1) ~= ...
-			agent_state{i}.relaxed_sensing_quality(s))
+			(agent_state1{i}.relaxed_sensing_quality(s-1) ~= ...
+			agent_state1{i}.relaxed_sensing_quality(s))
 				switched_law(i) = s;
 			end
 		end
 		% Intersect with region
 		[ux, uy] = polybool('and', ux, uy, ...
-		simulation_parameters.region(1,:), ...
-		simulation_parameters.region(2,:));
+		simulation1_parameters.region(1,:), ...
+		simulation1_parameters.region(2,:));
 		% Add union area to H
 		Hg(s) = polyarea_nan(ux, uy);
 		fprintf('Iteration %d\n',s);
@@ -122,8 +157,8 @@ if PLOT_GUARANTEED_OBJECTIVE
 	% Calculate maximum guaranteed objective value
 	Hg_max = 0;
 	for i=1:N
-		Hg_max = Hg_max + polyarea( agents{i}.base_guaranteed_sensing(1,:), ...
-		agents{i}.base_guaranteed_sensing(2,:) );
+		Hg_max = Hg_max + polyarea( agents1{i}.base_guaranteed_sensing(1,:), ...
+		agents1{i}.base_guaranteed_sensing(2,:) );
 	end
 	
 	figure('Name','Guaranteed Objective');
@@ -145,51 +180,40 @@ if PLOT_TRAJECTORIES
 	hold on
 	axis equal
 	axis off
-	axis(simulation_parameters.axis);
-	plot_poly( simulation_parameters.region, 'k' );
+	axis(simulation1_parameters.axis);
+	plot_poly( simulation1_parameters.region, 'k' );
 	for i=1:N
-		plot( agent_state{i}.x, agent_state{i}.y, 'b', 'Color', colors(i,:) );
-		plot( agent_state{i}.x(1), agent_state{i}.y(1), 'b.', 'Color', colors(i,:) );
-		plot( agent_state{i}.x(end), agent_state{i}.y(end), 'bo', 'Color', colors(i,:) );
+		plot( agent_state1{i}.x, agent_state1{i}.y, 'b', 'Color', color1 );
+		plot( agent_state1{i}.x(1), agent_state1{i}.y(1), 'b.', 'Color', color1 );
+		plot( agent_state1{i}.x(end), agent_state1{i}.y(end), 'bo', 'Color', color1 );
+		plot( agent_state2{i}.x, agent_state2{i}.y, 'b', 'Color', color2 );
+		plot( agent_state2{i}.x(1), agent_state2{i}.y(1), 'r.', 'Color', color2 );
+		plot( agent_state2{i}.x(end), agent_state2{i}.y(end), 'ro', 'Color', color2 );
 	end
 end
 
 if PLOT_INITIAL_CONFIGURATION
 	figure('Name','Initial State');
-	plot_state( simulation_parameters, agents, agent_state, 1, colors );
+	plot_state( simulation1_parameters, agents1, agent_state1, 1, colors );
 end
 
 if PLOT_FINAL_CONFIGURATION
 	figure('Name','Final State');
-	plot_state( simulation_parameters, agents, agent_state, iterations, colors );
+	plot_state( simulation1_parameters, agents1, agent_state1, iterations, colors );
 end
 
 if PLOT_STATE
 	figure('Name','Agent state');
 	% Number of states
-	Ns = agents{1}.number_of_states;
+	Ns = agents1{1}.number_of_states;
 	for p=1:Ns
 		subplot(Ns,1,p);
 		hold on
 		for i=1:N
-			state = agent_state{i}.(agents{i}.states{p});
+			state = agent_state1{i}.(agents1{i}.states{p});
 			plot( t, state, 'b', 'Color', colors(i,:) );
 		end
-		ylabel(agents{i}.states{p});
-	end
-	xlabel('Time (s)');
-end
-
-if PLOT_INPUTS
-	figure('Name','Agent control inputs');
-	% Number of inputs
-	Ni = agents{1}.number_of_inputs;
-	for p=1:Ni
-		subplot(Ni,1,p);
-		hold on
-		for i=1:N
-			plot( t, agent_state{i}.inputs(:,p), 'b', 'Color', colors(i,:) );
-		end
+		ylabel(agents1{i}.states{p});
 	end
 	xlabel('Time (s)');
 end
@@ -199,8 +223,8 @@ if CALCULATE_REAL_FINAL_COVERAGE
 	% Calculate maximum possible real coverage
 	H_max = 0;
 	for i=1:N
-		H_max = H_max + polyarea( agents{i}.base_sensing(1,:), ...
-		agents{i}.base_sensing(2,:) );
+		H_max = H_max + polyarea( agents1{i}.base_sensing(1,:), ...
+		agents1{i}.base_sensing(2,:) );
 	end
 	H_low = H_max;
 	H_high = 0;
@@ -212,23 +236,23 @@ if CALCULATE_REAL_FINAL_COVERAGE
 		uy = [];
 		for i=1:N
 			% Generate a random position and orientation within the uncertainty bounds
-			magnitude = agents{i}.position_uncertainty * rand();
+			magnitude = agents1{i}.position_uncertainty * rand();
 			angle = 2*pi * rand();
 			[x, y] = pol2cart( angle, magnitude );
-			agents{i}.random_position = [x ; y];
-			agents{i}.random_attitude = ...
-			agents{i}.attitude_uncertainty * 2*(rand()-0.5);
+			agents1{i}.random_position = [x ; y];
+			agents1{i}.random_attitude = ...
+			agents1{i}.attitude_uncertainty * 2*(rand()-0.5);
 			% Create sensing
-			sensing = rot( agents{i}.base_sensing, ...
-			agent_state{i}.yaw(s) + agents{i}.random_attitude ) + ...
-			[agent_state{i}.x(s) ; agent_state{i}.y(s)] + agents{i}.random_position;
+			sensing = rot( agents1{i}.base_sensing, ...
+			agent_state1{i}.yaw(s) + agents1{i}.random_attitude ) + ...
+			[agent_state1{i}.x(s) ; agent_state1{i}.y(s)] + agents1{i}.random_position;
 			% Add to union
 			[ux, uy] = polybool('or', ux, uy, sensing(1,:), sensing(2,:));
 		end
 		% Intersect with region
 		[ux, uy] = polybool('and', ux, uy, ...
-		simulation_parameters.region(1,:), ...
-		simulation_parameters.region(2,:));
+		simulation1_parameters.region(1,:), ...
+		simulation1_parameters.region(2,:));
 		% Add union area to H
 		H = polyarea_nan(ux, uy);
 		if H < H_low

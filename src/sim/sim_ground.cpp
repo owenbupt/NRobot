@@ -53,6 +53,7 @@ int main() {
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
 	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
+	/* ADD FULL INITIALIZATION HERE */
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
 	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
@@ -67,7 +68,7 @@ int main() {
 			return nr::ERROR_CLIPPING_FAILED;
 		}
 	}
-	
+
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);

@@ -35,7 +35,8 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.001;
-	bool export_results = false;
+	bool export_results = true;
+	double K = 0.001;
 
 	/* Get the current time. */
 	clock_t start_time_raw = std::time(NULL);
@@ -69,6 +70,7 @@ int main() {
 	nr::MAs agents ( P, A, Tstep );
 	for (size_t i=0; i<N; i++) {
 		/* Dynamics */
+		// agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XY;
 		agents[i].dynamics = nr::DYNAMICS_DUBINS_GROUND_XYy;
 		/* Base sensing patterns */
 		agents[i].sensing_radius = 0.3;
@@ -189,21 +191,23 @@ int main() {
 		 */
 		if (s > 1) {
 			for (size_t i=0; i<N; i++) {
-				double th_desired_previous =
-				  std::atan2(agents_evolution[i].control_input[1][s-2],
-				  agents_evolution[i].control_input[0][s-2]);
-				double th_desired_current =
-				  std::atan2(agents[i].control_input[1],
-				  agents[i].control_input[0]);
-				double th_current = agents[i].attitude.yaw;
-				double th_error_current =
-				  th_desired_current - th_current;
-				double th_desired_derivative =
-				  (th_desired_current - th_desired_previous) /
-				  agents[i].time_step;
-				agents[i].control_input[2] =
-				  th_error_current / agents[i].time_step +
-				  th_desired_derivative;
+				if (agents[i].dynamics == nr::DYNAMICS_DUBINS_GROUND_XYy){
+					double th_desired_previous =
+					  std::atan2(agents_evolution[i].control_input[1][s-2],
+					  agents_evolution[i].control_input[0][s-2]);
+					double th_desired_current =
+					  std::atan2(agents[i].control_input[1],
+					  agents[i].control_input[0]);
+					double th_current = agents[i].attitude.yaw;
+					double th_error_current =
+					  th_desired_current - th_current;
+					double th_desired_derivative =
+					  (th_desired_current - th_desired_previous) /
+					  agents[i].time_step;
+					agents[i].control_input[2] =
+					  K * th_error_current / agents[i].time_step +
+					  th_desired_derivative;
+				}
 			}
 		}
 

@@ -11,6 +11,8 @@ TODO
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
         http://alienryderflex.com/polygon_fill/
     simple switch to run simulation without plotting?
+	try this color palette
+		http://androidarts.com/palette/16pal.htm
     create function to copy MA class without neighbors vector (use in find neighbors)
 		or define copy/copy assignment operator
     check ellipse creation with orientation and center

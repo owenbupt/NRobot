@@ -39,7 +39,7 @@
 #define NR_CMP_ERR 0.00000000001
 
 /* Polygon quality */
-#define NR_PPC 60
+#define NR_PPC 120
 
 /*
  *  The number of digits after the decimal point used when reading/writing
