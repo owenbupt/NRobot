@@ -1,10 +1,9 @@
 TODO
 	options at beginning of sim to select what to plot
 	create one universal simulation
-	change relaxed to feasible
 	export frames from sdl
 		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
-	fix collision avoidance to use same method as icra2018
+	fix collision avoidance to use same method as icra2018 and aut18 for diff drive
     project control input on offset region boundary to keep in region
     EDITED nr::in FUNCTION, MIGHT BE WRONG
     create functions number_of_inputs/number_of_states/name( dynamics_type )

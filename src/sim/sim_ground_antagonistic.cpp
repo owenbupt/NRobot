@@ -30,24 +30,30 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 15;
-	double Tstep = 0.001;
+	double Tfinal = 60;
+	double Tstep = 0.01;
 	size_t plot_sleep_ms = 0;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
-	nr::read( &region, "resources/region_sq.txt", true);
+	nr::read( &region, "resources/region_cb.txt", true);
 	double rdiameter = diameter( region );
 
 	/****** Setup agents ******/
 	/* Agent initial positions */
 	nr::Points P;
-	P.push_back( nr::Point(-5,5) );
-	P.push_back( nr::Point(-5,2) );
+	P.push_back( nr::Point(1.721,1.013) );
+	P.push_back( nr::Point(1.482,1.206) );
+	P.push_back( nr::Point(2.006,1.342) );
+	P.push_back( nr::Point(1.536,1.454) );
+	P.push_back( nr::Point(1.443,1.655) );
+	P.push_back( nr::Point(1.792,1.585) );
+	P.push_back( nr::Point(1.255,1.134) );
+	P.push_back( nr::Point(1.911,0.905) );
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 2);
+	std::vector<double> sradii (N, 0.5);
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
@@ -75,7 +81,7 @@ int main() {
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
-	PLOT_SCALE = 20;
+	PLOT_SCALE = 100;
 	bool uquit = false;
 	#endif
 
