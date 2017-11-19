@@ -592,7 +592,9 @@ void nr_control_au( nr::MA* agent ) {
 void nr::create_sensing_disk(
 	nr::MA* agent
 ) {
-	nr::Circle C (agent->position, agent->sensing_radius);
+	nr::Circle C (nr::Point(), agent->sensing_radius);
+	agent->base_sensing = nr::Polygon( C );
+	C = Circle(agent->position, agent->sensing_radius);
 	agent->sensing = nr::Polygon( C );
 }
 

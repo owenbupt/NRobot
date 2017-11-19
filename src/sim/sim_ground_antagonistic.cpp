@@ -39,7 +39,7 @@ int main() {
 	double rdiameter = diameter( region );
 
 	/****** Setup agents ******/
-	/* Node initial positions */
+	/* Agent initial positions */
 	nr::Points P;
 	P.push_back( nr::Point(-5,5) );
 	P.push_back( nr::Point(-5,2) );
@@ -48,14 +48,18 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
-	std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
+	// std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
+	std::vector<double> sradii (N, 1);
+	// std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
+	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
 	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
 	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
+	/* Create sensing disks. */
+	nr::create_sensing_disks( &agents );
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;

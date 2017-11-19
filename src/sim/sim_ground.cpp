@@ -111,7 +111,7 @@ int main() {
 		H[s-1] = nr::calculate_objective( agents );
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
-		nr::print( agents, false );
+		// nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
