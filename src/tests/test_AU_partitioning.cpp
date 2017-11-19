@@ -57,8 +57,8 @@ int main() {
 		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
 		/* Base sensing patterns */
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
-		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		/* Sensing quality at feasible sensing */
+		agents[i].feasible_sensing_quality = 0;
 	}
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
@@ -127,7 +127,7 @@ int main() {
 			PLOT_FOREGROUND_COLOR = {0x00, 0xAA, 0x00, 0xFF};
 			for (size_t i=0; i<N; i++) {
 				// nr::plot_polygon( agents[i].guaranteed_sensing );
-				// nr::plot_polygon( agents[i].relaxed_sensing );
+				// nr::plot_polygon( agents[i].feasible_sensing );
 				// nr::plot_polygon( agents[i].total_sensing );
 			}
 

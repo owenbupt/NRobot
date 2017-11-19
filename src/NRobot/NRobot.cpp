@@ -17,9 +17,6 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstdio>
-#include <string>
-
 #include "NRobot.hpp"
 
 
@@ -33,7 +30,7 @@ nr::MA::MA() {
 	this->communication_radius = 0;
 	this->position_uncertainty = 0;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
@@ -62,7 +59,7 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
@@ -93,7 +90,7 @@ nr::MA::MA(
 	this->communication_radius = cradius;
 	this->position_uncertainty = uradius;
 	this->attitude_uncertainty = 0;
-	this->relaxed_sensing_quality = 0;
+	this->feasible_sensing_quality = 0;
 	this->save_unassigned_sensing = false;
 	/* Control */
 	this->partitioning = nr::PARTITIONING_VORONOI;
@@ -185,6 +182,81 @@ nr::MAs::MAs(
 	}
 }
 
+
+
+
+
+/*******************************************************/
+/****************** MA_evolution class *****************/
+/*******************************************************/
+nr::MA_evolution::MA_evolution(
+) {
+
+	this->ID = 0;
+	this->number_of_agents = 0;
+	this->iterations = 0;
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
+	size_t number_of_inputs = 2;
+	this->position =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->attitude =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->velocity_translational =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->velocity_rotational =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
+	this->neighbor_connectivity = std::vector<std::vector<bool>>
+	(this->number_of_agents, std::vector<bool> (iterations, false));
+	this->control_input = std::vector<std::vector<double>>
+	(number_of_inputs, std::vector<double> (iterations, 0));
+}
+
+nr::MA_evolution::MA_evolution(
+	size_t ID,
+	size_t number_of_agents,
+	size_t iterations,
+	dynamics_type dynamics
+) {
+	size_t number_of_inputs;
+	this->ID = ID;
+	this->number_of_agents = number_of_agents;
+	this->iterations = iterations;
+	this->dynamics = dynamics;
+	switch (dynamics) {
+		case nr::DYNAMICS_SI_GROUND_XY:
+		number_of_inputs = 2;
+		break;
+
+		case nr::DYNAMICS_SI_GROUND_XYy:
+		case nr::DYNAMICS_SI_AIR_XYZ:
+		number_of_inputs = 3;
+		break;
+
+		case nr::DYNAMICS_SI_AIR_XYZy:
+		number_of_inputs = 4;
+		break;
+
+		default:
+		std::printf("Invalid dynamics %d\n", this->dynamics);
+		std::printf("Switching to %d\n", nr::DYNAMICS_SI_GROUND_XY);
+		this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
+		number_of_inputs = 2;
+	}
+	this->position =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->attitude =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->velocity_translational =
+	std::vector<nr::Point> (iterations, nr::Point());
+	this->velocity_rotational =
+	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
+	this->neighbor_connectivity = std::vector<std::vector<bool>>
+	(this->number_of_agents, std::vector<bool> (iterations, false));
+	this->control_input = std::vector<std::vector<double>>
+	(number_of_inputs, std::vector<double> (iterations, 0));
+}
 
 
 
@@ -336,29 +408,29 @@ int nr_cell_anisotropic_partitioning( nr::MA* agent, const nr::Polygon& region )
 }
 
 int nr_cell_au_partitioning( nr::MA* agent, const nr::Polygon& region ) {
-	/* Create vectors containing all guaranteed, relaxed and total sensing
+	/* Create vectors containing all guaranteed, feasible and total sensing
 	   regions. */
-	nr::Polygons guaranteed_sensing, relaxed_sensing, total_sensing;
+	nr::Polygons guaranteed_sensing, feasible_sensing, total_sensing;
 	/* Add the sensing patterns fo the current agent. */
 	guaranteed_sensing.push_back( agent->guaranteed_sensing );
-	relaxed_sensing.push_back( agent->relaxed_sensing );
+	feasible_sensing.push_back( agent->feasible_sensing );
 	total_sensing.push_back( agent->total_sensing );
 
 	/* Add the sensing patterns of its neighbors. */
 	for (size_t j=0; j<agent->neighbors.size(); j++) {
 		guaranteed_sensing.push_back( agent->neighbors[j].guaranteed_sensing );
-		relaxed_sensing.push_back( agent->neighbors[j].relaxed_sensing );
+		feasible_sensing.push_back( agent->neighbors[j].feasible_sensing );
 		total_sensing.push_back( agent->neighbors[j].total_sensing );
 	}
 
 	int err;
 	if (agent->save_unassigned_sensing) {
 		err = nr::au_partitioning_cell( region, guaranteed_sensing,
-		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+		    feasible_sensing, total_sensing, agent->feasible_sensing_quality, 0,
 		    &(agent->cell), &(agent->unassigned_sensing) );
 	} else {
 		err = nr::au_partitioning_cell( region, guaranteed_sensing,
-		    relaxed_sensing, total_sensing, agent->relaxed_sensing_quality, 0,
+		    feasible_sensing, total_sensing, agent->feasible_sensing_quality, 0,
 		    &(agent->cell) );
 	}
 
@@ -468,12 +540,12 @@ void nr_control_au( nr::MA* agent ) {
 	/* Loop over all vertices of sensing. If it is also a vertex of the cell,
 	   then add it to the integral. */
 
-	/* Select the sensing region based on the value of the relaxed sensing
+	/* Select the sensing region based on the value of the feasible sensing
 	   quality. */
 	nr::Polygon sensing;
-	if (agent->relaxed_sensing_quality == 0) {
+	if (agent->feasible_sensing_quality == 0) {
 		sensing = agent->guaranteed_sensing;
-	} else if (agent->relaxed_sensing_quality == 1) {
+	} else if (agent->feasible_sensing_quality == 1) {
 		sensing = agent->total_sensing;
 	} else {
 		/* Not implemented yet */
@@ -520,7 +592,9 @@ void nr_control_au( nr::MA* agent ) {
 void nr::create_sensing_disk(
 	nr::MA* agent
 ) {
-	nr::Circle C (agent->position, agent->sensing_radius);
+	nr::Circle C (nr::Point(), agent->sensing_radius);
+	agent->base_sensing = nr::Polygon( C );
+	C = Circle(agent->position, agent->sensing_radius);
 	agent->sensing = nr::Polygon( C );
 }
 
@@ -548,7 +622,7 @@ void nr::find_neighbors(
 				agent->neighbors.back().attitude_uncertainty = agents[j].attitude_uncertainty;
 				agent->neighbors.back().sensing = agents[j].sensing;
 				agent->neighbors.back().guaranteed_sensing = agents[j].guaranteed_sensing;
-				agent->neighbors.back().relaxed_sensing = agents[j].relaxed_sensing;
+				agent->neighbors.back().feasible_sensing = agents[j].feasible_sensing;
 				agent->neighbors.back().total_sensing = agents[j].total_sensing;
 				agent->neighbors.back().dynamics = agents[j].dynamics;
 				agent->neighbors.back().partitioning = agents[j].partitioning;
@@ -727,12 +801,12 @@ int nr::compute_base_sensing_patterns(
 		/* Set the base guaranteed sensing pattern on the agent */
 		agent->base_total_sensing = ts_tr;
 
-		/* Relaxed sensing computation */
+		/* feasible sensing computation */
 		/* Subtract the guaranteed sensing from the total sensing */
 		err = nr::polygon_clip( nr::DIFF,
 			agent->base_total_sensing,
 			agent->base_guaranteed_sensing,
-			&(agent->base_relaxed_sensing) );
+			&(agent->base_feasible_sensing) );
 		if (err) {
 			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
@@ -741,7 +815,7 @@ int nr::compute_base_sensing_patterns(
 
 	/* Fix contour orientation */
 	nr::fix_orientation( &(agent->base_guaranteed_sensing) );
-	nr::fix_orientation( &(agent->base_relaxed_sensing) );
+	nr::fix_orientation( &(agent->base_feasible_sensing) );
 	nr::fix_orientation( &(agent->base_total_sensing) );
 
 	return nr::SUCCESS;
@@ -760,11 +834,11 @@ void nr::update_sensing_patterns(
 		nr::rotate( &(agent->guaranteed_sensing), agent->attitude.yaw, true );
 		nr::translate( &(agent->guaranteed_sensing), agent->position );
 	}
-	/* Relaxed Sensing */
-	if ( !nr::is_empty(agent->base_relaxed_sensing) ) {
-		agent->relaxed_sensing = agent->base_relaxed_sensing;
-		nr::rotate( &(agent->relaxed_sensing), agent->attitude.yaw, true );
-		nr::translate( &(agent->relaxed_sensing), agent->position );
+	/* feasible Sensing */
+	if ( !nr::is_empty(agent->base_feasible_sensing) ) {
+		agent->feasible_sensing = agent->base_feasible_sensing;
+		nr::rotate( &(agent->feasible_sensing), agent->attitude.yaw, true );
+		nr::translate( &(agent->feasible_sensing), agent->position );
 	}
 	/* Total Sensing */
 	if ( !nr::is_empty(agent->base_total_sensing) ) {
@@ -942,8 +1016,8 @@ void nr::print(
 	    agent.position_uncertainty);
 	std::printf("%s  Attitude Uncertainty: %f\n", is.c_str(),
 	    agent.attitude_uncertainty);
-	std::printf("%s  Relaxed Sensing Quality: %f\n", is.c_str(),
-	    agent.relaxed_sensing_quality);
+	std::printf("%s  Feasible Sensing Quality: %f\n", is.c_str(),
+	    agent.feasible_sensing_quality);
 	std::printf("%s  Save Unassinged Sensing: %d\n", is.c_str(),
 	    (int) agent.save_unassigned_sensing);
 	/* Show if the various sensing polygons are empty or not. */
@@ -951,16 +1025,16 @@ void nr::print(
 	    !nr::is_empty(agent.base_sensing));
 	std::printf("%s  Base Guaranteed Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_guaranteed_sensing));
-	std::printf("%s  Base Relaxed Sensing: %d\n", is.c_str(),
-	    !nr::is_empty(agent.base_relaxed_sensing));
+	std::printf("%s  Base Feasible Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.base_feasible_sensing));
 	std::printf("%s  Base Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.base_total_sensing));
 	std::printf("%s  Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.sensing));
 	std::printf("%s  Guaranteed Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.guaranteed_sensing));
-	std::printf("%s  Relaxed Sensing: %d\n", is.c_str(),
-	    !nr::is_empty(agent.relaxed_sensing));
+	std::printf("%s  Feasible Sensing: %d\n", is.c_str(),
+	    !nr::is_empty(agent.feasible_sensing));
 	std::printf("%s  Total Sensing: %d\n", is.c_str(),
 	    !nr::is_empty(agent.total_sensing));
 	std::printf("%s  Unassigned Sensing: %d\n", is.c_str(),
@@ -1000,7 +1074,9 @@ void nr::print(
 
 
 /****** MAs ******/
-void nr::create_sensing_disks( nr::MAs* agents ) {
+void nr::create_sensing_disks(
+	nr::MAs* agents
+) {
 	/* Create the sensing disk of each agent */
 	for (size_t i=0; i<agents->size(); i++) {
 		nr::create_sensing_disk( &(agents->at(i)) );
@@ -1069,10 +1145,10 @@ double nr::calculate_objective(
 			/* Select correct sensing depending on the partitioning used. */
 			if (agents[0].partitioning == nr::PARTITIONING_ANISOTROPIC) {
 				tmp_sensing = agents[i].sensing;
-			} else if (agents[i].relaxed_sensing_quality == 0) {
+			} else if (agents[i].feasible_sensing_quality == 0) {
 				tmp_sensing = agents[i].guaranteed_sensing;
 			} else {
-				tmp_sensing = agents[i].relaxed_sensing;
+				tmp_sensing = agents[i].feasible_sensing;
 			}
 			err = nr::polygon_clip( nr::OR, tmp_sensing, union_sensing, &union_sensing );
 			if (err) {
@@ -1095,6 +1171,207 @@ double nr::calculate_objective(
 	}
 
 	return H;
+}
+
+
+
+
+/************************/
+/****** Simulation ******/
+/************************/
+int nr::export_simulation_parameters(
+    struct tm* start_time,
+    size_t number_of_agents,
+    double simulation_duration,
+    double time_step,
+    double elapsed_time,
+    std::vector<double>& objective,
+    nr::Polygon& region,
+    double objective_function_threshold,
+    size_t objective_function_average_window
+) {
+	/*
+	 *  Create filename "sim_YYYYMMDD_HHMMSS_parameters.txt".
+	 *  It is 34 characters long.
+	 */
+	char fname[34+1];
+	std::snprintf( fname, 34+1, "sim_%.4d%.2d%.2d_%.2d%.2d%.2d_parameters.txt",
+	start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+	start_time->tm_hour, start_time->tm_min, start_time->tm_sec );
+
+	/* Calculate number of iterations and average iteration time. */
+	size_t number_of_iterations = std::floor(simulation_duration/time_step);
+	double average_iteration = elapsed_time / number_of_iterations;
+
+	/* Open file for writing. */
+	FILE* f;
+	f = std::fopen( fname, "w" );
+	if (f == NULL) {
+		return nr::ERROR_FILE;
+	}
+
+	/* Write data to file. */
+	std::fprintf( f, "%lu\n", number_of_agents );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, simulation_duration );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, time_step );
+	std::fprintf( f, "%lu\n", number_of_iterations );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, elapsed_time );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, average_iteration );
+	for (size_t s=0; s<number_of_iterations; s++) {
+		std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS, objective[s] );
+	}
+	std::fprintf( f, "\n" );
+	std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, objective_function_threshold );
+	std::fprintf( f, "%lu\n", objective_function_average_window );
+	nr::write( region, f, true, true );
+
+	/* Close file. */
+	std::fclose( f );
+	return nr::SUCCESS;
+}
+
+int nr::export_agent_parameters(
+	struct tm* start_time,
+    nr::MAs& agents
+) {
+	/* Loop over each agent. */
+	for (size_t i=0; i<agents.size(); i++) {
+		/*
+		 *  Create filename "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt".
+		 *  It is 45 characters long.
+		 */
+		char fname[45+1];
+		std::snprintf( fname, 45+1,
+		"sim_%.4d%.2d%.2d_%.2d%.2d%.2d_agent_%.4lu_parameters.txt",
+		start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+		start_time->tm_hour, start_time->tm_min, start_time->tm_sec,
+		agents[i].ID );
+
+		/* Open file for writing. */
+		FILE* f;
+		f = std::fopen( fname, "w" );
+		if (f == NULL) {
+			return nr::ERROR_FILE;
+		}
+
+		/* Write data to file. */
+		std::fprintf( f, "%lu\n", agents[i].ID );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].sensing_radius );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].communication_radius );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].position_uncertainty );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].attitude_uncertainty );
+		std::fprintf( f, "%d\n", agents[i].dynamics );
+		std::fprintf( f, "%.*f\n", NR_FLOAT_DIGITS, agents[i].time_step );
+		std::fprintf( f, "%d\n", agents[i].partitioning );
+		std::fprintf( f, "%d\n", agents[i].control );
+		std::fprintf( f, "%d\n", agents[i].avoidance );
+		switch (agents[i].dynamics) {
+			case DYNAMICS_SI_GROUND_XY:
+			std::fprintf( f, "% .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1] );
+			break;
+
+			case DYNAMICS_SI_GROUND_XYy:
+			case DYNAMICS_SI_AIR_XYZ:
+			std::fprintf( f, "% .*f % .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[2] );
+			break;
+
+			case DYNAMICS_SI_AIR_XYZy:
+			std::fprintf( f, "% .*f % .*f % .*f % .*f\n",
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[0],
+			NR_FLOAT_DIGITS, agents[i].control_input_gains[1],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[2],
+		 	NR_FLOAT_DIGITS, agents[i].control_input_gains[3] );
+			break;
+
+			default:
+			std::printf("Invalid dynamics %d\n", agents[i].dynamics);
+			return nr::ERROR_INVALID_DYNAMICS;
+		}
+		nr::write( agents[i].base_sensing, f, true, true );
+		nr::write( agents[i].base_guaranteed_sensing, f, true, true );
+		nr::write( agents[i].base_feasible_sensing, f, true, true );
+
+		/* Close file. */
+		std::fclose( f );
+	}
+
+	return nr::SUCCESS;
+}
+
+int nr::export_agent_state(
+    struct tm* start_time,
+    std::vector<nr::MA_evolution>& agents_evolution
+) {
+	/* Loop over each agent. */
+	for (size_t i=0; i<agents_evolution.size(); i++) {
+		/*
+		 *  Create filename "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt".
+		 *  It is 40 characters long.
+		 */
+		char fname[40+1];
+		std::snprintf( fname, 40+1,
+		"sim_%.4d%.2d%.2d_%.2d%.2d%.2d_agent_%.4lu_state.txt",
+		start_time->tm_year+1900, start_time->tm_mon+1, start_time->tm_mday,
+		start_time->tm_hour, start_time->tm_min, start_time->tm_sec,
+		agents_evolution[i].ID );
+
+		/* Open file for writing. */
+		FILE* f;
+		f = std::fopen( fname, "w" );
+		if (f == NULL) {
+			return nr::ERROR_FILE;
+		}
+
+		/* Write data to file. Loop over each iteration. */
+		for (size_t s=1; s<=agents_evolution[i].iterations; s++) {
+			std::fprintf( f, "%lu ", s );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].x );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].y );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].position[s-1].z );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].roll );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].pitch );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].attitude[s-1].yaw );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].x );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].y );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_translational[s-1].z );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].roll );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].pitch );
+			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].velocity_rotational[s-1].yaw );
+			std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS,
+			agents_evolution[i].feasible_sensing_quality[s-1] );
+			for (size_t j=0; j<agents_evolution[i].number_of_agents; j++) {
+				std::fprintf( f, "%d ",
+				(int) agents_evolution[i].neighbor_connectivity[j][s-1] );
+			}
+			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+				std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
+				agents_evolution[i].control_input[j][s-1] );
+			}
+			std::fprintf( f, "\n" );
+		}
+
+		/* Close file. */
+		std::fclose( f );
+	}
+
+	return nr::SUCCESS;
 }
 
 

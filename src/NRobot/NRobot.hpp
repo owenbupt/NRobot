@@ -20,9 +20,12 @@
 #ifndef __NRobot_hpp
 #define __NRobot_hpp
 
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+
 #include "NRBase.hpp"
 #include "NRPart.hpp"
-// #include "NRClip.hpp"
 #if NR_PLOT_AVAILABLE
 #include "NRPlot.hpp"
 #endif
@@ -72,9 +75,6 @@ enum avoidance_type{
 /*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
-/*!
-	Mobile Agent class.
-*/
 class MA {
 	public:
 		/*********** Data members ***********/
@@ -103,8 +103,8 @@ class MA {
         /* The maximum distance the MAs real position may be from its reported
            position. */
         double attitude_uncertainty;
-        double relaxed_sensing_quality;
-        /* The coverage quality at the relaxed sensing region. */
+        double feasible_sensing_quality;
+        /* The coverage quality at the feasible sensing region. */
         bool save_unassigned_sensing;
         /* Whether to save the part of the MA's sensing region left unassigned.
            Applies to certain partitioning schemes only.  */
@@ -116,22 +116,22 @@ class MA {
         Polygon base_guaranteed_sensing;
         /* The region the MA is guaranteed to sense given its uncertainty when
            the MA is located at [x,y]=[0,0] with theta=0. */
-        Polygon base_relaxed_sensing;
+        Polygon base_feasible_sensing;
         /* The region the MA is not guaranteed to sense excluding the region it
            is guaranteed not to sense when the MA is located at [x,y]=[0,0]
            with theta=0. */
         Polygon base_total_sensing;
-        /* The union of the guaranteed and relaxed sensing regions when the MA
+        /* The union of the guaranteed and feasible sensing regions when the MA
            is located at [x,y]=[0,0] with theta=0. */
 		Polygon sensing;
         /* The curent sensing pattern of the agent. */
         Polygon guaranteed_sensing;
         /* The region the MA is guaranteed to sense given its uncertainty */
-        Polygon relaxed_sensing;
+        Polygon feasible_sensing;
         /* The region the MA is not guaranteed to sense excluding the region it
            is guaranteed not to sense. */
         Polygon total_sensing;
-        /* The union of the guaranteed and relaxed sensing regions. */
+        /* The union of the guaranteed and feasible sensing regions. */
         Polygon unassigned_sensing;
         /* The part of the MA's sensing region left unassigned during the
         partitioning. Applies to certain partitioning schemes only. */
@@ -197,9 +197,6 @@ class MA {
 /*******************************************************/
 /********************** MAs class **********************/
 /*******************************************************/
-/*!
-	Vector of Mobile Agents.
-*/
 class MAs: public std::vector<MA> {
 	public:
 		/*********** Data members ***********/
@@ -239,6 +236,53 @@ class MAs: public std::vector<MA> {
 
 
 
+/*******************************************************/
+/****************** MA_evolution class *****************/
+/*******************************************************/
+class MA_evolution {
+	public:
+		/*********** Data members ***********/
+        size_t ID;
+        /* The MA's unique ID. */
+        size_t number_of_agents;
+        /* The total number of agents in the network. */
+        size_t iterations;
+        /* The number of iterations in the simulation. */
+        dynamics_type dynamics;
+        /* The agent dynamics. Used to allocate memory for control inputs. */
+        std::vector<Point> position;
+        std::vector<Orientation> attitude;
+        std::vector<Point> velocity_translational;
+        std::vector<Orientation> velocity_rotational;
+        /* Vectors containing the MA's state at each iteration. */
+        std::vector<double> feasible_sensing_quality;
+        /* The MA's feasible_sensing_quality at each iteration. */
+        std::vector<std::vector<bool>> neighbor_connectivity;
+        /*
+         *  neighbor_connectivity[i][s] is true if the MA was communicating
+         *  with agent i at iteration s.
+         */
+        std::vector<std::vector<double>> control_input;
+        /*
+         *  control_input[i][s] holds the value of control input i at iteration
+         *  s. The number of control inputs depends on the dynamics.
+         */
+
+		/*********** Constructors ***********/
+        MA_evolution();
+
+        MA_evolution(
+            size_t ID,
+            size_t number_of_agents,
+			size_t iterations,
+            dynamics_type dynamics
+		);
+};
+
+
+
+
+
 
 /**********************************************************/
 /********************* Main functions *********************/
@@ -270,7 +314,7 @@ void simulate_dynamics(
 int compute_base_sensing_patterns(
     MA* agent
 );
-/* Compute the base guaranteed, relaxed and total sensing patterns. This is
+/* Compute the base guaranteed, feasible and total sensing patterns. This is
    used during the initialization phase in order to speed up execution by only
    translating and rotating the base sensing patterns when MA state changes. */
 
@@ -360,15 +404,45 @@ double calculate_objective(
 /************************/
 /****** Simulation ******/
 /************************/
-int export_results(
-    Polygon& region,
-    MAs& agents,
-    std::vector<double> objective,
-    double duration,
+int export_simulation_parameters(
+    struct tm* start_time,
+    size_t number_of_agents,
+    double simulation_duration,
     double time_step,
-    double elapsed_time
+    double elapsed_time,
+    std::vector<double>& objective,
+    Polygon& region,
+    double objective_function_threshold = -1,
+    size_t objective_function_average_window = 0
 );
-/* Export the simulation results to three text files. */
+/*
+ *  Export the simulation parameters to a file timestamped with the start time
+ *  of the simulation. objective_function_threshold and
+ *  objective_function_average_window are not always needed and are thus given
+ *  default values. The filename is "sim_YYYYMMDD_HHMMSS_parameters.txt".
+ */
+
+int export_agent_parameters(
+    struct tm* start_time,
+    MAs& agents
+);
+/*
+ *  Export the parameters of each agent to a separate file, timestamped with the
+ *  start time of the simulation. The filename is
+ *  "sim_YYYYMMDD_HHMMSS_agent_XXXX_parameters.txt" where XXXX is the agent ID.
+ */
+
+int export_agent_state(
+    struct tm* start_time,
+    std::vector<nr::MA_evolution>& agents_evolution
+);
+/*
+ * Export the state and other time varying parameters of each agent to a
+ *  separate file, timestamped with the
+ *  start time of the simulation. The filename is
+ *  "sim_YYYYMMDD_HHMMSS_agent_XXXX_state.txt" where XXXX is the agent ID.
+ */
+
 
 
 

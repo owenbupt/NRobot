@@ -17,15 +17,7 @@
  *  along with NRobot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cmath>
-#include <cfloat>
-#include <cstdio>
-#include <iostream>
-#include <vector>
-#include <fstream>
-
 #include "NRBase.hpp"
-#include "clipper.hpp"
 
 
 #define NR_STRICTLY_SIMPLE false /* Experimental feature of clipper */
@@ -318,18 +310,6 @@ void nr::operator + ( const nr::Point& A, nr::Polygon& P ) {
 
 void nr::operator - ( nr::Polygon& P, const nr::Point& A ) {
 	nr::translate( &P, -A );
-}
-
-std::ostream& nr::operator << ( std::ostream& output, const nr::Point& P ) {
-	output << P.x << " " << P.y << " " << P.z;
-	return output;
-}
-
-std::ostream& nr::operator << ( std::ostream& output, const nr::Contour& C ) {
-	for (size_t i=0; i<C.size(); i++) {
-		output << C.at(i) << "\n";
-	}
-	return output;
 }
 
 /****************************** Point ******************************/
@@ -777,40 +757,49 @@ int nr::write( const nr::Polygon& P, const char* fname, bool write_hole, bool wr
 	FILE* fp = std::fopen(fname, mode);
 	if (fp != NULL) {
 
-		/* Write contour number */
-		std::fprintf(fp, "%lu\n", P.contour.size());
-
-		/* Loop over each contour */
-		for (size_t i=0; i<P.contour.size(); i++) {
-
-			/* Write vertex number */
-			std::fprintf(fp, "%lu\n", P.contour[i].size());
-
-			/* Write hole flag */
-			if (write_hole) {
-				std::fprintf(fp, "%d\n", (int) P.is_hole[i]);
-			}
-
-			/* Write open flag */
-			if (write_open) {
-				std::fprintf(fp, "%d\n", (int) P.is_open[i]);
-			}
-
-			/* Loop over each vertex */
-			for (size_t j=0; j<P.contour[i].size(); j++) {
-
-				/* Write each vertex */
-				std::fprintf(fp, "% lf % lf\n",
-				(double) P.contour[i][j].x,	(double) P.contour[i][j].y);
-			}
-		}
+		nr::write( P, fp, write_hole, write_open );
 
 		std::fclose(fp);
-		return 0;
+		return nr::SUCCESS;
 	} else {
 		std::printf("Polygon write error: file %s could not be opened\n", fname);
-		return 1;
+		return nr::ERROR_FILE;
 	}
+}
+
+int nr::write(
+	const nr::Polygon& P,
+	FILE* file,
+	bool write_hole,
+	bool write_open
+) {
+	if (file == NULL) {
+		return nr::ERROR_FILE;
+	}
+	/* Write contour number */
+	std::fprintf(file, "%lu\n", P.contour.size());
+	/* Loop over each contour */
+	for (size_t i=0; i<P.contour.size(); i++) {
+		/* Write vertex number */
+		std::fprintf(file, "%lu\n", P.contour[i].size());
+		/* Write hole flag */
+		if (write_hole) {
+			std::fprintf(file, "%d\n", (int) P.is_hole[i]);
+		}
+		/* Write open flag */
+		if (write_open) {
+			std::fprintf(file, "%d\n", (int) P.is_open[i]);
+		}
+		/* Loop over each vertex */
+		for (size_t j=0; j<P.contour[i].size(); j++) {
+			/* Write each vertex */
+			std::fprintf(file, "% .*f % .*f\n",
+			NR_FLOAT_DIGITS, (double) P.contour[i][j].x,
+			NR_FLOAT_DIGITS, (double) P.contour[i][j].y);
+		}
+	}
+
+	return nr::SUCCESS;
 }
 
 void nr::print( const nr::Polygon& P ) {
@@ -1173,11 +1162,11 @@ int nr::polygon_clip_fast(
 
 	/****** Add the paths/Polygons to the clipper class ******/
 	if ( !clpr.AddPaths(subj, ClipperLib::ptSubject, true) ) {
-		printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
+		std::printf("Clipper error: Invalid subject nr::Polygon %p.\n", (void*) &S1);
 		return nr::ERROR_INVALID_SUBJECT;
 	}
 	if ( !clpr.AddPaths(clip, ClipperLib::ptClip, true) ) {
-		printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
+		std::printf("Clipper error: Invalid clip nr::Polygon %p.\n", (void*) &S2);
 		return nr::ERROR_INVALID_CLIP;
 	}
 
@@ -1194,7 +1183,7 @@ int nr::polygon_clip_fast(
 	/****** Execute clipping ******/
 	ClipperLib::Paths result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		std::printf("Clipper error: nr::Polygon clipping failed.\n");
 		return nr::ERROR_CLIPPING_FAILED;
 	}
 
@@ -1312,7 +1301,7 @@ int nr::polygon_clip(
 	/****** Execute clipping ******/
 	ClipperLib::PolyTree result;
 	if ( !clpr.Execute( clipType, result ) ) {
-		std::cout << "Clipper error: nr::Polygon clipping failed.\n";
+		std::printf("Clipper error: nr::Polygon clipping failed.\n");
 		return nr::ERROR_CLIPPING_FAILED;
 	}
 
@@ -1363,13 +1352,13 @@ nr::Polygon nr::halfplane(
 
 	/* Create halfplane assuming both points are on x axis with center on origin */
 	H.contour[0][0].x = 0;
-	H.contour[0][0].y = -length/2;
-	H.contour[0][1].x = -length/2;
-	H.contour[0][1].y = -length/2;
-	H.contour[0][2].x = -length/2;
-	H.contour[0][2].y = length/2;
+	H.contour[0][0].y = -length;
+	H.contour[0][1].x = -length;
+	H.contour[0][1].y = -length;
+	H.contour[0][2].x = -length;
+	H.contour[0][2].y = length;
 	H.contour[0][3].x = 0;
-	H.contour[0][3].y = length/2;
+	H.contour[0][3].y = length;
 
 	/* Rotate halfplane */
 	double theta = std::atan2(B.y-A.y, B.x-A.x);

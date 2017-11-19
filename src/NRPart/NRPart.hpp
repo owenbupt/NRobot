@@ -21,6 +21,9 @@
 #ifndef __NRPart_h
 #define __NRPart_h
 
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 
 #include "NRBase.hpp"

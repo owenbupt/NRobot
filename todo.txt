@@ -1,9 +1,13 @@
 TODO
-    offset region inwards
-    export simulation results
-    m code to plot simulation results
-    MA.unassigned_region and save_unassigned are no longer used
+	change relaxed to feasible
+	export frames from sdl
+		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
+	fix collision avoidance to use same method as icra2018
+    project control input on offset region boundary to keep in region
+    add simulation export to other sims
+    MA unassigned_region and save_unassigned are no longer used
     EDITED nr::in FUNCTION, MIGHT BE WRONG
+    create functions number_of_inputs/number_of_states/name( dynamics_type )
     find a way to fill polygons with SDL2
         http://www.ferzkopp.net/Software/SDL_gfx-2.0/Docs/html/_s_d_l__gfx_primitives_8c_source.html
         http://alienryderflex.com/polygon_fill/
@@ -22,12 +26,12 @@ TODO
     add error handling function to make code cleaner (return appropriate error message)
     NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
     fix partitioning for coincident seeds?
-    test NRCLip scaling (look for library to do proper scaling)
+    test NRClip scaling (look for library to do proper scaling)
     Finish in/on functions in NBase
     Consistently comment/format every function
-    Change code style in function declarations-definitions (one argument per line)
+    Change code style in function declarations-definitions (one argument per line) and comments
 	add testing executables (and automated tests?)
-    check if preprocessor can process header files (want to remove sdl stuff is sdl is not available)
+    check if preprocessor can process header files (want to remove plot stuff if sdl is not available)
 
 Improve functions
 	double n::area( const Polygon& P )
@@ -53,8 +57,6 @@ Improve functions
 Optimizations
     nr::Polygon::Polygon( const nr::Circle& C, size_t points_per_circle )
         make contour CW on setup (do not use reverse_order)
-    double n::diameter( const Polygon& P )
-		use convex hull to reduce complexity in non-convex polygons
 
 AWGV - low priority
     check AWGV partitioning
