@@ -43,14 +43,10 @@ int main() {
 	nr::Points P;
 	P.push_back( nr::Point(-5,5) );
 	P.push_back( nr::Point(-5,2) );
-	P.push_back( nr::Point(-3,5) );
-	P.push_back( nr::Point(-3,-7) );
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	// std::vector<double> sradii { 0.8, 1.6, 1.4, 3.5 };
-	std::vector<double> sradii (N, 1);
-	// std::vector<double> uradii { 0.15, 0.18, 0.1, 0.13 };
+	std::vector<double> sradii (N, 2);
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
@@ -60,6 +56,9 @@ int main() {
 	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
 	/* Create sensing disks. */
 	nr::create_sensing_disks( &agents );
+	/* Indices of antagonistic agents. */
+	std::vector<bool> antagonist (N, false);
+	antagonist[1] = true;
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
@@ -103,6 +102,12 @@ int main() {
 			nr::compute_cell( &(agents[i]), region );
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
+			/* Change control if agent is antagonistic. */
+			if (antagonist[i]) {
+				for (size_t j=0; j<agents[i].control_input.size(); j++) {
+					agents[i].control_input[j] = -agents[i].control_input[j];
+				}
+			}
 			/* Ensure collision avoidance. */
             nr::ensure_collision_avoidance( &(agents[i]) );
 		}
@@ -134,6 +139,7 @@ int main() {
 			if (uquit) {
 				break;
 			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		#endif
 
 		/* The movement of each agent is simulated */
