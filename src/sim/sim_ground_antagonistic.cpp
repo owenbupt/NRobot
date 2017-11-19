@@ -30,8 +30,9 @@ int main() {
 	nr::info();
 
 	/****** Simulation parameters ******/
-	double Tfinal = 10;
-	double Tstep = 0.01;
+	double Tfinal = 15;
+	double Tstep = 0.0001;
+	size_t plot_sleep_ms = 0;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -133,13 +134,20 @@ int main() {
 			nr::plot_cells( agents, BLUE );
 			/* communication */
 			// nr::plot_communication( agents, GREEN );
+			/* Mark antagonistic agents. */
+			for (size_t i=0; i<N; i++) {
+				if (antagonist[i]) {
+					plot_point( agents[i].position, RED, 3 );
+					plot_cell( agents[i], RED );
+				}
+			}
 
 			nr::plot_render();
 			uquit = nr::plot_handle_input();
 			if (uquit) {
 				break;
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
