@@ -108,8 +108,8 @@ int main() {
 		agents[i].attitude_uncertainty = M_PI/10;
 		/* Communication radius */
 		agents[i].communication_radius = 2 * agents[i].sensing_radius;
-		/* Sensing quality at relaxed sensing */
-		agents[i].relaxed_sensing_quality = 0;
+		/* Sensing quality at feasible sensing */
+		agents[i].feasible_sensing_quality = 0;
 		/* Increase gain for rotational control law */
 		agents[i].control_input_gains[2] = 10;
 		agents[i].save_unassigned_sensing = false;
@@ -194,8 +194,8 @@ int main() {
 				agents[i].velocity_translational;
 				agents_evolution[i].velocity_rotational[s-1] =
 				agents[i].velocity_rotational;
-				agents_evolution[i].relaxed_sensing_quality[s-1] =
-				agents[i].relaxed_sensing_quality;
+				agents_evolution[i].feasible_sensing_quality[s-1] =
+				agents[i].feasible_sensing_quality;
 				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
 					agents_evolution[i].
 					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;

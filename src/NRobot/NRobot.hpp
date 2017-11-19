@@ -103,8 +103,8 @@ class MA {
         /* The maximum distance the MAs real position may be from its reported
            position. */
         double attitude_uncertainty;
-        double relaxed_sensing_quality;
-        /* The coverage quality at the relaxed sensing region. */
+        double feasible_sensing_quality;
+        /* The coverage quality at the feasible sensing region. */
         bool save_unassigned_sensing;
         /* Whether to save the part of the MA's sensing region left unassigned.
            Applies to certain partitioning schemes only.  */
@@ -116,22 +116,22 @@ class MA {
         Polygon base_guaranteed_sensing;
         /* The region the MA is guaranteed to sense given its uncertainty when
            the MA is located at [x,y]=[0,0] with theta=0. */
-        Polygon base_relaxed_sensing;
+        Polygon base_feasible_sensing;
         /* The region the MA is not guaranteed to sense excluding the region it
            is guaranteed not to sense when the MA is located at [x,y]=[0,0]
            with theta=0. */
         Polygon base_total_sensing;
-        /* The union of the guaranteed and relaxed sensing regions when the MA
+        /* The union of the guaranteed and feasible sensing regions when the MA
            is located at [x,y]=[0,0] with theta=0. */
 		Polygon sensing;
         /* The curent sensing pattern of the agent. */
         Polygon guaranteed_sensing;
         /* The region the MA is guaranteed to sense given its uncertainty */
-        Polygon relaxed_sensing;
+        Polygon feasible_sensing;
         /* The region the MA is not guaranteed to sense excluding the region it
            is guaranteed not to sense. */
         Polygon total_sensing;
-        /* The union of the guaranteed and relaxed sensing regions. */
+        /* The union of the guaranteed and feasible sensing regions. */
         Polygon unassigned_sensing;
         /* The part of the MA's sensing region left unassigned during the
         partitioning. Applies to certain partitioning schemes only. */
@@ -255,8 +255,8 @@ class MA_evolution {
         std::vector<Point> velocity_translational;
         std::vector<Orientation> velocity_rotational;
         /* Vectors containing the MA's state at each iteration. */
-        std::vector<double> relaxed_sensing_quality;
-        /* The MA's relaxed_sensing_quality at each iteration. */
+        std::vector<double> feasible_sensing_quality;
+        /* The MA's feasible_sensing_quality at each iteration. */
         std::vector<std::vector<bool>> neighbor_connectivity;
         /*
          *  neighbor_connectivity[i][s] is true if the MA was communicating
@@ -314,7 +314,7 @@ void simulate_dynamics(
 int compute_base_sensing_patterns(
     MA* agent
 );
-/* Compute the base guaranteed, relaxed and total sensing patterns. This is
+/* Compute the base guaranteed, feasible and total sensing patterns. This is
    used during the initialization phase in order to speed up execution by only
    translating and rotating the base sensing patterns when MA state changes. */
 

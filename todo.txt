@@ -1,4 +1,5 @@
 TODO
+	change relaxed to feasible
 	export frames from sdl
 		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
 	fix collision avoidance to use same method as icra2018
