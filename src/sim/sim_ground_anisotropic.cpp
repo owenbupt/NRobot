@@ -35,7 +35,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.01;
-	bool export_results = true;
+	bool export_results = false;
 
 	/* Get the current time. */
 	clock_t start_time_raw = std::time(NULL);
