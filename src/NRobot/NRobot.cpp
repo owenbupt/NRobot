@@ -1382,7 +1382,7 @@ void nr::plot_position(
     const SDL_Color& color
 ) {
 	/* Plot position */
-	nr::plot_point( agent.position, color );
+	nr::plot_point( agent.position, color, 2 );
 	/* Plot orientation if needed */
 	if ((agent.dynamics == nr::DYNAMICS_SI_GROUND_XYy) ||
 	    (agent.dynamics == nr::DYNAMICS_SI_AIR_XYZy) ||
