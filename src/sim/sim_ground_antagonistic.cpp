@@ -81,7 +81,9 @@ int main() {
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
-	PLOT_SCALE = 100;
+	PLOT_SCALE = 200;
+	PLOT_X_OFFSET = -300;
+	PLOT_Y_OFFSET = 200;
 	bool uquit = false;
 	#endif
 
