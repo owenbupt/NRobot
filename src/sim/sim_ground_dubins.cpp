@@ -35,7 +35,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.001;
-	bool export_results = true;
+	bool export_results = false;
 	double K = 0.001;
 
 	/* Get the current time. */
@@ -102,7 +102,9 @@ int main() {
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
-	PLOT_SCALE = 100;
+	PLOT_SCALE = 200;
+	PLOT_X_OFFSET = -300;
+	PLOT_Y_OFFSET = 200;
 	bool uquit = false;
 	#endif
 
@@ -145,8 +147,8 @@ int main() {
 			agents[i].velocity_translational;
 			agents_evolution[i].velocity_rotational[s-1] =
 			agents[i].velocity_rotational;
-			agents_evolution[i].relaxed_sensing_quality[s-1] =
-			agents[i].relaxed_sensing_quality;
+			agents_evolution[i].feasible_sensing_quality[s-1] =
+			agents[i].feasible_sensing_quality;
 			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
 				agents_evolution[i].
 				neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;

@@ -30,6 +30,8 @@ extern SDL_Color BLACK;
 extern SDL_Color WHITE;
 extern SDL_Color GRAY;
 extern SDL_Color GREY;
+extern SDL_Color DARK_GRAY;
+extern SDL_Color DARK_GREY;
 extern SDL_Color RED;
 extern SDL_Color GREEN;
 extern SDL_Color BLUE;
@@ -39,6 +41,9 @@ extern SDL_Color ORANGE;
 extern SDL_Color CYAN;
 extern SDL_Color BROWN;
 extern SDL_Color PINK;
+extern SDL_Color DARK_GREEN;
+extern SDL_Color DARK_BLUE;
+extern SDL_Color CREAM;
 /* Color palettes */
 extern std::vector<SDL_Color> PLOT_COLORS;
 

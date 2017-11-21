@@ -103,7 +103,7 @@ int main() {
 		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
 		agents[i].sensing_radius = nr::radius( agents[i].base_sensing );
 		/* Position uncertainty */
-		agents[i].position_uncertainty = 0.1;
+		agents[i].position_uncertainty = 0;
 		/* Attitude uncertainty */
 		agents[i].attitude_uncertainty = M_PI/10;
 		/* Communication radius */
@@ -149,7 +149,9 @@ int main() {
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
-	PLOT_SCALE = 100;
+	PLOT_SCALE = 200;
+	PLOT_X_OFFSET = -300;
+	PLOT_Y_OFFSET = 200;
 	bool uquit = false;
 	#endif
 

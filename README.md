@@ -3,7 +3,8 @@ A C++ library of algorithms for area coverage by a network of mobile robotic
 agents. It includes algorithms for both ground and aerial mobile agents.
 
 ## Screenshots
-To be added soon.
+<img src="./resources/screenshots/voronoi.png" width="49%"> <img src="./resources/screenshots/voronoi_dubins.png" width="49%">
+<img src="./resources/screenshots/anisotropic.png" width="49%"> <img src="./resources/screenshots/anisotropic_switching.png" width="49%">
 
 ## Compilation
 NRobot uses CMake for the build process. To compile the library as well as some

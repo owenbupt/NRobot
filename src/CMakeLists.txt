@@ -26,7 +26,7 @@ SET_TARGET_PROPERTIES(nrobot PROPERTIES OUTPUT_NAME nrobot${BUILD_POSTFIX})
 
 
 ########## Create simulation executables ##########
-SET(SIM_SRC "sim/sim_ground.cpp" "sim/sim_ground_anisotropic.cpp" "sim/sim_ground_anisotropic_switching.cpp" "sim/sim_ground_distance.cpp" "sim/sim_ground_antagonistic.cpp")
+SET(SIM_SRC "sim/sim_ground.cpp" "sim/sim_ground_dubins.cpp" "sim/sim_ground_anisotropic.cpp" "sim/sim_ground_anisotropic_switching.cpp" "sim/sim_ground_distance.cpp" "sim/sim_ground_antagonistic.cpp")
 FOREACH( sim ${SIM_SRC} )
     # Get base filename
     GET_FILENAME_COMPONENT( sim_name ${sim} NAME_WE )
