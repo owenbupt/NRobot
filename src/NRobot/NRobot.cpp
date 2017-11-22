@@ -443,6 +443,14 @@ void nr_control_centroid( nr::MA* agent ) {
 	agent->control_input[1] = v.y;
 }
 
+void nr_control_r_limited_centroid( nr::MA* agent ) {
+    /* Vector from the agent to its cell centroid */
+    nr::Point v;
+    v = nr::centroid( agent->rlimited_cell ) - agent->position;
+	agent->control_input[0] = v.x;
+	agent->control_input[1] = v.y;
+}
+
 void nr_control_free_arc( nr::MA* agent ) {
     /* Initialize the vector resulting from the integral to zero */
     nr::Point integral_vector;
@@ -889,6 +897,10 @@ void nr::compute_control(
 	switch (agent->control) {
 		case nr::CONTROL_CENTROID:
 		nr_control_centroid( agent );
+		break;
+
+		case nr::CONTROL_R_LIMITED_CENTROID:
+		nr_control_r_limited_centroid( agent );
 		break;
 
 		case nr::CONTROL_FREE_ARC:
