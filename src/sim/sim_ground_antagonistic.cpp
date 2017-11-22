@@ -61,11 +61,14 @@ int main() {
 	/* Set partitioning and control law */
 	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
 	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
+	nr::set_control( &agents, nr::CONTROL_CENTROID );
+	// nr::set_control( &agents, nr::CONTROL_R_LIMITED_CENTROID );
 	/* Create sensing disks. */
 	nr::create_sensing_disks( &agents );
 	/* Indices of antagonistic agents. */
 	std::vector<bool> antagonist (N, false);
 	antagonist[1] = true;
+	// antagonist[5] = true;
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
