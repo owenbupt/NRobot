@@ -53,7 +53,7 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0.5);
+	std::vector<double> sradii (N, 0.4);
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
 	/* Initialize agents */
