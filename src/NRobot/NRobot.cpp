@@ -23,6 +23,88 @@
 /*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
+nr::MA::MA(
+	size_t ID,
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
+	nr::Point& pos,
+	double position_uncertainty,
+	double communication_radius,
+	double sensing_radius,
+	std::vector<double>& control_input_gains,
+	double time_step
+) {
+	/* Agent - control parameters */
+	this->ID = ID;
+	this->dynamics = dynamics;
+	this->time_step = time_step;
+	this->partitioning = partitioning;
+	this->control = control;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	/* ADD CHECK FOR GAIN VECTOR LENGTH HERE AND RAISE WARNING */
+	this->control_input_gains = control_input_gains,
+	/* Initial state */
+	this->position = pos;
+	/* Uncertainty */
+	this->position_uncertainty = position_uncertainty;
+	/* Communication */
+	this->communication_radius = communication_radius;
+	/* Sensing */
+	this->sensing_radius = sensing_radius;
+	nr::create_sensing_disk( this );
+	/* Set values to other parameters */
+	this->attitude_uncertainty = 0;
+	this->feasible_sensing_quality = 0;
+	this->control_input = std::vector<double> (6,0);
+	/* The other data members use their default constructors */
+}
+
+nr::MA::MA(
+	size_t ID,
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
+	nr::Point& pos,
+	nr::Orientation& att,
+	double position_uncertainty,
+	double attitude_uncertainty,
+	double communication_radius,
+	nr::Polygon& base_sensing,
+	std::vector<double>& control_input_gains,
+	double time_step
+) {
+	/* Agent - control parameters */
+	this->ID = ID;
+	this->dynamics = dynamics;
+	this->time_step = time_step;
+	this->partitioning = partitioning;
+	this->control = control;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	/* ADD CHECK FOR GAIN VECTOR LENGTH HERE AND RAISE WARNING */
+	this->control_input_gains = control_input_gains,
+	/* Initial state */
+	this->position = pos;
+	this->attitude = att;
+	/* Uncertainty */
+	this->position_uncertainty = position_uncertainty;
+	this->attitude_uncertainty = attitude_uncertainty;
+	/* Communication */
+	this->communication_radius = communication_radius;
+	/* Sensing */
+	this->base_sensing = base_sensing;
+	this->sensing_radius = nr::radius( this->base_sensing );
+	if (nr::compute_base_sensing_patterns( this )) {
+		std::printf("Agent initialization error\n");
+	}
+	nr::update_sensing_patterns( this );
+	/* Set values to other parameters */
+	this->feasible_sensing_quality = 0;
+	this->control_input = std::vector<double> (6,0);
+	/* The other data members use their default constructors */
+}
+
+/* DEPRECATED */
 nr::MA::MA() {
 	this->ID = 0;
 	/* Agent parameters */
@@ -100,6 +182,8 @@ nr::MA::MA(
 	this->time_step = time_step;
 	/* The other data members use their default constructors */
 }
+/* DEPRECATED */
+
 
 
 
@@ -107,6 +191,73 @@ nr::MA::MA(
 /*******************************************************/
 /********************** MAs class **********************/
 /*******************************************************/
+nr::MAs::MAs(
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
+	nr::Points& pos,
+	std::vector<double>& position_uncertainty,
+	std::vector<double>& communication_radius,
+	std::vector<double>& sensing_radius,
+	std::vector<double>& control_input_gains,
+	double time_step
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector element */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA(
+			i,
+			dynamics,
+			partitioning,
+			control,
+			pos[i],
+			position_uncertainty[i],
+			communication_radius[i],
+			sensing_radius[i],
+			control_input_gains,
+			time_step
+		);
+	}
+}
+
+nr::MAs::MAs(
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
+	nr::Points& pos,
+	nr::Orientations& att,
+	std::vector<double>& position_uncertainty,
+	std::vector<double>& attitude_uncertainty,
+	std::vector<double>& communication_radius,
+	nr::Polygon& base_sensing,
+	std::vector<double>& control_input_gains,
+	double time_step
+) {
+	/* Number of elements */
+	size_t N = pos.size();
+	this->resize(N);
+	/* Initialize each vector element */
+	for (size_t i=0; i<N; i++) {
+		this->at(i) = nr::MA(
+			i,
+			dynamics,
+			partitioning,
+			control,
+			pos[i],
+			att[i],
+			position_uncertainty[i],
+			attitude_uncertainty[i],
+			communication_radius[i],
+			base_sensing,
+			control_input_gains,
+			time_step
+		);
+	}
+}
+
+/* DEPRECATED */
 nr::MAs::MAs() {
 	/* All data members use their default constructors */
 }
@@ -178,6 +329,7 @@ nr::MAs::MAs(
 		this->at(i).ID = i+1;
 	}
 }
+/* DEPRECATED */
 
 
 
@@ -818,6 +970,11 @@ int nr::compute_base_sensing_patterns(
 			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
 		}
+	} else {
+		/* Otherwise just copy the base sensing */
+		agent->base_guaranteed_sensing = agent->base_sensing;
+		agent->base_feasible_sensing = agent->base_sensing;
+		agent->base_total_sensing = agent->base_sensing;
 	}
 
 	/* Fix contour orientation */

@@ -53,18 +53,23 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0.4);
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
+	std::vector<double> sradii (N, 0.4);
+	/* Control input gains */
+	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
-	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
-	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
-	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
-	nr::set_control( &agents, nr::CONTROL_CENTROID );
-	// nr::set_control( &agents, nr::CONTROL_R_LIMITED_CENTROID );
-	/* Create sensing disks. */
-	nr::create_sensing_disks( &agents );
+	nr::MAs agents (
+		nr::DYNAMICS_SI_GROUND_XY,
+		nr::PARTITIONING_VORONOI,
+		nr::CONTROL_FREE_ARC,
+		P,
+		uradii,
+		cradii,
+		sradii,
+		control_input_gains,
+		Tstep
+	);
 	/* Indices of antagonistic agents. */
 	std::vector<bool> antagonist (N, false);
 	antagonist[1] = true;
@@ -74,7 +79,6 @@ int main() {
 	nr::Polygons offset_regions;
 	for (size_t i=0; i<N; i++) {
 		offset_regions.push_back( region );
-
 		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
 		if (err) {
 			return nr::ERROR_CLIPPING_FAILED;

@@ -72,6 +72,7 @@ enum control_type{
 /**************** Collision avoidance ******************/
 /*******************************************************/
 enum avoidance_type{
+    AVOIDANCE_DISABLED,
     AVOIDANCE_DISK_BISECTOR
 };
 
@@ -180,24 +181,55 @@ class MA {
         /* The time step when simulating the MA dynamics. */
 
 		/*********** Constructors ***********/
-		MA();
-
-		MA(
+        /* Need to set collision avoidance, feasible sensing quality manually. */
+        MA(
+            size_t ID,
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
 			Point& pos,
-            double time_step = 0.01,
-			double sradius = 0,
-			double uradius = 0,
-			double cradius = 0
+            double position_uncertainty,
+            double communication_radius,
+			double sensing_radius,
+            std::vector<double>& control_input_gains,
+            double time_step
 		);
 
-		MA(
+        MA(
+            size_t ID,
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
 			Point& pos,
 			Orientation& att,
-            double time_step = 0.01,
-			double sradius = 0,
-			double uradius = 0,
-			double cradius = 0
+            double position_uncertainty,
+            double attitude_uncertainty,
+			double communication_radius,
+            Polygon& base_sensing,
+            std::vector<double>& control_input_gains,
+            double time_step
 		);
+
+        /* DEPRECATED */
+        MA();
+
+        MA(
+            Point& pos,
+            double time_step = 0.01,
+            double sradius = 0,
+            double uradius = 0,
+            double cradius = 0
+        );
+
+        MA(
+            Point& pos,
+            Orientation& att,
+            double time_step = 0.01,
+            double sradius = 0,
+            double uradius = 0,
+            double cradius = 0
+        );
+        /* DEPRECATED */
 };
 
 
@@ -211,6 +243,33 @@ class MAs: public std::vector<MA> {
 		/*********** Data members ***********/
 
 		/*********** Constructors ***********/
+        MAs(
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
+            Points& pos,
+            std::vector<double>& position_uncertainty,
+            std::vector<double>& communication_radius,
+            std::vector<double>& sensing_radius,
+            std::vector<double>& control_input_gains,
+            double time_step
+        );
+
+        MAs(
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
+            Points& pos,
+            Orientations& att,
+            std::vector<double>& position_uncertainty,
+            std::vector<double>& attitude_uncertainty,
+            std::vector<double>& communication_radius,
+            Polygon& base_sensing,
+            std::vector<double>& control_input_gains,
+            double time_step
+        );
+
+        /* DEPRECATED */
 		MAs();
 
         MAs(
@@ -240,6 +299,7 @@ class MAs: public std::vector<MA> {
 			std::vector<double>& uradii,
 			std::vector<double>& cradii
 		);
+        /* DEPRECATED */
 };
 
 
