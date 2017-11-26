@@ -1,5 +1,8 @@
+Antagonistic
+	dynamically change the size of is_neighbor_antagonist
+
 TODO
-	change all sims to use the new constructors
+	implement keep in region and collision avoidance
 	how to incorporate extra data members for antagonistic coverage?
 	add function to move agent and then move sensing etc in background
 	options at beginning of sim to select what to plot
@@ -20,14 +23,9 @@ TODO
     create function to copy MA class without neighbors vector (use in find neighbors)
 		or define copy/copy assignment operator
     check ellipse creation with orientation and center
-    add more functions for MAs class (ease of use wrappers for MA functions)
-    better MA/MAs constructors (using the new members added)
-    Finish MAs constructors (add default vector values)
     allow points and orientations to be accessed by [] operator ([0] is x or roll etc.)
     add error handling function to make code cleaner (return appropriate error message)
 		rename error_type to return_value and create reuturn_type class?
-	export frames from sdl
-		https://stackoverflow.com/questions/20233469/how-do-i-take-and-save-a-bmp-screenshot-in-sdl-2
     NRPlot functions can fail (sdl functions return 0 on success, https://wiki.libsdl.org/SDL_GetError)
     fix partitioning for coincident seeds?
     test NRClip scaling (look for library to do proper scaling)

@@ -180,7 +180,13 @@ class MA {
         double time_step;
         /* The time step when simulating the MA dynamics. */
 
+        /****** Data for antagonistic control ******/
+        bool is_antagonist;
+        std::vector<bool> is_neighbor_antagonist;
+
 		/*********** Constructors ***********/
+        MA();
+
         /* Need to set collision avoidance, feasible sensing quality manually. */
         MA(
             size_t ID,
@@ -209,27 +215,6 @@ class MA {
             std::vector<double>& control_input_gains,
             double time_step
 		);
-
-        /* DEPRECATED */
-        MA();
-
-        MA(
-            Point& pos,
-            double time_step = 0.01,
-            double sradius = 0,
-            double uradius = 0,
-            double cradius = 0
-        );
-
-        MA(
-            Point& pos,
-            Orientation& att,
-            double time_step = 0.01,
-            double sradius = 0,
-            double uradius = 0,
-            double cradius = 0
-        );
-        /* DEPRECATED */
 };
 
 
@@ -243,6 +228,8 @@ class MAs: public std::vector<MA> {
 		/*********** Data members ***********/
 
 		/*********** Constructors ***********/
+        MAs();
+
         MAs(
             dynamics_type dynamics,
             partitioning_type partitioning,
@@ -268,38 +255,6 @@ class MAs: public std::vector<MA> {
             std::vector<double>& control_input_gains,
             double time_step
         );
-
-        /* DEPRECATED */
-		MAs();
-
-        MAs(
-			Points& pos,
-            double time_step = 0.01
-		);
-
-		MAs(
-			Points& pos,
-            double time_step,
-			std::vector<double>& sradii,
-			std::vector<double>& uradii,
-			std::vector<double>& cradii
-		);
-
-        MAs(
-			Points& pos,
-			Orientations& att,
-            double time_step = 0.01
-		);
-
-		MAs(
-			Points& pos,
-			Orientations& att,
-            double time_step,
-			std::vector<double>& sradii,
-			std::vector<double>& uradii,
-			std::vector<double>& cradii
-		);
-        /* DEPRECATED */
 };
 
 

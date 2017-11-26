@@ -23,6 +23,26 @@
 /*******************************************************/
 /********************** MA class ***********************/
 /*******************************************************/
+nr::MA::MA() {
+	this->ID = 0;
+	/* Agent parameters */
+	this->sensing_radius = 0;
+	this->communication_radius = 0;
+	this->position_uncertainty = 0;
+	this->attitude_uncertainty = 0;
+	this->feasible_sensing_quality = 0;
+	/* Control */
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_CENTROID;
+	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
+	this->control_input = std::vector<double> (6,0);
+	this->control_input_gains = std::vector<double> (6,1);
+	/* Dynamics and simulation */
+	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
+	this->time_step = 0.01;
+	/* The other data members use their default constructors */
+}
+
 nr::MA::MA(
 	size_t ID,
 	nr::dynamics_type dynamics,
@@ -57,6 +77,7 @@ nr::MA::MA(
 	this->attitude_uncertainty = 0;
 	this->feasible_sensing_quality = 0;
 	this->control_input = std::vector<double> (6,0);
+	this->is_antagonist = false;
 	/* The other data members use their default constructors */
 }
 
@@ -101,88 +122,10 @@ nr::MA::MA(
 	/* Set values to other parameters */
 	this->feasible_sensing_quality = 0;
 	this->control_input = std::vector<double> (6,0);
+	this->is_antagonist = false;
 	/* The other data members use their default constructors */
 }
 
-/* DEPRECATED */
-nr::MA::MA() {
-	this->ID = 0;
-	/* Agent parameters */
-	this->sensing_radius = 0;
-	this->communication_radius = 0;
-	this->position_uncertainty = 0;
-	this->attitude_uncertainty = 0;
-	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
-	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
-	this->time_step = 0.01;
-	/* The other data members use their default constructors */
-}
-
-nr::MA::MA(
-	nr::Point& pos,
-	double time_step,
-	double sradius,
-	double uradius,
-	double cradius
-) {
-	this->ID = 0;
-	/* State */
-	this->position = pos;
-	/* Agent parameters */
-	this->sensing_radius = sradius;
-	this->communication_radius = cradius;
-	this->position_uncertainty = uradius;
-	this->attitude_uncertainty = 0;
-	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
-	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
-	this->time_step = time_step;
-	/* The other data members use their default constructors */
-}
-
-nr::MA::MA(
-	nr::Point& pos,
-	nr::Orientation& att,
-	double time_step,
-	double sradius,
-	double uradius,
-	double cradius
-) {
-	this->ID = 0;
-	/* State */
-	this->position = pos;
-	this->attitude = att;
-	/* Agent parameters */
-	this->sensing_radius = sradius;
-	this->communication_radius = cradius;
-	this->position_uncertainty = uradius;
-	this->attitude_uncertainty = 0;
-	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
-	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
-	this->time_step = time_step;
-	/* The other data members use their default constructors */
-}
-/* DEPRECATED */
 
 
 
@@ -191,6 +134,10 @@ nr::MA::MA(
 /*******************************************************/
 /********************** MAs class **********************/
 /*******************************************************/
+nr::MAs::MAs() {
+	/* All data members use their default constructors */
+}
+
 nr::MAs::MAs(
 	nr::dynamics_type dynamics,
 	nr::partitioning_type partitioning,
@@ -208,7 +155,7 @@ nr::MAs::MAs(
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
 		this->at(i) = nr::MA(
-			i,
+			i+1,
 			dynamics,
 			partitioning,
 			control,
@@ -241,7 +188,7 @@ nr::MAs::MAs(
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
 		this->at(i) = nr::MA(
-			i,
+			i+1,
 			dynamics,
 			partitioning,
 			control,
@@ -257,79 +204,7 @@ nr::MAs::MAs(
 	}
 }
 
-/* DEPRECATED */
-nr::MAs::MAs() {
-	/* All data members use their default constructors */
-}
 
-nr::MAs::MAs(
-	nr::Points& pos,
-	double time_step
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], time_step );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
-
-nr::MAs::MAs(
-	nr::Points& pos,
-	double time_step,
-	std::vector<double>& sradii,
-	std::vector<double>& uradii,
-	std::vector<double>& cradii
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], time_step, sradii[i], uradii[i], cradii[i] );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
-
-nr::MAs::MAs(
-	nr::Points& pos,
-	nr::Orientations& att,
-	double time_step
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], time_step );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
-
-nr::MAs::MAs(
-	nr::Points& pos,
-	nr::Orientations& att,
-	double time_step,
-	std::vector<double>& sradii,
-	std::vector<double>& uradii,
-	std::vector<double>& cradii
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], time_step, sradii[i], uradii[i], cradii[i] );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
-/* DEPRECATED */
 
 
 

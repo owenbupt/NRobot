@@ -35,6 +35,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 10;
 	double Tstep = 0.01;
+	size_t plot_sleep_ms = 10;
 	bool export_results = false;
 
 	/* Get the current time. */
@@ -188,28 +189,29 @@ int main() {
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			// nr::plot_sensing( agents, RED );
-			/* cells */
-			// nr::plot_cells( agents, BLUE );
-			for (size_t i=0; i<N; i++) {
-				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
-			}
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		// nr::plot_sensing( agents, RED );
+		/* cells */
+		// nr::plot_cells( agents, BLUE );
+		for (size_t i=0; i<N; i++) {
+			nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
+		}
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
 
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
@@ -249,32 +251,32 @@ int main() {
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
-		uquit = false;
-		while (!uquit) {
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+	uquit = false;
+	while (!uquit) {
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			// nr::plot_sensing( agents, RED );
-			/* cells */
-			// nr::plot_cells( agents, BLUE );
-			for (size_t i=0; i<N; i++) {
-				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
-			}
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
-
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		// nr::plot_sensing( agents, RED );
+		/* cells */
+		// nr::plot_cells( agents, BLUE );
+		for (size_t i=0; i<N; i++) {
+			nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
 		}
-		nr::plot_quit();
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
+
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+	}
+	nr::plot_quit();
 	#endif
 
 	return 0;

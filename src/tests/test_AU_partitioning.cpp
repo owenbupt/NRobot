@@ -44,25 +44,32 @@ int main() {
 	A.push_back( nr::Orientation(0,0,M_PI*4/5) );
 	/* Number of agents */
 	size_t N = P.size();
-	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 1.2, 2.1 };
-	std::vector<double> uradii { 0.2, 0.2 };
-	std::vector<double> cradii (N, 5);
+	/* Base sensing */
+	nr::Polygon base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
+	/* Uncertainty */
+	std::vector<double> position_uncertainty { 0.2, 0.2 };
+	std::vector<double> attitude_uncertainty (N,M_PI/10);
+	std::vector<double> communication_radius (N,2*nr::radius( base_sensing ));
+	/* Control input gains */
+	std::vector<double> control_input_gains = {1,1,10};
 	/* Initialize agents */
-	nr::MAs agents (P, A, 0.01, sradii, uradii, cradii);
+	nr::MAs agents (
+		nr::DYNAMICS_SI_GROUND_XYy,
+		nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY,
+		nr::CONTROL_ANISOTROPIC_UNCERTAINTY,
+		P,
+		A,
+		position_uncertainty,
+		attitude_uncertainty,
+		communication_radius,
+		base_sensing,
+		control_input_gains,
+		0.01
+	);
 	for (size_t i=0; i<N; i++) {
-		/* Attitude uncertainty */
-		agents[i].attitude_uncertainty = M_PI/10;
-		/* Dynamics */
-		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
-		/* Base sensing patterns */
-		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 2, 1, nr::Point(1,0) ) );
 		/* Sensing quality at feasible sensing */
-		agents[i].feasible_sensing_quality = 0;
+		agents[i].feasible_sensing_quality = 1;
 	}
-	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
-	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
 
 	/* Sensing */
 	for (size_t i=0; i<N; i++) {

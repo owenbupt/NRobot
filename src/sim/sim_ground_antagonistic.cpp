@@ -32,7 +32,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 60;
 	double Tstep = 0.01;
-	size_t plot_sleep_ms = 0;
+	size_t plot_sleep_ms = 10;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -71,9 +71,10 @@ int main() {
 		Tstep
 	);
 	/* Indices of antagonistic agents. */
-	std::vector<bool> antagonist (N, false);
-	antagonist[1] = true;
-	// antagonist[5] = true;
+	for (size_t i=0; i<N; i++) {
+		agents[i].is_neighbor_antagonist = std::vector<bool> (N,false);
+	}
+	agents[1].is_antagonist = true;
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
@@ -119,13 +120,11 @@ int main() {
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
 			/* Change control if agent is antagonistic. */
-			if (antagonist[i]) {
+			if (agents[i].is_antagonist) {
 				for (size_t j=0; j<agents[i].control_input.size(); j++) {
 					agents[i].control_input[j] = -agents[i].control_input[j];
 				}
 			}
-			/* Ensure collision avoidance. */
-            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */
@@ -136,33 +135,33 @@ int main() {
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			nr::plot_sensing( agents, RED );
-			/* cells */
-			nr::plot_cells( agents, BLUE );
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
-			/* Mark antagonistic agents. */
-			for (size_t i=0; i<N; i++) {
-				if (antagonist[i]) {
-					plot_point( agents[i].position, RED, 3 );
-					plot_cell( agents[i], RED );
-				}
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		nr::plot_sensing( agents, RED );
+		/* cells */
+		nr::plot_cells( agents, BLUE );
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
+		/* Mark antagonistic agents. */
+		for (size_t i=0; i<N; i++) {
+			if (agents[i].is_antagonist) {
+				plot_point( agents[i].position, RED, 3 );
+				plot_cell( agents[i], RED );
 			}
+		}
 
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
@@ -184,12 +183,12 @@ int main() {
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
-		uquit = false;
-		while (!uquit) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			uquit = nr::plot_handle_input();
-		}
-		nr::plot_quit();
+	uquit = false;
+	while (!uquit) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		uquit = nr::plot_handle_input();
+	}
+	nr::plot_quit();
 	#endif
 
 	return 0;

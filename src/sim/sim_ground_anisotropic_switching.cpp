@@ -41,6 +41,7 @@ int main() {
     /****** Simulation parameters ******/
 	double Tfinal = 5;
 	double Tstep = 0.01;
+    size_t plot_sleep_ms = 10;
 	bool export_results = false;
 
 	/* Get the current time. */
@@ -78,33 +79,34 @@ int main() {
 	A.push_back( nr::Orientation(0,0, 1.4436339452103413 ) );
 	/* Number of agents */
 	size_t N = P.size();
+    /* Base sensing */
+	nr::Polygon base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
+	/* Uncertainty */
+	std::vector<double> position_uncertainty (N,0.1);
+	std::vector<double> attitude_uncertainty (N,M_PI/10);
+	std::vector<double> communication_radius (N,2*nr::radius( base_sensing ));
+	/* Control input gains */
+	std::vector<double> control_input_gains = {1,1,10};
 	/* Initialize agents */
-	nr::MAs agents ( P, A, Tstep );
-    for (size_t i=0; i<N; i++) {
-		/* Dynamics */
-		agents[i].dynamics = nr::DYNAMICS_SI_GROUND_XYy;
-		/* Base sensing patterns */
-		agents[i].base_sensing = nr::Polygon( nr::Ellipse( 0.5, 0.3, nr::Point(0.25,0) ) );
-		agents[i].sensing_radius = nr::radius( agents[i].base_sensing );
-		/* Position uncertainty */
-		agents[i].position_uncertainty = 0.1;
-		/* Attitude uncertainty */
-		agents[i].attitude_uncertainty = M_PI/10;
-		/* Communication radius */
-		agents[i].communication_radius = 2 * (agents[i].sensing_radius + agents[i].position_uncertainty);
+	nr::MAs agents (
+		nr::DYNAMICS_SI_GROUND_XYy,
+		nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY,
+		nr::CONTROL_ANISOTROPIC_UNCERTAINTY,
+		P,
+		A,
+		position_uncertainty,
+		attitude_uncertainty,
+		communication_radius,
+		base_sensing,
+		control_input_gains,
+		Tstep
+	);
+	for (size_t i=0; i<N; i++) {
+        /* Change communication radius */
+        agents[i].communication_radius = 2 * (agents[i].sensing_radius + agents[i].position_uncertainty);
 		/* Sensing quality at feasible sensing */
 		agents[i].feasible_sensing_quality = 1;
-		/* Increase gain for rotational control law */
-		agents[i].control_input_gains[2] = 10;
-        /* Compute base sensing patterns */
-		int err = nr::compute_base_sensing_patterns( &(agents[i]) );
-		if (err) {
-			return nr::ERROR_CLIPPING_FAILED;
-		}
 	}
-	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_ANISOTROPIC_UNCERTAINTY );
-	nr::set_control( &agents, nr::CONTROL_ANISOTROPIC_UNCERTAINTY );
 
     /****** Create constrained regions ******/
     nr::Polygons offset_regions;
@@ -232,28 +234,29 @@ int main() {
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			// nr::plot_sensing( agents, RED );
-			/* cells */
-            // nr::plot_cells( agents, BLUE );
-			for (size_t i=0; i<N; i++) {
-				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
-			}
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		// nr::plot_sensing( agents, RED );
+		/* cells */
+        // nr::plot_cells( agents, BLUE );
+		for (size_t i=0; i<N; i++) {
+			nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
+		}
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
 
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+        std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
@@ -294,32 +297,32 @@ int main() {
 
 	/****** Quit plot ******/
     #if NR_PLOT_AVAILABLE
-		uquit = false;
-		while (!uquit) {
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+	uquit = false;
+	while (!uquit) {
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			// nr::plot_sensing( agents, RED );
-			/* cells */
-			// nr::plot_cells( agents, BLUE );
-			for (size_t i=0; i<N; i++) {
-				nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
-			}
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
-
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		// nr::plot_sensing( agents, RED );
+		/* cells */
+		// nr::plot_cells( agents, BLUE );
+		for (size_t i=0; i<N; i++) {
+			nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
 		}
-		nr::plot_quit();
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
+
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+	}
+	nr::plot_quit();
 	#endif
 
 	return 0;

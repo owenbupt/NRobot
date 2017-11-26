@@ -32,6 +32,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 100;
 	double Tstep = 0.01;
+	size_t plot_sleep_ms = 1;
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -47,25 +48,34 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii { 4.0, 4.0, 4.0, 4.0 };
-	std::vector<double> uradii { 0.0, 0.0, 0.0, 0.0 };
-	std::vector<double> cradii { 8.0, 8.0, 8.0, 8.0 };
+	std::vector<double> uradii (N, 0);
+	std::vector<double> cradii (N, 8);
+	std::vector<double> sradii (N, 4);
+	/* Control input gains */
+	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
-	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
-	/* Set control law */
-	nr::set_control( &agents, nr::CONTROL_DISTANCE );
+	nr::MAs agents (
+		nr::DYNAMICS_SI_GROUND_XY,
+		nr::PARTITIONING_VORONOI,
+		nr::CONTROL_DISTANCE,
+		P,
+		uradii,
+		cradii,
+		sradii,
+		control_input_gains,
+		Tstep
+	);
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
 	for (size_t i=0; i<N; i++) {
 		offset_regions.push_back( region );
-
 		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
 		if (err) {
 			return nr::ERROR_CLIPPING_FAILED;
 		}
 	}
-	
+
 	/****** Initialize plot ******/
 	#if NR_PLOT_AVAILABLE
 	if (nr::plot_init()) exit(1);
@@ -109,25 +119,26 @@ int main() {
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
-			nr::plot_clear_render();
-			nr::plot_show_axes();
+		nr::plot_clear_render();
+		nr::plot_show_axes();
 
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			nr::plot_sensing( agents, RED );
-			/* cells */
-			nr::plot_cells( agents, BLUE );
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
+		/* Region, nodes and udisks */
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		/* sdisks */
+		nr::plot_sensing( agents, RED );
+		/* cells */
+		nr::plot_cells( agents, BLUE );
+		/* communication */
+		// nr::plot_communication( agents, GREEN );
 
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
@@ -149,12 +160,12 @@ int main() {
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
-		uquit = false;
-		while (!uquit) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			uquit = nr::plot_handle_input();
-		}
-		nr::plot_quit();
+	uquit = false;
+	while (!uquit) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		uquit = nr::plot_handle_input();
+	}
+	nr::plot_quit();
 	#endif
 
 	return 0;
