@@ -25,21 +25,25 @@
 /*******************************************************/
 nr::MA::MA() {
 	this->ID = 0;
-	/* Agent parameters */
-	this->sensing_radius = 0;
-	this->communication_radius = 0;
-	this->position_uncertainty = 0;
-	this->attitude_uncertainty = 0;
-	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
-	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
+	/* Agent - control parameters */
 	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = 0.01;
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_FREE_ARC;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	this->control_input_gains = std::vector<double> (6,1),
+	/* Uncertainty */
+	this->position_uncertainty = 0;
+	/* Communication */
+	this->communication_radius = 0;
+	/* Sensing */
+	this->sensing_radius = 1;
+	nr::create_sensing_disk( this );
+	/* Set values to other parameters */
+	this->attitude_uncertainty = 0;
+	this->feasible_sensing_quality = 0;
+	this->control_input = std::vector<double> (6,0);
+	this->is_antagonist = false;
 	/* The other data members use their default constructors */
 }
 
@@ -1526,6 +1530,24 @@ void nr::plot_communication(
 ) {
 	for (size_t i=0; i<agents.size(); i++) {
 		nr::plot_communication( agents[i], color );
+	}
+}
+
+void nr::plot_communication_links(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	for (size_t j=0; j<agent.neighbors.size();  j++) {
+		nr::plot_segment( agent.position, agent.neighbors[j].position, color );
+	}
+}
+
+void nr::plot_communication_links(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_communication_links( agents[i], color );
 	}
 }
 

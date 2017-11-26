@@ -531,6 +531,20 @@ void plot_communication(
 );
 /* Plot the communication radius of a single MA or a vector of MAs. */
 
+void plot_communication_links(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+
+void plot_communication_links(
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/*
+ *  Plot the communication links between a single MA and its neighbors or
+ *  between all agents in vector of MAs.
+ */
+
 #endif
 
 } /* End of namespace */

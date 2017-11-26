@@ -33,6 +33,13 @@ int main() {
 	double Tfinal = 60;
 	double Tstep = 0.01;
 	size_t plot_sleep_ms = 10;
+	bool export_results = false;
+
+	/* Get the current time. */
+	clock_t start_time_raw = std::time(NULL);
+	struct tm* start_time = std::localtime( &start_time_raw );
+	/* Number of iterations */
+	size_t smax = std::floor(Tfinal/Tstep);
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -55,7 +62,7 @@ int main() {
 	/* Sensing, uncertainty and communication radii */
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
-	std::vector<double> sradii (N, 0.4);
+	std::vector<double> sradii (N, 0.5);
 	/* Control input gains */
 	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
@@ -75,6 +82,7 @@ int main() {
 		agents[i].is_neighbor_antagonist = std::vector<bool> (N,false);
 	}
 	agents[1].is_antagonist = true;
+	// agents[6].is_antagonist = true;
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
@@ -83,6 +91,15 @@ int main() {
 		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
 		if (err) {
 			return nr::ERROR_CLIPPING_FAILED;
+		}
+	}
+
+	/****** Initialize MA evolution vector ******/
+	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
+	if (export_results) {
+		for (size_t i=0; i<N; i++) {
+			agents_evolution[i] =
+			nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
 		}
 	}
 
@@ -98,7 +115,6 @@ int main() {
 
 
 	/****** Simulate agents ******/
-	size_t smax = std::floor(Tfinal/Tstep);
 	std::vector<double> H (smax, 0);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
@@ -131,6 +147,35 @@ int main() {
 		H[s-1] = nr::calculate_objective( agents );
 		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
+		/* Save agent evolution. */
+		if (export_results) {
+			for (size_t i=0; i<N; i++) {
+				agents_evolution[i].position[s-1] = agents[i].position;
+				agents_evolution[i].attitude[s-1] = agents[i].attitude;
+				agents_evolution[i].velocity_translational[s-1] =
+				agents[i].velocity_translational;
+				agents_evolution[i].velocity_rotational[s-1] =
+				agents[i].velocity_rotational;
+				agents_evolution[i].feasible_sensing_quality[s-1] =
+				agents[i].feasible_sensing_quality;
+				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+					agents_evolution[i].
+					neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
+				}
+				for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+					agents_evolution[i].control_input[j][s-1] =
+					agents[i].control_input[j];
+				}
+			}
+		}
+
+		/* Try to identify antagonist - check all  neighbors */
+		for (size_t i=0; i<N; i++) {
+			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+
+			}
+		}
+
 		// nr::print( agents, false );
 
 		/* Plot network state */
@@ -147,7 +192,7 @@ int main() {
 		/* cells */
 		nr::plot_cells( agents, BLUE );
 		/* communication */
-		// nr::plot_communication( agents, GREEN );
+		nr::plot_communication_links( agents, GREEN );
 		/* Mark antagonistic agents. */
 		for (size_t i=0; i<N; i++) {
 			if (agents[i].is_antagonist) {
@@ -180,6 +225,24 @@ int main() {
 	std::printf("Simulation finished in %.2f seconds\n", elapsed_time);
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
 	#endif
+
+	/****** Export simulation results ******/
+	if (export_results) {
+		int err;
+		err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
+		elapsed_time, H, region );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_parameters( start_time, agents );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_state( start_time, agents_evolution );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+	}
 
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
