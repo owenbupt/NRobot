@@ -249,7 +249,7 @@ int main() {
 			nr::plot_cell( agents[i], PLOT_COLORS[i % PLOT_COLORS.size()] );
 		}
 		/* communication */
-		// nr::plot_communication( agents, GREEN );
+		// nr::plot_communication_links( agents, GREEN );
 
 		nr::plot_render();
 		uquit = nr::plot_handle_input();

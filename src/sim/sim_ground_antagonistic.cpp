@@ -32,7 +32,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 60;
 	double Tstep = 0.01;
-	size_t plot_sleep_ms = 10;
+	size_t plot_sleep_ms = 1;
 	bool export_results = false;
 
 	/* Get the current time. */
@@ -192,7 +192,7 @@ int main() {
 		/* cells */
 		nr::plot_cells( agents, BLUE );
 		/* communication */
-		nr::plot_communication_links( agents, GREEN );
+		// nr::plot_communication_links( agents, GREEN );
 		/* Mark antagonistic agents. */
 		for (size_t i=0; i<N; i++) {
 			if (agents[i].is_antagonist) {

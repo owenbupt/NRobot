@@ -134,7 +134,7 @@ int main() {
 		/* cells */
 		nr::plot_cells( agents, BLUE );
 		/* communication */
-		// nr::plot_communication( agents, GREEN );
+		// nr::plot_communication_links( agents, GREEN );
 
 		nr::plot_render();
 		uquit = nr::plot_handle_input();
