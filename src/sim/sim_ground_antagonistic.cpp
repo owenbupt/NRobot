@@ -32,7 +32,7 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 60;
 	double Tstep = 0.01;
-	size_t plot_sleep_ms = 1;
+	size_t plot_sleep_ms = 10;
 	bool export_results = false;
 
 	/* Get the current time. */
@@ -128,6 +128,17 @@ int main() {
             /* Translate and rotate for real sensing */
     		nr::update_sensing_patterns( &(agents[i]) );
 		}
+		/* Check if self has converged */
+		for (size_t i=0; i<N; i++) {
+			/* FINISH THIS */
+			// nr::has_converged(
+			// 	&(agents[i]),
+		    // 	agents_evolution[i].position,
+		    // 	agents_evolution[i].attitude,
+			// 	0.000000001,
+			// 	10
+			// );
+		}
 		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
@@ -182,16 +193,11 @@ int main() {
 		#if NR_PLOT_AVAILABLE
 		nr::plot_clear_render();
 		nr::plot_show_axes();
-
-		/* Region, nodes and udisks */
 		nr::plot_polygon( region, BLACK );
 		nr::plot_positions( agents, BLACK );
 		nr::plot_uncertainty( agents, BLACK );
-		/* sdisks */
 		nr::plot_sensing( agents, RED );
-		/* cells */
 		nr::plot_cells( agents, BLUE );
-		/* communication */
 		// nr::plot_communication_links( agents, GREEN );
 		/* Mark antagonistic agents. */
 		for (size_t i=0; i<N; i++) {
@@ -200,7 +206,6 @@ int main() {
 				plot_cell( agents[i], RED );
 			}
 		}
-
 		nr::plot_render();
 		uquit = nr::plot_handle_input();
 		if (uquit) {

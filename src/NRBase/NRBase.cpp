@@ -321,6 +321,10 @@ double nr::norm( const nr::Point& A ) {
 	return sqrt( pow(A.x, 2) + pow(A.y, 2) + pow(A.z, 2) );
 }
 
+double nr::norm( const nr::Orientation& A ) {
+	return sqrt( pow(A.roll, 2) + pow(A.pitch, 2) + pow(A.yaw, 2) );
+}
+
 double nr::dist( const nr::Point& A, const nr::Point& B ) {
 	return sqrt( pow(A.x-B.x, 2) + pow(A.y-B.y, 2) + pow(A.z-B.z, 2) );
 }

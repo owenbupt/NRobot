@@ -44,6 +44,7 @@ nr::MA::MA() {
 	this->feasible_sensing_quality = 0;
 	this->control_input = std::vector<double> (6,0);
 	this->is_antagonist = false;
+	this->is_converged = false;
 	/* The other data members use their default constructors */
 }
 
@@ -82,6 +83,7 @@ nr::MA::MA(
 	this->feasible_sensing_quality = 0;
 	this->control_input = std::vector<double> (6,0);
 	this->is_antagonist = false;
+	this->is_converged = false;
 	/* The other data members use their default constructors */
 }
 
@@ -127,6 +129,7 @@ nr::MA::MA(
 	this->feasible_sensing_quality = 0;
 	this->control_input = std::vector<double> (6,0);
 	this->is_antagonist = false;
+	this->is_converged = false;
 	/* The other data members use their default constructors */
 }
 
@@ -652,6 +655,9 @@ void nr::find_neighbors(
 				agent->neighbors.back().dynamics = agents[j].dynamics;
 				agent->neighbors.back().partitioning = agents[j].partitioning;
 				agent->neighbors.back().control = agents[j].control;
+				/****** Data for antagonistic control ******/
+				agent->neighbors.back().is_neighbor_antagonist = agents[j].is_neighbor_antagonist;
+				agent->neighbors.back().is_converged = agents[j].is_converged;
 			}
 		}
 	}
@@ -1024,6 +1030,38 @@ double nr::calculate_objective(
 	}
 
 	return H;
+}
+
+bool nr::has_converged(
+    nr::MA* agent,
+    std::vector<nr::Point>& previous_positions,
+    std::vector<nr::Orientation>& previous_orientations,
+	double threshold,
+    size_t window_size
+) {
+	/* FINISH THIS */
+	/* Use a smaller window if there is not enough data. */
+	if (previous_positions.size() < window_size) {
+		window_size = previous_positions.size();
+	}
+	/* The first element of the average is the current state. */
+	nr::Point pos_average = agent->position;
+	nr::Orientation att_average = agent->attitude;
+	for (size_t s=0; s<window_size-1; s++) {
+		pos_average += previous_positions[previous_positions.size()-s-1];
+		att_average += previous_orientations[previous_orientations.size()-s-1];
+	}
+	/* Calculate average */
+	pos_average = pos_average / (double) window_size;
+	att_average = att_average / (double) window_size;
+	/* Check norms against threshold. */
+	if ( nr::norm(pos_average) + nr::norm(att_average) <= threshold) {
+		agent->is_converged = true;
+		return true;
+	} else {
+		agent->is_converged = false;
+		return false;
+	}
 }
 
 void nr::print(

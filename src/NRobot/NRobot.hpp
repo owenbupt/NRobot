@@ -183,6 +183,7 @@ class MA {
         /****** Data for antagonistic control ******/
         bool is_antagonist;
         std::vector<bool> is_neighbor_antagonist;
+        bool is_converged;
 
 		/*********** Constructors ***********/
         MA();
@@ -371,6 +372,19 @@ double calculate_objective(
 );
 /* Computes the value of the objective function for the current agent. The
    computation depends on the control law and partitioning selected. */
+
+bool has_converged(
+    MA* agent,
+    std::vector<nr::Point>& previous_positions,
+    std::vector<nr::Orientation>& previous_orientations,
+    double threshold,
+    size_t window_size
+);
+/*
+ *  Return whether the agent has converged and  set the appropriate MA data
+ *  member. The function checks if the agent's state has changed more than
+ *  threshold in a window of window_size iterations back.
+ */
 
 void print(
     const MA& agent,
