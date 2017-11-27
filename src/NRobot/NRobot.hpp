@@ -373,7 +373,7 @@ double calculate_objective(
 /* Computes the value of the objective function for the current agent. The
    computation depends on the control law and partitioning selected. */
 
-bool has_converged(
+bool check_convergence(
     MA* agent,
     std::vector<nr::Point>& previous_positions,
     std::vector<nr::Orientation>& previous_orientations,

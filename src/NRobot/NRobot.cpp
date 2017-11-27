@@ -276,18 +276,29 @@ nr::MA_evolution::MA_evolution(
 		number_of_inputs = 2;
 	}
 	this->position =
-	std::vector<nr::Point> (iterations, nr::Point());
+	  std::vector<nr::Point> (0, nr::Point());
 	this->attitude =
-	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	  std::vector<nr::Orientation> (0, nr::Orientation());
 	this->velocity_translational =
-	std::vector<nr::Point> (iterations, nr::Point());
+	  std::vector<nr::Point> (0, nr::Point());
 	this->velocity_rotational =
-	std::vector<nr::Orientation> (iterations, nr::Orientation());
-	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
+	  std::vector<nr::Orientation> (0, nr::Orientation());
+	this->feasible_sensing_quality = std::vector<double> (0, 0);
 	this->neighbor_connectivity = std::vector<std::vector<bool>>
-	(this->number_of_agents, std::vector<bool> (iterations, false));
+	  (this->number_of_agents, std::vector<bool> (0, false));
 	this->control_input = std::vector<std::vector<double>>
-	(number_of_inputs, std::vector<double> (iterations, 0));
+	  (number_of_inputs, std::vector<double> (0, 0));
+	this->position.reserve(iterations);
+	this->attitude.reserve(iterations);
+	this->velocity_translational.reserve(iterations);
+	this->velocity_rotational.reserve(iterations);
+	this->feasible_sensing_quality.reserve(iterations);
+	for (size_t j=0; j<number_of_agents; j++) {
+		this->neighbor_connectivity[j].reserve(iterations);
+	}
+	for (size_t j=0; j<number_of_inputs; j++) {
+		this->control_input[j].reserve(iterations);
+	}
 }
 
 
@@ -1032,7 +1043,7 @@ double nr::calculate_objective(
 	return H;
 }
 
-bool nr::has_converged(
+bool nr::check_convergence(
     nr::MA* agent,
     std::vector<nr::Point>& previous_positions,
     std::vector<nr::Orientation>& previous_orientations,
@@ -1040,6 +1051,8 @@ bool nr::has_converged(
     size_t window_size
 ) {
 	/* FINISH THIS */
+	printf("%lu\n",window_size);
+	printf("%lu\n",previous_positions.size());
 	/* Use a smaller window if there is not enough data. */
 	if (previous_positions.size() < window_size) {
 		window_size = previous_positions.size();
@@ -1414,38 +1427,38 @@ int nr::export_agent_state(
 		for (size_t s=1; s<=agents_evolution[i].iterations; s++) {
 			std::fprintf( f, "%lu ", s );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].x );
+			  agents_evolution[i].position[s-1].x );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].y );
+			  agents_evolution[i].position[s-1].y );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].z );
+			  agents_evolution[i].position[s-1].z );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].roll );
+			  agents_evolution[i].attitude[s-1].roll );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].pitch );
+			  agents_evolution[i].attitude[s-1].pitch );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].yaw );
+			  agents_evolution[i].attitude[s-1].yaw );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].x );
+			  agents_evolution[i].velocity_translational[s-1].x );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].y );
+			  agents_evolution[i].velocity_translational[s-1].y );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].z );
+			  agents_evolution[i].velocity_translational[s-1].z );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].roll );
+			  agents_evolution[i].velocity_rotational[s-1].roll );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].pitch );
+			  agents_evolution[i].velocity_rotational[s-1].pitch );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].yaw );
+			  agents_evolution[i].velocity_rotational[s-1].yaw );
 			std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].feasible_sensing_quality[s-1] );
+			  agents_evolution[i].feasible_sensing_quality[s-1] );
 			for (size_t j=0; j<agents_evolution[i].number_of_agents; j++) {
 				std::fprintf( f, "%d ",
-				(int) agents_evolution[i].neighbor_connectivity[j][s-1] );
+				  (int) agents_evolution[i].neighbor_connectivity[j][s-1] );
 			}
 			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
 				std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-				agents_evolution[i].control_input[j][s-1] );
+				  agents_evolution[i].control_input[j][s-1] );
 			}
 			std::fprintf( f, "\n" );
 		}

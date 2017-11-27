@@ -143,21 +143,24 @@ int main() {
 
 		/* Save agent evolution. */
 		for (size_t i=0; i<N; i++) {
-			agents_evolution[i].position[s-1] = agents[i].position;
-			agents_evolution[i].attitude[s-1] = agents[i].attitude;
-			agents_evolution[i].velocity_translational[s-1] =
-			agents[i].velocity_translational;
-			agents_evolution[i].velocity_rotational[s-1] =
-			agents[i].velocity_rotational;
-			agents_evolution[i].feasible_sensing_quality[s-1] =
-			agents[i].feasible_sensing_quality;
-			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
-				agents_evolution[i].
-				neighbor_connectivity[agents[i].neighbors[j].ID-1][s-1] = true;
-			}
-			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
-				agents_evolution[i].control_input[j][s-1] =
-				agents[i].control_input[j];
+			for (size_t i=0; i<N; i++) {
+				agents_evolution[i].position.push_back(agents[i].position);
+				agents_evolution[i].attitude.push_back(agents[i].attitude);
+				agents_evolution[i].velocity_translational.
+				  push_back(agents[i].velocity_translational);
+				agents_evolution[i].velocity_rotational.
+				  push_back(agents[i].velocity_rotational);
+				agents_evolution[i].feasible_sensing_quality.
+				  push_back(agents[i].feasible_sensing_quality);
+				for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+					agents_evolution[i].
+					  neighbor_connectivity[agents[i].neighbors[j].ID-1].
+					  push_back(true);
+				}
+				for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+					agents_evolution[i].control_input[j].push_back
+					  (agents[i].control_input[j]);
+				}
 			}
 		}
 
