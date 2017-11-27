@@ -62,7 +62,7 @@ int main() {
 	/* Sensing, uncertainty and communication radii */
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
-	std::vector<double> sradii (N, 0.5);
+	std::vector<double> sradii (N, 0.4);
 	/* Control input gains */
 	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
@@ -81,7 +81,7 @@ int main() {
 	for (size_t i=0; i<N; i++) {
 		agents[i].is_neighbor_antagonist = std::vector<bool> (N,false);
 	}
-	agents[1].is_antagonist = true;
+	// agents[1].is_antagonist = true;
 	// agents[6].is_antagonist = true;
 
 	/****** Create constrained regions ******/
@@ -127,14 +127,13 @@ int main() {
     		nr::update_sensing_patterns( &(agents[i]) );
 		}
 		/* Check if self has converged */
-		for (size_t i=0; i<N; i++) {
-			if (s == 15)
-			/* FINISH THIS */
+		for (size_t i=0; i<1; i++) {
+			/* FINISH THIS AND REMOVE DEBUG CODE */
 			nr::check_convergence(
 				&(agents[i]),
 		    	agents_evolution[i].position,
 		    	agents_evolution[i].attitude,
-				0.000000001,
+				Tstep/100,
 				10
 			);
 		}
@@ -155,7 +154,7 @@ int main() {
 
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
-		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+		// std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
 
 		/* Save agent evolution. */
 		for (size_t i=0; i<N; i++) {

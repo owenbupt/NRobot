@@ -1050,25 +1050,33 @@ bool nr::check_convergence(
 	double threshold,
     size_t window_size
 ) {
-	/* FINISH THIS */
-	printf("%lu\n",window_size);
-	printf("%lu\n",previous_positions.size());
+	/* Do nothing if no previous data exists. */
+	if (previous_positions.size() == 0) {
+		return false;
+	}
 	/* Use a smaller window if there is not enough data. */
 	if (previous_positions.size() < window_size) {
 		window_size = previous_positions.size();
 	}
-	/* The first element of the average is the current state. */
-	nr::Point pos_average = agent->position;
-	nr::Orientation att_average = agent->attitude;
-	for (size_t s=0; s<window_size-1; s++) {
-		pos_average += previous_positions[previous_positions.size()-s-1];
-		att_average += previous_orientations[previous_orientations.size()-s-1];
+	/* Find t he average over the previous window_size iterations. */
+	nr::Point pos_average = 0;
+	nr::Orientation att_average = 0;
+	for (size_t s=0; s<window_size; s++) {
+		pos_average += previous_positions[previous_positions.size()-1-s];
+		att_average += previous_orientations[previous_orientations.size()-1-s];
 	}
-	/* Calculate average */
+	/* Divide by window_size to get average value. */
 	pos_average = pos_average / (double) window_size;
 	att_average = att_average / (double) window_size;
+
+	printf("avg pos %f %f  pos %f %f  diff %f  converged %u\n",pos_average.x, pos_average.y, 
+	  agent->position.x, agent->position.y,
+	  nr::norm(agent->position-pos_average),
+	  nr::norm(agent->position-pos_average)<=threshold);
+
 	/* Check norms against threshold. */
-	if ( nr::norm(pos_average) + nr::norm(att_average) <= threshold) {
+	if ( nr::norm(agent->position-pos_average) +
+	  nr::norm(agent->attitude-att_average) <= threshold) {
 		agent->is_converged = true;
 		return true;
 	} else {

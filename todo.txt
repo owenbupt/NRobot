@@ -2,7 +2,6 @@ Antagonistic
 	dynamically change the size of is_neighbor_antagonist
 
 TODO
-	update result saving
 	make sure theta remains at -pi,pi
 	print new MA data members
 	implement keep in region and collision avoidance
