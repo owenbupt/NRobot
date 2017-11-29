@@ -1069,9 +1069,10 @@ bool nr::check_convergence(
 	pos_average = pos_average / (double) window_size;
 	att_average = att_average / (double) window_size;
 
-	printf("avg pos %f %f  pos %f %f  diff %f  converged %u\n",pos_average.x, pos_average.y, 
+	printf("avg pos %f %f  pos %f %f  diff %f  threshold %f  converged %u\n",pos_average.x, pos_average.y,
 	  agent->position.x, agent->position.y,
 	  nr::norm(agent->position-pos_average),
+	  threshold,
 	  nr::norm(agent->position-pos_average)<=threshold);
 
 	/* Check norms against threshold. */

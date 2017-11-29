@@ -1,6 +1,18 @@
 Antagonistic
 	dynamically change the size of is_neighbor_antagonist
 
+Convergence
+	For Voronoi  partitioning the the free arc law, the minimum positive
+	magnitude of the  control input is when a single edge of the circular
+	approximation is integrated over, thus umin = 2*pi*Rs / PPC
+	where Rs is the sensing radius and PPC is Points Per Circle. Given single
+	integrator dynamics approximated in discrete time
+	( q(t) - q(t-T) ) / T = u   =>   q(t) - q(t-T) = T * u
+	Thus the least possible value for ||q(t) - q(t-T)|| occurs when
+	u = T*umin. However, it is possible that agents converge to positions
+	where more than one edge is integrated (or contributes to the integral)
+	for each agent.
+
 TODO
 	make sure theta remains at -pi,pi
 	print new MA data members

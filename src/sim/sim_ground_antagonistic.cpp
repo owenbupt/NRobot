@@ -62,7 +62,7 @@ int main() {
 	/* Sensing, uncertainty and communication radii */
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
-	std::vector<double> sradii (N, 0.4);
+	std::vector<double> sradii (N, 0.3);
 	/* Control input gains */
 	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
@@ -113,6 +113,8 @@ int main() {
 
 
 	/****** Simulate agents ******/
+	/* ONLY FOR HOMOGENEOUS AGENTS */
+	double convergence_threshold = M_PI*agents[0].sensing_radius/NR_PPC * Tstep;
 	std::vector<double> H (smax, 0);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
@@ -127,13 +129,13 @@ int main() {
     		nr::update_sensing_patterns( &(agents[i]) );
 		}
 		/* Check if self has converged */
-		for (size_t i=0; i<1; i++) {
+		for (size_t i=0; i<N; i++) {
 			/* FINISH THIS AND REMOVE DEBUG CODE */
 			nr::check_convergence(
 				&(agents[i]),
-		    	agents_evolution[i].position,
-		    	agents_evolution[i].attitude,
-				Tstep/100,
+				agents_evolution[i].position,
+				agents_evolution[i].attitude,
+				convergence_threshold,
 				10
 			);
 		}
