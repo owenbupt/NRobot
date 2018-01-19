@@ -265,10 +265,20 @@ template <class T> Point operator * ( T k, const Point& P ) {
 template <class T> Point operator / ( const Point& P, T k ) {
 	return Point(P.x/k, P.y/k, P.z/k);
 }
+template <class T> Orientation operator * ( const Orientation& P, T k ) {
+	return Orientation(k*P.roll, k*P.pitch, k*P.yaw);
+}
+template <class T> Orientation operator * ( T k, const Orientation& P ) {
+	return Orientation(k*P.roll, k*P.pitch, k*P.yaw);
+}
+template <class T> Orientation operator / ( const Orientation& P, T k ) {
+	return Orientation(P.roll/k, P.pitch/k, P.yaw/k);
+}
 
 /****************************** Point ******************************/
 void print( const Point& A );
 double norm( const Point& A );
+double norm( const Orientation& A );
 double dist( const Point& A, const Point& B );
 double dist( const Point& A, const Contour& C ); 					/* TODO */
 double dist( const Point& A, const Polygon& P ); 					/* TODO */

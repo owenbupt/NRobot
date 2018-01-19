@@ -25,81 +25,115 @@
 /*******************************************************/
 nr::MA::MA() {
 	this->ID = 0;
-	/* Agent parameters */
-	this->sensing_radius = 0;
-	this->communication_radius = 0;
-	this->position_uncertainty = 0;
-	this->attitude_uncertainty = 0;
-	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
-	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
+	/* Agent - control parameters */
 	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
 	this->time_step = 0.01;
-	/* The other data members use their default constructors */
-}
-
-nr::MA::MA(
-	nr::Point& pos,
-	double time_step,
-	double sradius,
-	double uradius,
-	double cradius
-) {
-	this->ID = 0;
-	/* State */
-	this->position = pos;
-	/* Agent parameters */
-	this->sensing_radius = sradius;
-	this->communication_radius = cradius;
-	this->position_uncertainty = uradius;
+	this->partitioning = nr::PARTITIONING_VORONOI;
+	this->control = nr::CONTROL_FREE_ARC;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	this->control_input_gains = std::vector<double> (6,1),
+	/* Uncertainty */
+	this->position_uncertainty = 0;
+	/* Communication */
+	this->communication_radius = 0;
+	/* Sensing */
+	this->sensing_radius = 1;
+	nr::create_sensing_disk( this );
+	/* Set values to other parameters */
 	this->attitude_uncertainty = 0;
 	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
 	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
-	this->time_step = time_step;
+	this->is_antagonist = false;
+	this->is_converged = false;
 	/* The other data members use their default constructors */
 }
 
 nr::MA::MA(
+	size_t ID,
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
+	nr::Point& pos,
+	double position_uncertainty,
+	double communication_radius,
+	double sensing_radius,
+	std::vector<double>& control_input_gains,
+	double time_step
+) {
+	/* Agent - control parameters */
+	this->ID = ID;
+	this->dynamics = dynamics;
+	this->time_step = time_step;
+	this->partitioning = partitioning;
+	this->control = control;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	/* ADD CHECK FOR GAIN VECTOR LENGTH HERE AND RAISE WARNING */
+	this->control_input_gains = control_input_gains,
+	/* Initial state */
+	this->position = pos;
+	/* Uncertainty */
+	this->position_uncertainty = position_uncertainty;
+	/* Communication */
+	this->communication_radius = communication_radius;
+	/* Sensing */
+	this->sensing_radius = sensing_radius;
+	nr::create_sensing_disk( this );
+	/* Set values to other parameters */
+	this->attitude_uncertainty = 0;
+	this->feasible_sensing_quality = 0;
+	this->control_input = std::vector<double> (6,0);
+	this->is_antagonist = false;
+	this->is_converged = false;
+	/* The other data members use their default constructors */
+}
+
+nr::MA::MA(
+	size_t ID,
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
 	nr::Point& pos,
 	nr::Orientation& att,
-	double time_step,
-	double sradius,
-	double uradius,
-	double cradius
+	double position_uncertainty,
+	double attitude_uncertainty,
+	double communication_radius,
+	nr::Polygon& base_sensing,
+	std::vector<double>& control_input_gains,
+	double time_step
 ) {
-	this->ID = 0;
-	/* State */
+	/* Agent - control parameters */
+	this->ID = ID;
+	this->dynamics = dynamics;
+	this->time_step = time_step;
+	this->partitioning = partitioning;
+	this->control = control;
+	this->avoidance = nr::AVOIDANCE_DISABLED,
+	/* ADD CHECK FOR GAIN VECTOR LENGTH HERE AND RAISE WARNING */
+	this->control_input_gains = control_input_gains,
+	/* Initial state */
 	this->position = pos;
 	this->attitude = att;
-	/* Agent parameters */
-	this->sensing_radius = sradius;
-	this->communication_radius = cradius;
-	this->position_uncertainty = uradius;
-	this->attitude_uncertainty = 0;
+	/* Uncertainty */
+	this->position_uncertainty = position_uncertainty;
+	this->attitude_uncertainty = attitude_uncertainty;
+	/* Communication */
+	this->communication_radius = communication_radius;
+	/* Sensing */
+	this->base_sensing = base_sensing;
+	this->sensing_radius = nr::radius( this->base_sensing );
+	if (nr::compute_base_sensing_patterns( this )) {
+		std::printf("Agent initialization error\n");
+	}
+	nr::update_sensing_patterns( this );
+	/* Set values to other parameters */
 	this->feasible_sensing_quality = 0;
-	/* Control */
-	this->partitioning = nr::PARTITIONING_VORONOI;
-	this->control = nr::CONTROL_CENTROID;
-	this->avoidance = nr::AVOIDANCE_DISK_BISECTOR;
 	this->control_input = std::vector<double> (6,0);
-	this->control_input_gains = std::vector<double> (6,1);
-	/* Dynamics and simulation */
-	this->dynamics = nr::DYNAMICS_SI_GROUND_XY;
-	this->time_step = time_step;
+	this->is_antagonist = false;
+	this->is_converged = false;
 	/* The other data members use their default constructors */
 }
+
+
 
 
 
@@ -112,7 +146,14 @@ nr::MAs::MAs() {
 }
 
 nr::MAs::MAs(
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
 	nr::Points& pos,
+	std::vector<double>& position_uncertainty,
+	std::vector<double>& communication_radius,
+	std::vector<double>& sensing_radius,
+	std::vector<double>& control_input_gains,
 	double time_step
 ) {
 	/* Number of elements */
@@ -120,33 +161,32 @@ nr::MAs::MAs(
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], time_step );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
+		this->at(i) = nr::MA(
+			i+1,
+			dynamics,
+			partitioning,
+			control,
+			pos[i],
+			position_uncertainty[i],
+			communication_radius[i],
+			sensing_radius[i],
+			control_input_gains,
+			time_step
+		);
 	}
 }
 
 nr::MAs::MAs(
-	nr::Points& pos,
-	double time_step,
-	std::vector<double>& sradii,
-	std::vector<double>& uradii,
-	std::vector<double>& cradii
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], time_step, sradii[i], uradii[i], cradii[i] );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
-
-nr::MAs::MAs(
+	nr::dynamics_type dynamics,
+	nr::partitioning_type partitioning,
+	nr::control_type control,
 	nr::Points& pos,
 	nr::Orientations& att,
+	std::vector<double>& position_uncertainty,
+	std::vector<double>& attitude_uncertainty,
+	std::vector<double>& communication_radius,
+	nr::Polygon& base_sensing,
+	std::vector<double>& control_input_gains,
 	double time_step
 ) {
 	/* Number of elements */
@@ -154,30 +194,24 @@ nr::MAs::MAs(
 	this->resize(N);
 	/* Initialize each vector element */
 	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], time_step );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
+		this->at(i) = nr::MA(
+			i+1,
+			dynamics,
+			partitioning,
+			control,
+			pos[i],
+			att[i],
+			position_uncertainty[i],
+			attitude_uncertainty[i],
+			communication_radius[i],
+			base_sensing,
+			control_input_gains,
+			time_step
+		);
 	}
 }
 
-nr::MAs::MAs(
-	nr::Points& pos,
-	nr::Orientations& att,
-	double time_step,
-	std::vector<double>& sradii,
-	std::vector<double>& uradii,
-	std::vector<double>& cradii
-) {
-	/* Number of elements */
-	size_t N = pos.size();
-	this->resize(N);
-	/* Initialize each vector element */
-	for (size_t i=0; i<N; i++) {
-		this->at(i) = nr::MA( pos[i], att[i], time_step, sradii[i], uradii[i], cradii[i] );
-		/* Set the ID for each element */
-		this->at(i).ID = i+1;
-	}
-}
+
 
 
 
@@ -242,18 +276,29 @@ nr::MA_evolution::MA_evolution(
 		number_of_inputs = 2;
 	}
 	this->position =
-	std::vector<nr::Point> (iterations, nr::Point());
+	  std::vector<nr::Point> (0, nr::Point());
 	this->attitude =
-	std::vector<nr::Orientation> (iterations, nr::Orientation());
+	  std::vector<nr::Orientation> (0, nr::Orientation());
 	this->velocity_translational =
-	std::vector<nr::Point> (iterations, nr::Point());
+	  std::vector<nr::Point> (0, nr::Point());
 	this->velocity_rotational =
-	std::vector<nr::Orientation> (iterations, nr::Orientation());
-	this->feasible_sensing_quality = std::vector<double> (iterations, 0);
+	  std::vector<nr::Orientation> (0, nr::Orientation());
+	this->feasible_sensing_quality = std::vector<double> (0, 0);
 	this->neighbor_connectivity = std::vector<std::vector<bool>>
-	(this->number_of_agents, std::vector<bool> (iterations, false));
+	  (this->number_of_agents, std::vector<bool> (0, false));
 	this->control_input = std::vector<std::vector<double>>
-	(number_of_inputs, std::vector<double> (iterations, 0));
+	  (number_of_inputs, std::vector<double> (0, 0));
+	this->position.reserve(iterations);
+	this->attitude.reserve(iterations);
+	this->velocity_translational.reserve(iterations);
+	this->velocity_rotational.reserve(iterations);
+	this->feasible_sensing_quality.reserve(iterations);
+	for (size_t j=0; j<number_of_agents; j++) {
+		this->neighbor_connectivity[j].reserve(iterations);
+	}
+	for (size_t j=0; j<number_of_inputs; j++) {
+		this->control_input[j].reserve(iterations);
+	}
 }
 
 
@@ -621,6 +666,9 @@ void nr::find_neighbors(
 				agent->neighbors.back().dynamics = agents[j].dynamics;
 				agent->neighbors.back().partitioning = agents[j].partitioning;
 				agent->neighbors.back().control = agents[j].control;
+				/****** Data for antagonistic control ******/
+				agent->neighbors.back().is_neighbor_antagonist = agents[j].is_neighbor_antagonist;
+				agent->neighbors.back().is_converged = agents[j].is_converged;
 			}
 		}
 	}
@@ -818,6 +866,11 @@ int nr::compute_base_sensing_patterns(
 			std::printf("Clipping operation returned error %d\n", err);
 			return nr::ERROR_CLIPPING_FAILED;
 		}
+	} else {
+		/* Otherwise just copy the base sensing */
+		agent->base_guaranteed_sensing = agent->base_sensing;
+		agent->base_feasible_sensing = agent->base_sensing;
+		agent->base_total_sensing = agent->base_sensing;
 	}
 
 	/* Fix contour orientation */
@@ -988,6 +1041,49 @@ double nr::calculate_objective(
 	}
 
 	return H;
+}
+
+bool nr::check_convergence(
+    nr::MA* agent,
+    std::vector<nr::Point>& previous_positions,
+    std::vector<nr::Orientation>& previous_orientations,
+	double threshold,
+    size_t window_size
+) {
+	/* Do nothing if no previous data exists. */
+	if (previous_positions.size() == 0) {
+		return false;
+	}
+	/* Use a smaller window if there is not enough data. */
+	if (previous_positions.size() < window_size) {
+		window_size = previous_positions.size();
+	}
+	/* Find t he average over the previous window_size iterations. */
+	nr::Point pos_average = 0;
+	nr::Orientation att_average = 0;
+	for (size_t s=0; s<window_size; s++) {
+		pos_average += previous_positions[previous_positions.size()-1-s];
+		att_average += previous_orientations[previous_orientations.size()-1-s];
+	}
+	/* Divide by window_size to get average value. */
+	pos_average = pos_average / (double) window_size;
+	att_average = att_average / (double) window_size;
+
+	printf("avg pos %f %f  pos %f %f  diff %f  threshold %f  converged %u\n",pos_average.x, pos_average.y,
+	  agent->position.x, agent->position.y,
+	  nr::norm(agent->position-pos_average),
+	  threshold,
+	  nr::norm(agent->position-pos_average)<=threshold);
+
+	/* Check norms against threshold. */
+	if ( nr::norm(agent->position-pos_average) +
+	  nr::norm(agent->attitude-att_average) <= threshold) {
+		agent->is_converged = true;
+		return true;
+	} else {
+		agent->is_converged = false;
+		return false;
+	}
 }
 
 void nr::print(
@@ -1340,38 +1436,38 @@ int nr::export_agent_state(
 		for (size_t s=1; s<=agents_evolution[i].iterations; s++) {
 			std::fprintf( f, "%lu ", s );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].x );
+			  agents_evolution[i].position[s-1].x );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].y );
+			  agents_evolution[i].position[s-1].y );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].position[s-1].z );
+			  agents_evolution[i].position[s-1].z );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].roll );
+			  agents_evolution[i].attitude[s-1].roll );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].pitch );
+			  agents_evolution[i].attitude[s-1].pitch );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].attitude[s-1].yaw );
+			  agents_evolution[i].attitude[s-1].yaw );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].x );
+			  agents_evolution[i].velocity_translational[s-1].x );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].y );
+			  agents_evolution[i].velocity_translational[s-1].y );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_translational[s-1].z );
+			  agents_evolution[i].velocity_translational[s-1].z );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].roll );
+			  agents_evolution[i].velocity_rotational[s-1].roll );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].pitch );
+			  agents_evolution[i].velocity_rotational[s-1].pitch );
 			std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].velocity_rotational[s-1].yaw );
+			  agents_evolution[i].velocity_rotational[s-1].yaw );
 			std::fprintf( f, "%.*f ", NR_FLOAT_DIGITS,
-			agents_evolution[i].feasible_sensing_quality[s-1] );
+			  agents_evolution[i].feasible_sensing_quality[s-1] );
 			for (size_t j=0; j<agents_evolution[i].number_of_agents; j++) {
 				std::fprintf( f, "%d ",
-				(int) agents_evolution[i].neighbor_connectivity[j][s-1] );
+				  (int) agents_evolution[i].neighbor_connectivity[j][s-1] );
 			}
 			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
 				std::fprintf( f, "% .*f ", NR_FLOAT_DIGITS,
-				agents_evolution[i].control_input[j][s-1] );
+				  agents_evolution[i].control_input[j][s-1] );
 			}
 			std::fprintf( f, "\n" );
 		}
@@ -1494,6 +1590,24 @@ void nr::plot_communication(
 ) {
 	for (size_t i=0; i<agents.size(); i++) {
 		nr::plot_communication( agents[i], color );
+	}
+}
+
+void nr::plot_communication_links(
+	const nr::MA& agent,
+    const SDL_Color& color
+) {
+	for (size_t j=0; j<agent.neighbors.size();  j++) {
+		nr::plot_segment( agent.position, agent.neighbors[j].position, color );
+	}
+}
+
+void nr::plot_communication_links(
+	const nr::MAs& agents,
+    const SDL_Color& color
+) {
+	for (size_t i=0; i<agents.size(); i++) {
+		nr::plot_communication_links( agents[i], color );
 	}
 }
 

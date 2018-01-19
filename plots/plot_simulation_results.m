@@ -25,10 +25,8 @@ colors = [ 255, 0, 77 ;
 		   255, 119, 168 ] ./ 255;
 
 % Select simulation to load and set plot options
-simulation_date = '20170926_200437';
+simulation_date = '20171127_132335';
 simulation_directory = '..';
-% simulation_date = '20170926_193422';
-% simulation_directory = '..';
 
 PLOT_OBJECTIVE = 1;
 PLOT_GUARANTEED_OBJECTIVE = 0;

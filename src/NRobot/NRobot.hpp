@@ -72,6 +72,7 @@ enum control_type{
 /**************** Collision avoidance ******************/
 /*******************************************************/
 enum avoidance_type{
+    AVOIDANCE_DISABLED,
     AVOIDANCE_DISK_BISECTOR
 };
 
@@ -179,24 +180,41 @@ class MA {
         double time_step;
         /* The time step when simulating the MA dynamics. */
 
-		/*********** Constructors ***********/
-		MA();
+        /****** Data for antagonistic control ******/
+        bool is_antagonist;
+        std::vector<bool> is_neighbor_antagonist;
+        bool is_converged;
 
-		MA(
+		/*********** Constructors ***********/
+        MA();
+
+        /* Need to set collision avoidance, feasible sensing quality manually. */
+        MA(
+            size_t ID,
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
 			Point& pos,
-            double time_step = 0.01,
-			double sradius = 0,
-			double uradius = 0,
-			double cradius = 0
+            double position_uncertainty,
+            double communication_radius,
+			double sensing_radius,
+            std::vector<double>& control_input_gains,
+            double time_step
 		);
 
-		MA(
+        MA(
+            size_t ID,
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
 			Point& pos,
 			Orientation& att,
-            double time_step = 0.01,
-			double sradius = 0,
-			double uradius = 0,
-			double cradius = 0
+            double position_uncertainty,
+            double attitude_uncertainty,
+			double communication_radius,
+            Polygon& base_sensing,
+            std::vector<double>& control_input_gains,
+            double time_step
 		);
 };
 
@@ -211,35 +229,33 @@ class MAs: public std::vector<MA> {
 		/*********** Data members ***********/
 
 		/*********** Constructors ***********/
-		MAs();
+        MAs();
 
         MAs(
-			Points& pos,
-            double time_step = 0.01
-		);
-
-		MAs(
-			Points& pos,
-            double time_step,
-			std::vector<double>& sradii,
-			std::vector<double>& uradii,
-			std::vector<double>& cradii
-		);
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
+            Points& pos,
+            std::vector<double>& position_uncertainty,
+            std::vector<double>& communication_radius,
+            std::vector<double>& sensing_radius,
+            std::vector<double>& control_input_gains,
+            double time_step
+        );
 
         MAs(
-			Points& pos,
-			Orientations& att,
-            double time_step = 0.01
-		);
-
-		MAs(
-			Points& pos,
-			Orientations& att,
-            double time_step,
-			std::vector<double>& sradii,
-			std::vector<double>& uradii,
-			std::vector<double>& cradii
-		);
+            dynamics_type dynamics,
+            partitioning_type partitioning,
+            control_type control,
+            Points& pos,
+            Orientations& att,
+            std::vector<double>& position_uncertainty,
+            std::vector<double>& attitude_uncertainty,
+            std::vector<double>& communication_radius,
+            Polygon& base_sensing,
+            std::vector<double>& control_input_gains,
+            double time_step
+        );
 };
 
 
@@ -356,6 +372,19 @@ double calculate_objective(
 );
 /* Computes the value of the objective function for the current agent. The
    computation depends on the control law and partitioning selected. */
+
+bool check_convergence(
+    MA* agent,
+    std::vector<nr::Point>& previous_positions,
+    std::vector<nr::Orientation>& previous_orientations,
+    double threshold,
+    size_t window_size
+);
+/*
+ *  Return whether the agent has converged and  set the appropriate MA data
+ *  member. The function checks if the agent's state has changed more than
+ *  threshold in a window of window_size iterations back.
+ */
 
 void print(
     const MA& agent,
@@ -515,6 +544,20 @@ void plot_communication(
     const SDL_Color& color = PLOT_FOREGROUND_COLOR
 );
 /* Plot the communication radius of a single MA or a vector of MAs. */
+
+void plot_communication_links(
+    const MA& agent,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+
+void plot_communication_links(
+    const MAs& agents,
+    const SDL_Color& color = PLOT_FOREGROUND_COLOR
+);
+/*
+ *  Plot the communication links between a single MA and its neighbors or
+ *  between all agents in vector of MAs.
+ */
 
 #endif
 

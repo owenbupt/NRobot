@@ -32,7 +32,14 @@ int main() {
 	/****** Simulation parameters ******/
 	double Tfinal = 60;
 	double Tstep = 0.01;
-	size_t plot_sleep_ms = 0;
+	size_t plot_sleep_ms = 10;
+	bool export_results = false;
+
+	/* Get the current time. */
+	clock_t start_time_raw = std::time(NULL);
+	struct tm* start_time = std::localtime( &start_time_raw );
+	/* Number of iterations */
+	size_t smax = std::floor(Tfinal/Tstep);
 
 	/****** Region of interest ******/
 	nr::Polygon region;
@@ -53,32 +60,45 @@ int main() {
 	/* Number of agents */
 	size_t N = P.size();
 	/* Sensing, uncertainty and communication radii */
-	std::vector<double> sradii (N, 0.5);
 	std::vector<double> uradii (N, 0);
 	std::vector<double> cradii (N, rdiameter);
+	std::vector<double> sradii (N, 0.3);
+	/* Control input gains */
+	std::vector<double> control_input_gains = {1,1};
 	/* Initialize agents */
-	nr::MAs agents (P, Tstep, sradii, uradii, cradii);
-	/* Set partitioning and control law */
-	nr::set_partitioning( &agents, nr::PARTITIONING_VORONOI );
-	nr::set_control( &agents, nr::CONTROL_FREE_ARC );
-	nr::set_control( &agents, nr::CONTROL_CENTROID );
-	// nr::set_control( &agents, nr::CONTROL_R_LIMITED_CENTROID );
-	/* Create sensing disks. */
-	nr::create_sensing_disks( &agents );
+	nr::MAs agents (
+		nr::DYNAMICS_SI_GROUND_XY,
+		nr::PARTITIONING_VORONOI,
+		nr::CONTROL_FREE_ARC,
+		P,
+		uradii,
+		cradii,
+		sradii,
+		control_input_gains,
+		Tstep
+	);
 	/* Indices of antagonistic agents. */
-	std::vector<bool> antagonist (N, false);
-	antagonist[1] = true;
-	// antagonist[5] = true;
+	for (size_t i=0; i<N; i++) {
+		agents[i].is_neighbor_antagonist = std::vector<bool> (N,false);
+	}
+	// agents[1].is_antagonist = true;
+	// agents[6].is_antagonist = true;
 
 	/****** Create constrained regions ******/
 	nr::Polygons offset_regions;
 	for (size_t i=0; i<N; i++) {
 		offset_regions.push_back( region );
-
 		int err = nr::offset_in( &(offset_regions[i]), agents[i].position_uncertainty );
 		if (err) {
 			return nr::ERROR_CLIPPING_FAILED;
 		}
+	}
+
+	/****** Initialize MA evolution vector ******/
+	std::vector<nr::MA_evolution> agents_evolution (N, nr::MA_evolution());
+	for (size_t i=0; i<N; i++) {
+		agents_evolution[i] =
+		nr::MA_evolution( agents[i].ID, N, smax, agents[i].dynamics );
 	}
 
 	/****** Initialize plot ******/
@@ -93,7 +113,8 @@ int main() {
 
 
 	/****** Simulate agents ******/
-	size_t smax = std::floor(Tfinal/Tstep);
+	/* ONLY FOR HOMOGENEOUS AGENTS */
+	double convergence_threshold = M_PI*agents[0].sensing_radius/NR_PPC * Tstep;
 	std::vector<double> H (smax, 0);
 	#if NR_TIME_EXECUTION
 	clock_t begin, end;
@@ -107,6 +128,17 @@ int main() {
             /* Translate and rotate for real sensing */
     		nr::update_sensing_patterns( &(agents[i]) );
 		}
+		/* Check if self has converged */
+		for (size_t i=0; i<N; i++) {
+			/* FINISH THIS AND REMOVE DEBUG CODE */
+			nr::check_convergence(
+				&(agents[i]),
+				agents_evolution[i].position,
+				agents_evolution[i].attitude,
+				convergence_threshold,
+				10
+			);
+		}
 		for (size_t i=0; i<N; i++) {
 			/* Communicate with neighbors and get their states */
 			nr::find_neighbors( &(agents[i]), agents );
@@ -115,50 +147,70 @@ int main() {
 			/* Compute own control input */
 			nr::compute_control( &(agents[i]) );
 			/* Change control if agent is antagonistic. */
-			if (antagonist[i]) {
+			if (agents[i].is_antagonist) {
 				for (size_t j=0; j<agents[i].control_input.size(); j++) {
 					agents[i].control_input[j] = -agents[i].control_input[j];
 				}
 			}
-			/* Ensure collision avoidance. */
-            nr::ensure_collision_avoidance( &(agents[i]) );
 		}
 
 		/* Calculate objective function and print progress. */
 		H[s-1] = nr::calculate_objective( agents );
-		std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+		// std::printf("Iteration: %lu    H: %.4f\r", s, H[s-1]);
+
+		/* Save agent evolution. */
+		for (size_t i=0; i<N; i++) {
+			agents_evolution[i].position.push_back(agents[i].position);
+			agents_evolution[i].attitude.push_back(agents[i].attitude);
+			agents_evolution[i].velocity_translational.
+			  push_back(agents[i].velocity_translational);
+			agents_evolution[i].velocity_rotational.
+			  push_back(agents[i].velocity_rotational);
+			agents_evolution[i].feasible_sensing_quality.
+			  push_back(agents[i].feasible_sensing_quality);
+			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+				agents_evolution[i].
+				  neighbor_connectivity[agents[i].neighbors[j].ID-1].
+				  push_back(true);
+			}
+			for (size_t j=0; j<agents_evolution[i].control_input.size(); j++) {
+				agents_evolution[i].control_input[j].push_back
+				  (agents[i].control_input[j]);
+			}
+		}
+
+		/* Try to identify antagonist - check all  neighbors */
+		for (size_t i=0; i<N; i++) {
+			for (size_t j=0; j<agents[i].neighbors.size(); j++) {
+
+			}
+		}
 
 		// nr::print( agents, false );
 
 		/* Plot network state */
 		#if NR_PLOT_AVAILABLE
-			nr::plot_clear_render();
-			nr::plot_show_axes();
-
-			/* Region, nodes and udisks */
-			nr::plot_polygon( region, BLACK );
-			nr::plot_positions( agents, BLACK );
-			nr::plot_uncertainty( agents, BLACK );
-			/* sdisks */
-			nr::plot_sensing( agents, RED );
-			/* cells */
-			nr::plot_cells( agents, BLUE );
-			/* communication */
-			// nr::plot_communication( agents, GREEN );
-			/* Mark antagonistic agents. */
-			for (size_t i=0; i<N; i++) {
-				if (antagonist[i]) {
-					plot_point( agents[i].position, RED, 3 );
-					plot_cell( agents[i], RED );
-				}
+		nr::plot_clear_render();
+		nr::plot_show_axes();
+		nr::plot_polygon( region, BLACK );
+		nr::plot_positions( agents, BLACK );
+		nr::plot_uncertainty( agents, BLACK );
+		nr::plot_sensing( agents, RED );
+		nr::plot_cells( agents, BLUE );
+		// nr::plot_communication_links( agents, GREEN );
+		/* Mark antagonistic agents. */
+		for (size_t i=0; i<N; i++) {
+			if (agents[i].is_antagonist) {
+				plot_point( agents[i].position, RED, 3 );
+				plot_cell( agents[i], RED );
 			}
-
-			nr::plot_render();
-			uquit = nr::plot_handle_input();
-			if (uquit) {
-				break;
-			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
+		}
+		nr::plot_render();
+		uquit = nr::plot_handle_input();
+		if (uquit) {
+			break;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(plot_sleep_ms));
 		#endif
 
 		/* The movement of each agent is simulated */
@@ -178,14 +230,32 @@ int main() {
 	std::printf("Average iteration %.5f seconds\n", average_iteration);
 	#endif
 
+	/****** Export simulation results ******/
+	if (export_results) {
+		int err;
+		err = nr::export_simulation_parameters( start_time, N, Tfinal, Tstep,
+		elapsed_time, H, region );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_parameters( start_time, agents );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+		err = nr::export_agent_state( start_time, agents_evolution );
+		if (err) {
+			return nr::ERROR_FILE;
+		}
+	}
+
 	/****** Quit plot ******/
 	#if NR_PLOT_AVAILABLE
-		uquit = false;
-		while (!uquit) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			uquit = nr::plot_handle_input();
-		}
-		nr::plot_quit();
+	uquit = false;
+	while (!uquit) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		uquit = nr::plot_handle_input();
+	}
+	nr::plot_quit();
 	#endif
 
 	return 0;
