@@ -1,3 +1,5 @@
+# This project has been moved [here](https://gitlab.com/sotirisp/NRobot).
+
 # NRobot
 A C++ library of algorithms for area coverage by a network of mobile robotic
 agents.
